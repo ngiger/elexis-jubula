@@ -1,0 +1,20 @@
+h1. Jubula GUI tests for Elexis 3.1
+
+Here Niklaus tries to make a new, better environment for running the Jubula GUI-tests.
+
+The following improvements are planned. Order may be varied depending whether we will encounter unforeseen problems.
+
+* Move to current Jubula-Version 8.2
+* Simplify vastly the ruby scripts. Ideas are:
+** Move all config-variables in one (or more) YAML-files
+** Add simple script to download Elexis-Opensource from Jenkin-CI
+** Add simple script to use Medelexis-Zip/license.xml from a given local directory
+** Add the jubula*jar for running the tests to this project for easy installation
+* Run Jubula-Tests inside a docker environment (to work around libwebkit-gtk problem under Linux)
+* Rework visiting all Views and Perspectives to use the Jubula-provided tools
+* Migrate to use Java-based UI test automation. This should ease the pain from other developpers to get a head start.
+* Add a custom articlestamm.xml with a good selection of drugs to make a good demo
+* Find a way to properly identify each tab of a combo, e.g. the various articlestamm
+* Rework some Elexis-GUI elements, e.g.
+** DatePickers should allow entering a date via the keyboard. This is needed when a consultation for a previous date has to be entered
+* Complete basic tests til we can prove that Elexis creates correct bills
