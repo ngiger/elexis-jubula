@@ -6,8 +6,8 @@ The following improvements are planned. Order may be varied depending whether we
 
 * Move to current Jubula-Version 8.2
 * Simplify vastly the ruby scripts. Ideas are:
-** Move all config-variables in one (or more) YAML-files
-** Add simple script to download Elexis-Opensource from Jenkin-CI
+** -Move all config-variables in one (or more) YAML-files- "see":defaults.yaml. They may be overriden be putting your changes into config.yaml
+** -Add simple script to download Elexis-Opensource from Jenkin-CI- "see":scripts/install_open_source_elexis.rb
 ** Add simple script to use Medelexis-Zip/license.xml from a given local directory
 ** Add the jubula*jar for running the tests to this project for easy installation
 * Run Jubula-Tests inside a docker environment (to work around libwebkit-gtk problem under Linux)

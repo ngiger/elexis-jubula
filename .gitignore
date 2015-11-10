@@ -1,5 +1,4 @@
 *.class
-
 # Package Files #
 # *.jar
 *.war
@@ -10,4 +9,7 @@ target/
 jetty.log
 workspace/
 profile.tmp
-
+work
+private
+.ruby-version
+config.yaml
