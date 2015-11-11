@@ -8,6 +8,7 @@ bin/
 target/
 jetty.log
 workspace/
+results/
 profile.tmp
 work
 private

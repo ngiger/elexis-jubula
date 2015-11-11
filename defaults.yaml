@@ -1,19 +1,21 @@
 ---
 :workdir:  work
+:jubula_root: /opt/jubula_8.2.0.021
+:jubula_version: 8.2
 :director_latest: http://mirror.switch.ch/eclipse/tools/buckminster/products/director_latest.zip
 :elexis_fsf:
-  :full_zip_url: http://download.elexis.info/elexis.3.core/3.0.0/ch.elexis.core.application.ElexisApp-linux.gtk.x86_64.zip
+   # :full_zip_url: http://download.elexis.info/elexis.3.core/3.0.0/ch.elexis.core.application.ElexisApp-linux.gtk.x86_64.zip
+  :full_zip_url: https://srv.elexis.info/jenkins/view/3.0/job/Elexis-3.0-Core/lastSuccessfulBuild/artifact/ch.elexis.core.p2site/target/products/ch.elexis.core.application.ElexisApp-linux.gtk.x86_64.zip
   :features_2_install:
-      http://download.elexis.info/elexis.3.core/release:
+      http://download.elexis.info/elexis.3.core/snapshot:
         - ch.elexis.core.application.feature.feature.group
         - ch.elexis.core.common.feature.feature.group
         - ch.elexis.core.logging.feature.feature.group
         - ch.elexis.core.ui.feature.feature.group
         - ch.elexis.core.ui.p2.feature.feature.group
-      http://download.elexis.info/elexis.3.base/release:
+      http://download.elexis.info/elexis.3.base/snapshot:
         - ch.elexis.base.ch.feature.feature.group
-# /opt/bootstrap-elexis-3/director/director -list -r http://download.elexis.info/elexis.3.base/release |grep feature.group| cut -d = -f1 | sort | uniq | grep -v source
-# /opt/bootstrap-elexis-3/director/director -list -r http://download.elexis.info/elexis.3.base/release |grep feature.group| cut -d = -f1 | sort | uniq | grep -v source
+# /opt/bootstrap-elexis-3/director/director -list -r http://download.elexis.info/elexis.3.base/snapshot |grep feature.group| cut -d = -f1 | sort | uniq | grep -v source
 # at.medevit.elexis.decision.feature.feature.group
 # at.medevit.elexis.loinc.feature.feature.group
 # at.medevit.elexis.medietikette.feature.feature.group
