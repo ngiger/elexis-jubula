@@ -2,6 +2,7 @@
 :workdir:  work
 :jubula_root: /opt/jubula_8.2.0.021
 :jubula_version: 8.2
+:port_number: 6333  # keep this in sync with ALL your Dockerfiles
 :director_latest: http://mirror.switch.ch/eclipse/tools/buckminster/products/director_latest.zip
 :elexis_fsf:
    # :full_zip_url: http://download.elexis.info/elexis.3.core/3.0.0/ch.elexis.core.application.ElexisApp-linux.gtk.x86_64.zip

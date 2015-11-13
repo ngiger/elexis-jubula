@@ -37,3 +37,21 @@ bc. "-DdbOpts=h2 -Delexis-run-mode=RunFromScratch
 -Declipse.p2.unsignedPolicy=allow -Dorg.eclipse.swt.browser.DefaultType=mozilla"
 
 We will probably soon add a possibility to add a specific command before a test execution, eg. to download a file. 
+
+
+h2. notes
+
+h3. Why do we not install Jubula on the docker
+
+The following arguments were in favor:
+* Once the docker images is created, running the tests would be easy
+
+The following arguments were against:
+* Jubula 8.2 is quite large (almost 900 MB) after the installation. We are able to zip the needed autagent to about 55MB.
+* We want to install Jubula only once on the target host
+
+h3. testing inside docker
+
+If you have ruby installed, run once @gem install bundler && bundle install --without debugger && rake docker_build@. Then call @rake docker_build_run@.
+
+To run a testsuite e.g. Screenshot just call @rake run_inside_docker Screenshot@. Insure that you got a nice screenshot under results/images/ before proceeding to more complex tests.

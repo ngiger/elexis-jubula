@@ -14,3 +14,21 @@ work
 private
 .ruby-version
 config.yaml
+first_attempt_with_docker
+run_docker
+elexis
+scripts/override
+wheezy/Gemfile
+wheezy/autagent*
+
+# File generated, because this is the home on docker
+.bash_history
+.bundle/
+.byebug_history
+.fontconfig/
+.install4j
+.java/
+.jubula/
+.oracle_jre_usage/
+.viminfo
+Gemfile.lock

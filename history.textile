@@ -1,0 +1,3 @@
+Release history
+
+* 0.1 2015.11.12 First release. Runs Jubula GUI test for Elexis Screenshot in docker containter

@@ -1,0 +1,9 @@
+AllCops:
+  Exclude:
+    - 'first_attempt_with_docker/**/*'
+Metrics/LineLength:
+  Max: 119
+Metrics/ClassLength:
+  Max: 199
+Metrics/MethodLength:
+  Max: 19
