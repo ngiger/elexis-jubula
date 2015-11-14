@@ -31,7 +31,7 @@ RUN apt-get clean && \
 ADD jubula.zip /root/jubula.zip
 RUN cd / && /usr/bin/unzip /root/jubula.zip
 
-RUN apt-get update && apt-get install -y xvfb xterm x11-xserver-utils x11-apps
+RUN apt-get update && apt-get install -y xvfb xterm x11-xserver-utils x11-apps awesome
 # x11-apps: to be able to take a screen-shot inside the container using xwd  -root -out screen.xwd
 # must be converted to png using "convert screen.xwd screen.png" (on host)
 
@@ -43,7 +43,6 @@ RUN useradd --uid 1200 --user-group --create-home --shell /bin/bash elexis && \
 ADD Gemfile /home/elexis/Gemfile
 # RUN gem install --no-ri --no-rdoc bundler
 # RUN cd /home/elexis && sudo -Hu elexis bundle install --without debugger
-USER elexis
 VOLUME /home/elexis
 
 # keep EXPOSE (the port) in sync with scripts/defaults.yaml
