@@ -61,3 +61,30 @@ h3. testing inside docker
 If you have ruby installed, run once @gem install bundler && bundle install --without debugger && rake docker_build@. Then call @rake docker_build_run@.
 
 To run a testsuite e.g. Screenshot just call @rake run_inside_docker Screenshot@. Insure that you got a nice screenshot under results/images/ before proceeding to more complex tests.
+
+h3. jubula.rc.rcp not correctly installed and configured
+
+I stumbled over a not very satisfying error message in this circonstances:
+* autagent started successfully
+* Elexis3 started, but the plugin org.eclipse.jubula.rc.rcp was not started, as the config.ini did not contain @reference\:file\:org.eclipse.jubula.rc.rcp_4.0.0.201510211215.jar@4\:start@. The output when running testexec was
+bc. 14.11.15 00:57:22 - AUT Agent:  Connecting to "172.17.0.51:6333" ...
+14.11.15 00:57:23 - AUT Agent:  connection established.
+14.11.15 00:57:23 - Database: Connecting as "sa" to "jdbc:h2:/home/opt/src/elexis-jubula/work/database/embedded;MVCC=TRUE;AUTO_SERVER=TRUE;DB_CLOSE_ON_EXIT=FALSE"...
+14.11.15 00:57:29 - Database: Connection established.
+14.11.15 00:57:29 - Database: Loading project "Screenshot" in version "1.0"...
+14.11.15 00:57:31 - Database: Project loading completed.
+14.11.15 00:57:31 - Project:  Checking completeness
+14.11.15 00:57:31 - Checking completeness of Test Suite "ScreenSuite"...
+14.11.15 00:57:31 - ... passed.
+14.11.15 00:57:31 -   Start working with Test Suite: ScreenSuite
+14.11.15 00:57:31 - Start working with Test Suite: ScreenSuite
+14.11.15 00:57:31 - AUT:    Connecting to "elexis"...
+14.11.15 00:57:31 - AUT ERROR: Could not send connect message to AUT. The associated communicator is null....
+!!Error occurred !!
+  Could not connect to AUT: elexis
+14.11.15 00:57:32 - AUT Agent:  connection closed.
+14.11.15 00:57:32 - Exit:   Code 1
+
+h3. Object mapping
+
+I always had a hard time to find that Ctrl-Shift-Q was the default key to collect a compontent from Elexis. This is configured under Preferences..Test..Object Mapping
