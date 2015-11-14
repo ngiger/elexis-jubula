@@ -89,7 +89,7 @@ def patch_ini_file_for_jubula_rc
   FileUtils.cp(ini_name, ini_name + '.bak', verbose: true) unless
   config_ini.each do |line|
     next unless /^osgi.bundles=/.match(line)
-    line.sub!(/osgi.bundles=/, 'osgi.bundles=reference\:file\:' + jubula_jar + '@4\:start,')
+    line.sub!(/osgi.bundles=/, 'osgi.bundles=reference\:file\:' + File.basename(jubula_jar) + '@4\:start,')
     File.open(ini_name, 'w') { |file| file.write config_ini.join('') }
     return true
   end

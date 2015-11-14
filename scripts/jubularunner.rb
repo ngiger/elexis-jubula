@@ -15,7 +15,7 @@ class DockerRunner
   ensure
     Socket.do_not_reverse_lookup = orig
   end
-  
+
   def docker_ip
     puts "cmd docker inspect jubula-#{@test_name} | grep IPAddress"
     result = `docker inspect jubula-#{@test_name} | grep IPAddress`
@@ -79,7 +79,10 @@ class JubulaRunner
     end
     doc = "#{exe} -data #{data_dir} -config jubula-#{Date.today.strftime('%Y.%m.%d')} \
 -vmargs #{@test_params[:aut_vmargs]}" #  2>&1 > /home/elexis/runner.log \n"
-    File.open(name, 'w') { |f| f.puts '#!/bin/sh -v' & f.puts(doc) }
+    File.open(name, 'w') do |f|
+      f.puts '#!/bin/sh -v'
+      f.puts(doc)
+    end
     FileUtils.chmod(0755, name)
     puts "#{DRY_RUN ? 'Would create' : 'Created'} wrapper script #{name} with content #{doc}"
     if @docker
@@ -95,7 +98,7 @@ class JubulaRunner
     @autagent = get_full_file_path_or_fail(File.join(Config[:jubula_root], 'server/autagent'))
     @stopautagent = get_full_file_path_or_fail(File.join(Config[:jubula_root], 'server/stopautagent'))
     @autrun = get_full_file_path_or_fail(File.join(Config[:jubula_root], 'server/autrun'))
-    puts "Found all tools to be able to run #{test_xml}"
+    puts "Found all tools to be able to run #{@test_xml}"
   end
 
   def prepare_jubula
@@ -103,12 +106,12 @@ class JubulaRunner
     path = File.join(RootDir, 'definitions', "#{@test_name}*.xml")
     candidates = Dir.glob(path)
     fail "Could not find any file using #{path}" if candidates.size == 0 && !DRY_RUN
-    test_xml = candidates.last # this should open the latest version of the
+    @test_xml = candidates.last # this should open the latest version of the
     modules = [
       File.join(Config[:jubula_root], 'examples/testCaseLibrary', "unbound_modules_swt_#{vers}.xml"),
       File.join(Config[:jubula_root], 'examples/testCaseLibrary', "unbound_modules_concrete_#{vers}.xml"),
       File.join(Config[:jubula_root], 'examples/testCaseLibrary', "unbound_modules_rcp_#{vers}.xml"),
-      test_xml
+      @test_xml
     ]
     modules.each { |m_path| get_full_file_path_or_fail(m_path) }
     creates = File.join(WorkDir, 'database/embedded.h2.db')
@@ -154,7 +157,7 @@ class JubulaRunner
 #{@test_params[:autrun_params]} \
 --autagenthost #{@docker ? @docker.local_ip : 'localhost'} \
 --autagentport #{Config[:port_number]} \
---exec #{@wrapper_file}" # 2>&1 > #{aut_log_file}"
+--exec #{@wrapper_file} &" # 2>&1 > #{aut_log_file}"
     puts "Starting autrun in 1 second: #{cmd}"
     sleep 1
     store_cmd('autrun.sh', cmd)
@@ -192,7 +195,7 @@ class JubulaRunner
     run_test_exec
     stop_agent
   ensure
-    @docker ? @docker.stop_docker : system("killall --quiet #{@test_params[:exe_name]}")
+    @docker ? @docker.stop_docker : system("killall --quiet #{@test_params[:exe_name]}", MAY_FAIL)
   end
 
   def show_configuration
