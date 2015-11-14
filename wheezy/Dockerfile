@@ -10,7 +10,10 @@ RUN apt-get update && \
     iceweasel \
     icedove \
     libxext-dev libxrender-dev libxtst-dev wget unzip sudo vim \
-    libwebkitgtk-1.0-0
+    libwebkitgtk-1.0-0 \
+    xvfb xterm x11-xserver-utils x11-apps awesome
+# x11-apps: to be able to take a screen-shot inside the container using xwd  -root -out screen.xwd
+# must be converted to png using "convert screen.xwd screen.png" (on host)
 
 # Install Oracle Java-8 and accept automatically its license
 RUN echo "deb http://ppa.launchpad.net/webupd8team/java/ubuntu trusty main" | tee /etc/apt/sources.list.d/webupd8team-java.list && \
@@ -24,31 +27,22 @@ RUN apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf /tmp/*
 
-# Add Jubula autagent (way too big)
-# ADD http://download.elexis.info/jubula/8.2/autagent_8_2_linux_x86_64.zip /root/autagent.zip
-#ADD autagent_8_2_linux_x86_64.zip /root/autagent.zip
-#RUN cd /opt && /usr/bin/unzip /root/autagent.zip
+# Somehow we could not run autagent inside docker
 ADD jubula.zip /root/jubula.zip
 RUN cd / && /usr/bin/unzip /root/jubula.zip
-
-RUN apt-get update && apt-get install -y xvfb xterm x11-xserver-utils x11-apps awesome
-# x11-apps: to be able to take a screen-shot inside the container using xwd  -root -out screen.xwd
-# must be converted to png using "convert screen.xwd screen.png" (on host)
 
 RUN useradd --uid 1200 --user-group --create-home --shell /bin/bash elexis && \
     echo "elexis ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/elexis && \
     chmod 0440 /etc/sudoers.d/elexis && \
     mkdir -p elexis /home/elexis/work /home/elexis/results
-# RUN xhost local:elexis
 ADD Gemfile /home/elexis/Gemfile
-# RUN gem install --no-ri --no-rdoc bundler
-# RUN cd /home/elexis && sudo -Hu elexis bundle install --without debugger
+RUN gem install --no-ri --no-rdoc bundler
+RUN cd /home/elexis && sudo -Hu elexis bundle install --without debugger
 VOLUME /home/elexis
 
 # keep EXPOSE (the port) in sync with scripts/defaults.yaml
 EXPOSE 6333
 CMD /bin/bash
-# ENV HOME /home/elexis
 USER elexis
 WORKDIR /home/elexis
 
