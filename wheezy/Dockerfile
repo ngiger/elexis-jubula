@@ -31,7 +31,7 @@ RUN apt-get clean && \
 ADD jubula.zip /root/jubula.zip
 RUN cd / && /usr/bin/unzip /root/jubula.zip
 
-RUN useradd --uid 1200 --user-group --create-home --shell /bin/bash elexis && \
+RUN useradd --uid 1002 --user-group --create-home --shell /bin/bash elexis && \
     echo "elexis ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/elexis && \
     chmod 0440 /etc/sudoers.d/elexis && \
     mkdir -p elexis /home/elexis/work /home/elexis/results

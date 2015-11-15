@@ -17,6 +17,7 @@ class DockerRunner
   end
 
   def docker_ip
+    return '127.0.0.1' if DRY_RUN
     puts "cmd docker inspect jubula-#{@test_name} | grep IPAddress"
     result = `docker inspect jubula-#{@test_name} | grep IPAddress`
     fail unless result
@@ -77,7 +78,9 @@ class JubulaRunner
       data_dir = '/home/elexis/work/data'
       exe = '/home/elexis/work/' + @test_params[:exe_name]
     end
-    doc = "#{exe} -data #{data_dir} -config jubula-#{Date.today.strftime('%Y.%m.%d')} \
+    doc = "export LANG=de_CH.UTF-8
+export LANGUAGE=de_CH:de
+ #{exe} -data #{data_dir} -config jubula-#{Date.today.strftime('%Y.%m.%d')} \
 -vmargs #{@test_params[:aut_vmargs]}" #  2>&1 > /home/elexis/runner.log \n"
     File.open(name, 'w') do |f|
       f.puts '#!/bin/sh -v'
@@ -132,7 +135,7 @@ class JubulaRunner
   end
 
   def start_autagent
-    cmd = "#{@autagent} -l -p #{Config[:port_number]} &"
+    cmd = "#{@autagent} -l -p #{Config[:port_number]}"
     puts "Starting autagent with port #{Config[:port_number]}"
     if @docker
       start_cmd = 'Xvfb :1 -screen 5 1280x1024x24 -nolisten tcp'
@@ -141,7 +144,7 @@ class JubulaRunner
       store_cmd('start_autagent.sh', cmd + "\necho autagent started\nexit 0")
       @docker.exec_in_docker('/home/elexis/start_autagent.sh')
     else
-      system(cmd)
+      system(cmd + ' &')
     end
   end
 
@@ -155,9 +158,10 @@ class JubulaRunner
     cmd = "cd #{File.dirname(@autrun)}
 ./#{File.basename(@autrun)} \
 #{@test_params[:autrun_params]} \
---autagenthost #{@docker ? @docker.local_ip : 'localhost'} \
+--autagenthost #{@docker ? 'localhost' : 'localhost'} \
 --autagentport #{Config[:port_number]} \
 --exec #{@wrapper_file} &" # 2>&1 > #{aut_log_file}"
+#--autagenthost #{@docker ? @docker.local_ip : 'localhost'} \
     puts "Starting autrun in 1 second: #{cmd}"
     sleep 1
     store_cmd('autrun.sh', cmd)
@@ -181,9 +185,12 @@ class JubulaRunner
 
   def stop_agent
     cmd = "#{@stopautagent} -p #{Config[:port_number]} -stop"
-    puts "Skip Stopping in 1 second autagent via #{cmd}"
-    sleep 1
-    @docker ? @docker.exec_in_docker(cmd) : system(cmd)
+    if DONT_STOP
+      puts "DONT_STOP: skip stopping autagent via #{cmd}"
+    else
+      sleep 1
+      @docker ? @docker.exec_in_docker(cmd) : system(cmd)
+    end
   end
 
   def run_prepared_jubula
@@ -195,7 +202,11 @@ class JubulaRunner
     run_test_exec
     stop_agent
   ensure
-    @docker ? @docker.stop_docker : system("killall --quiet #{@test_params[:exe_name]}", MAY_FAIL)
+    if DONT_STOP
+      puts "DONT_STOP: skip killing docker/exe"
+    else
+      @docker ? @docker.stop_docker : system("killall --quiet #{@test_params[:exe_name]}", MAY_FAIL)
+    end
   end
 
   def show_configuration

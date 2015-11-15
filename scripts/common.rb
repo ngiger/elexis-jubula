@@ -5,13 +5,11 @@ require 'fileutils'
 require 'pry' if Gem::Specification.find_all_by_name('pry').any?
 require 'byebug' if Gem::Specification.find_all_by_name('byebug').any?
 
-if ARGV.index('-n')
-  DRY_RUN = true
-  ARGV.delete('-n')
-else
-  DRY_RUN = false
-end
 MAY_FAIL = true
+DONT_STOP = (ARGV.index('--dont_stop') != nil)
+ARGV.delete('--dont_stop')
+DRY_RUN = (ARGV.index('-n') != nil)
+ARGV.delete('-n')
 
 override = File.expand_path(File.join(File.dirname(File.dirname(__FILE__)), 'scripts', 'override', 'defaults.yaml'))
 default = File.expand_path(File.join(File.dirname(File.dirname(__FILE__)), 'scripts', 'defaults.yaml'))
@@ -96,8 +94,17 @@ def patch_ini_file_for_jubula_rc
   fail "Could not find line osgi.bundle in #{File.expand_path(ini_name)}"
 end
 
+def install_docker_compose(docker_dir)
+  uname = (`uname -s` + '-' + `uname -m`).gsub("\n",'')
+  url = "https://github.com/docker/compose/releases/download/1.5.1/docker-compose-#{uname}"
+  download_if_not_exist(docker_dir, url)
+  dest = File.join(docker_dir, 'docker-compose')
+  FileUtils.cp(dest + '-' + uname, dest, :verbose => true)
+  FileUtils.chmod(0755, dest)
+end
 def docker_build(docker_dir = File.join(RootDir, 'wheezy'))
   puts "docker_build from #{docker_dir}"
+  # TODO: install_docker_compose(docker_dir)
   download_if_not_exist(docker_dir, 'http://download.elexis.info/jubula/8.2/autagent_8_2_linux_x86_64.zip')
   FileUtils.cp(File.join(RootDir, 'Gemfile'), docker_dir, verbose: true)
   docker_name = Config[:docker_name] || 'ngiger/jubula_runner'
