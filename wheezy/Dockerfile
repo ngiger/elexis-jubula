@@ -31,7 +31,7 @@ RUN apt-get clean && \
 ADD jubula.zip /root/jubula.zip
 RUN cd / && /usr/bin/unzip /root/jubula.zip
 
-RUN useradd --uid 1002 --user-group --create-home --shell /bin/bash elexis && \
+RUN useradd --uid 1200 --user-group --create-home --shell /bin/bash elexis && \
     echo "elexis ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/elexis && \
     chmod 0440 /etc/sudoers.d/elexis && \
     mkdir -p elexis /home/elexis/work /home/elexis/results
@@ -39,10 +39,11 @@ ADD Gemfile /home/elexis/Gemfile
 RUN gem install --no-ri --no-rdoc bundler
 RUN cd /home/elexis && sudo -Hu elexis bundle install --without debugger
 VOLUME /home/elexis
+RUN mkdir /opt/elexis
+VOLUME /opt/elexis
 
 # keep EXPOSE (the port) in sync with scripts/defaults.yaml
 EXPOSE 6333
 CMD /bin/bash
 USER elexis
 WORKDIR /home/elexis
-

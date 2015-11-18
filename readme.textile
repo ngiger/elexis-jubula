@@ -26,6 +26,7 @@ The following improvements are planned. Order may be varied depending whether we
 ** DatePickers should allow entering a date via the keyboard. This is needed when a consultation for a previous date has to be entered
 * Complete basic tests til we can prove that Elexis creates correct bills
 * As we have now the whole Jubula installed inside the container, we should copy the jar from within the container!
+* Use docker 1.9.0 which allows docker build --build-arg=, e.g --build-arg=[ "UID"=`id -u $USER`",  "GID"=`id -g $USER`"], s.a. https://docs.docker.com/engine/reference/builder/ with default values.
 
 h2. Jubula API-setup
 
