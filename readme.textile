@@ -2,17 +2,21 @@ h1. Jubula GUI tests for Elexis 3.1
 
 Here Niklaus tries to make a new, better environment for running the Jubula GUI-tests.
 
+h2. TODO
+
 The following improvements are planned. Order may be varied depending whether we will encounter unforeseen problems.
 
-* Move to current Jubula-Version 8.2
+* -Move to current Jubula-Version 8.2.-
 * Simplify vastly the ruby scripts. Ideas are:
 ** -Move all config-variables in one (or more) YAML-files- "see":defaults.yaml. They may be overriden be putting your changes into config.yaml
 ** -Add simple script to download Elexis-Opensource from Jenkin-CI- "see":scripts/install_open_source_elexis.rb
 ** Add simple script to use Medelexis-Zip/license.xml from a given local directory
 ** -Add the jubula*jar for running the tests to this project for easy installation- "see":scripts/run_jubula_test.rb
 *** -This file must patch the config.ini or the AUTagent will not start!-
-* Run Jubula-Tests inside a docker environment (to work around libwebkit-gtk problem under Linux)
+* -Run Jubula-Tests inside a docker environment (to work around libwebkit-gtk problem under Linux)-
 * -Test steps above with a very simple Jubula GUI test which creates only a screenshot of the main window. Must check whether running in a docker will create meaningfull (not mostly black) screenshots.- "see":definitions/Screenshot.yaml
+* Ensure that the generated screenshots contain the titel bar. Needs a simple window manager (like lwm, awesome,xfwmw4 or even a whole desktop like xfce4)
+* Add some rake tasks to easily test core components and publishing the docker image
 * Rework visiting all Views and Perspectives to use the Jubula-provided tools
 * Migrate to use Java-based UI test automation. This should ease the pain from other developpers to get a head start.
 * Add a custom articlestamm.xml with a good selection of drugs to make a good demo
@@ -20,7 +24,7 @@ The following improvements are planned. Order may be varied depending whether we
 * Rework some Elexis-GUI elements, e.g.
 ** DatePickers should allow entering a date via the keyboard. This is needed when a consultation for a previous date has to be entered
 * Complete basic tests til we can prove that Elexis creates correct bills
-
+* As we have now the whole Jubula installed inside the container, we should copy the jar from within the container!
 
 h2. concepts
 
@@ -41,10 +45,12 @@ We will probably soon add a possibility to add a specific command before a test 
 
 h2. notes
 
-h3. Why do we not install Jubula on the docker
+h3. Why do we install Jubula in the docker
 
 The following arguments were in favor:
 * Once the docker images is created, running the tests would be easy
+* Installing only the autagent did not work (the plugins directory was missing)
+* Running autrun on the host it was not possible to start Elexis inside the container
 
 The following arguments were against:
 * Jubula 8.2 is quite large (almost 900 MB) after the installation. We are able to zip the needed autagent to about 55MB.
@@ -55,3 +61,30 @@ h3. testing inside docker
 If you have ruby installed, run once @gem install bundler && bundle install --without debugger && rake docker_build@. Then call @rake docker_build_run@.
 
 To run a testsuite e.g. Screenshot just call @rake run_inside_docker Screenshot@. Insure that you got a nice screenshot under results/images/ before proceeding to more complex tests.
+
+h3. jubula.rc.rcp not correctly installed and configured
+
+I stumbled over a not very satisfying error message in this circonstances:
+* autagent started successfully
+* Elexis3 started, but the plugin org.eclipse.jubula.rc.rcp was not started, as the config.ini did not contain @reference\:file\:org.eclipse.jubula.rc.rcp_4.0.0.201510211215.jar@4\:start@. The output when running testexec was
+bc. 14.11.15 00:57:22 - AUT Agent:  Connecting to "172.17.0.51:6333" ...
+14.11.15 00:57:23 - AUT Agent:  connection established.
+14.11.15 00:57:23 - Database: Connecting as "sa" to "jdbc:h2:/home/opt/src/elexis-jubula/work/database/embedded;MVCC=TRUE;AUTO_SERVER=TRUE;DB_CLOSE_ON_EXIT=FALSE"...
+14.11.15 00:57:29 - Database: Connection established.
+14.11.15 00:57:29 - Database: Loading project "Screenshot" in version "1.0"...
+14.11.15 00:57:31 - Database: Project loading completed.
+14.11.15 00:57:31 - Project:  Checking completeness
+14.11.15 00:57:31 - Checking completeness of Test Suite "ScreenSuite"...
+14.11.15 00:57:31 - ... passed.
+14.11.15 00:57:31 -   Start working with Test Suite: ScreenSuite
+14.11.15 00:57:31 - Start working with Test Suite: ScreenSuite
+14.11.15 00:57:31 - AUT:    Connecting to "elexis"...
+14.11.15 00:57:31 - AUT ERROR: Could not send connect message to AUT. The associated communicator is null....
+!!Error occurred !!
+  Could not connect to AUT: elexis
+14.11.15 00:57:32 - AUT Agent:  connection closed.
+14.11.15 00:57:32 - Exit:   Code 1
+
+h3. Object mapping
+
+I always had a hard time to find that Ctrl-Shift-Q was the default key to collect a compontent from Elexis. This is configured under Preferences..Test..Object Mapping

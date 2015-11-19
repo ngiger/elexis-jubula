@@ -3,10 +3,11 @@ $LOAD_PATH.unshift File.dirname(__FILE__)
 require 'common'
 require 'socket'
 
+# Helper class to use docker for the Jubula AUT
 class DockerRunner
   # http://stackoverflow.com/questions/14112955/how-to-get-my-machines-ip-address-from-ruby-without-leveraging-from-other-ip-ad
   def local_ip
-    orig, Socket.do_not_reverse_lookup = Socket.do_not_reverse_lookup, true  # turn off reverse DNS resolution temporarily
+    orig, Socket.do_not_reverse_lookup = Socket.do_not_reverse_lookup, true # turn off reverse DNS resolution temporarily
     UDPSocket.open do |s|
       s.connect '192.168.1.1', 1
       s.addr.last
@@ -15,21 +16,34 @@ class DockerRunner
     Socket.do_not_reverse_lookup = orig
   end
 
-  def start_docker(cmd_in_docker, env = nil)
+  def docker_ip
+    puts "cmd docker inspect jubula-#{@test_name} | grep IPAddress"
+    result = `docker inspect jubula-#{@test_name} | grep IPAddress`
+    fail unless result
+    m = /"IPAddress": "(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"/.match(result)
+    fail unless m.size == 2
+    m[1]
+  end
+
+  def start_docker(cmd_in_docker, env = nil, workdir = nil)
     # First cleanup possible remnants of old runs
     stop_docker
     cmd = 'docker run --detach'
-    cmd += " --env=DISPLAY=:1.5 " # if env
+    cmd += " --env=#{env}" if env
+    cmd += " --workdir=#{workdir}" if workdir
     cmd += " -v #{RootDir}:/home/elexis/"
-#    cmd += " --name=jubula-#{@test_name} ngiger/jubula_runner #{cmd_in_docker}"
-    cmd += " --publish=#{local_ip}:6333:6333 --name=jubula-#{@test_name} ngiger/jubula_runner #{cmd_in_docker}"
-#    cmd += " --hostname=jubula-#{@test_name} --name=jubula-#{@test_name} ngiger/jubula_runner #{cmd_in_docker}"
+    cmd += " --publish=#{local_ip}:6333:6333 --name=jubula-#{@test_name} ngiger/jubula_runner"
+    cmd += ' ' + cmd_in_docker
     puts cmd
     system(cmd)
   end
 
-  def exec_in_docker(command)
-    cmd = "docker exec jubula-#{@test_name} #{command}"
+  def exec_in_docker(command, env = nil, workdir = nil)
+    cmd = 'docker exec --detach' # do it in the background
+    cmd += " --env=#{env} " if env
+    cmd += " --workdir=#{workdir}" if workdir
+    cmd += " jubula-#{@test_name} "
+    cmd += command
     puts cmd
     system(cmd)
   end
@@ -60,14 +74,16 @@ class JubulaRunner
     exe = get_full_file_path_or_fail(File.join(WorkDir, @test_params[:exe_name]))
     data_dir = File.join(WorkDir, 'data')
     if @docker
-      data_dir ='/home/elexis/work/data'
+      data_dir = '/home/elexis/work/data'
       exe = '/home/elexis/work/' + @test_params[:exe_name]
     end
-    doc = "#!/bin/sh \n#{exe} -data #{data_dir} -config jubula-#{Date.today.strftime('%Y.%m.%d')} \
--vmargs #{@test_params[:aut_vmargs]}\n"
-    File.open(name, 'w') { |f| f.puts(doc) }
+    doc = "#{exe} -data #{data_dir} -config jubula-#{Date.today.strftime('%Y.%m.%d')} \
+-vmargs #{@test_params[:aut_vmargs]}" #  2>&1 > /home/elexis/runner.log \n"
+    File.open(name, 'w') do |f|
+      f.puts '#!/bin/sh -v'
+      f.puts(doc)
+    end
     FileUtils.chmod(0755, name)
-    puts doc
     puts "#{DRY_RUN ? 'Would create' : 'Created'} wrapper script #{name} with content #{doc}"
     if @docker
       @wrapper_file = '/home/elexis/work/' + File.basename(name)
@@ -76,30 +92,28 @@ class JubulaRunner
     end
   end
 
+  def ensure_presence_of_jubula
+    @testexec = get_full_file_path_or_fail(File.join(Config[:jubula_root], 'jubula/testexec'))
+    @dbtool = get_full_file_path_or_fail(File.join(Config[:jubula_root], 'jubula/dbtool'))
+    @autagent = get_full_file_path_or_fail(File.join(Config[:jubula_root], 'server/autagent'))
+    @stopautagent = get_full_file_path_or_fail(File.join(Config[:jubula_root], 'server/stopautagent'))
+    @autrun = get_full_file_path_or_fail(File.join(Config[:jubula_root], 'server/autrun'))
+    puts "Found all tools to be able to run #{@test_xml}"
+  end
+
   def prepare_jubula
     vers = Config[:jubula_version].to_s
     path = File.join(RootDir, 'definitions', "#{@test_name}*.xml")
     candidates = Dir.glob(path)
-    unless candidates.size > 0
-      puts "Could not find any file using #{path}"
-      exit 2
-    end
-    test_xml = candidates.last # this should open the latest version of the
+    fail "Could not find any file using #{path}" if candidates.size == 0 && !DRY_RUN
+    @test_xml = candidates.last # this should open the latest version of the
     modules = [
       File.join(Config[:jubula_root], 'examples/testCaseLibrary', "unbound_modules_swt_#{vers}.xml"),
       File.join(Config[:jubula_root], 'examples/testCaseLibrary', "unbound_modules_concrete_#{vers}.xml"),
       File.join(Config[:jubula_root], 'examples/testCaseLibrary', "unbound_modules_rcp_#{vers}.xml"),
-      test_xml
+      @test_xml
     ]
     modules.each { |m_path| get_full_file_path_or_fail(m_path) }
-    @testexec = get_full_file_path_or_fail(File.join(Config[:jubula_root], 'jubula/testexec'))
-    @dbtool = get_full_file_path_or_fail(File.join(Config[:jubula_root], 'jubula/dbtool'))
-
-    @autagent = get_full_file_path_or_fail(File.join(Config[:jubula_root], 'server/autagent'))
-    @stopautagent = get_full_file_path_or_fail(File.join(Config[:jubula_root], 'server/stopautagent'))
-    @autrun = get_full_file_path_or_fail(File.join(Config[:jubula_root], 'server/autrun'))
-
-    puts "Found all tools to be able to run #{test_xml}"
     creates = File.join(WorkDir, 'database/embedded.h2.db')
     modules.each do |m|
       get_full_file_path_or_fail(m)
@@ -108,82 +122,96 @@ class JubulaRunner
     end unless File.exist?(creates)
   end
 
+  def store_cmd(name, doc)
+    path = File.join(RootDir, File.basename(name))
+    File.open(path, 'w') do |f|
+      f.puts '#!/bin/sh -v'
+      f.puts(doc)
+    end
+    FileUtils.chmod(0755, path)
+  end
+
+  def start_autagent
+    cmd = "#{@autagent} -l -p #{Config[:port_number]} &"
+    puts "Starting autagent with port #{Config[:port_number]}"
+    if @docker
+      start_cmd = 'Xvfb :1 -screen 5 1280x1024x24 -nolisten tcp'
+      store_cmd('start_docker.sh', start_cmd)
+      @docker.start_docker(start_cmd, 'DISPLAY=:1.5')
+      store_cmd('start_autagent.sh', cmd + "\necho autagent started\nexit 0")
+      @docker.exec_in_docker('/home/elexis/start_autagent.sh')
+    else
+      system(cmd)
+    end
+  end
+
+  def start_aut
+    work = WorkDir
+    data_dir = File.join(work, 'jubula/datadir')
+    data = File.join(work, 'jubula/data')
+    [data, data_dir].each { |path| FileUtils.makedirs(path.sub('/home/elexis', WorkDir), verbose: true) }
+    # aut_log_file = File.join(@docker ? '/home/elexis/results' :
+    # FileJoin(WorkDir, 'results'), "#{@test_name}_aut.log")
+    cmd = "cd #{File.dirname(@autrun)}
+./#{File.basename(@autrun)} \
+#{@test_params[:autrun_params]} \
+--autagenthost #{@docker ? @docker.local_ip : 'localhost'} \
+--autagentport #{Config[:port_number]} \
+--exec #{@wrapper_file} &" # 2>&1 > #{aut_log_file}"
+    puts "Starting autrun in 1 second: #{cmd}"
+    sleep 1
+    store_cmd('autrun.sh', cmd)
+    @docker ? @docker.exec_in_docker('/home/elexis/autrun.sh') : system(cmd)
+  end
+
+  def run_test_exec
+    results = File.join(RootDir, 'results')
+    FileUtils.makedirs(results)
+    # It must be possible to override all default arguments via the test.yaml!
+    cmd = "#{@testexec} \
+-server #{@docker ? @docker.docker_ip : 'localhost'} -port #{Config[:port_number]} \
+-resultdir #{results} \
+-datadir /tmp/jubula_data \
+#{@jubula_test_db_params} \
+#{@test_params[:testexec_params]} "
+    puts "Starting testexec: #{cmd}"
+    store_cmd('testexec.sh', cmd)
+    system(cmd)
+  end
+
+  def stop_agent
+    cmd = "#{@stopautagent} -p #{Config[:port_number]} -stop"
+    puts "Skip Stopping in 1 second autagent via #{cmd}"
+    sleep 1
+    @docker ? @docker.exec_in_docker(cmd) : system(cmd)
+  end
+
   def run_prepared_jubula
     Dir.chdir(WorkDir)
-    threads = []
-    begin # threads << Thread.new do
-      cmd = "#{@autagent} -l -p #{Config[:port_number]}"
-      puts "Starting autagent with port #{Config[:port_number]}"
-#      @docker.start_docker("Xvfb :1 -screen 0 280x1024x24  -nolisten tcp ") if @docker
-      @docker.start_docker('Xvfb :1 -screen 5 1280x1024x24 -nolisten tcp') if @docker
-#      @docker.start_docker('') if @docker # .bashrc start Xvfb and set DISPLAY=:1.5
-      @docker ? @docker.exec_in_docker(cmd + ' &') : system(cmd + ' &')
-      byebug
-    end
+    start_autagent
     sleep 1
-
-    begin # threads << Thread.new do
-      aut_log_file = File.join(ResultDir, "#{@test_name}_aut.log")
-      cmd = "#{@autrun} #{@test_params[:autrun_params]} --autagentport #{Config[:port_number]} \
---exec #{@docker ? '/bin/sh' : ''} #{@wrapper_file} & 2>&1 > #{aut_log_file}"
-      puts "Starting autrun in 1 second: #{cmd}"
-# this works on the container (either Elexis3 or runner.bat )
-# /opt/jubula_8.2.0.021/server/autrun --kblayout de_CD --autid elexis -rcp --autagentport 6333 --exec /home/elexis/work/Elexis3
-
-      # /opt/jubula_8.2.0.021/server/autrun --kblayout de_CD --autid elexis -rcp --autagentport 6333 --exec /bin/sh /opt/src/elexis-jubula/work/runner.bat
-      sleep 1
-      # @docker ? @docker.exec_in_docker(cmd) : system(cmd)
-      system(cmd)
-    end
-
-    data_dir = File.join(WorkDir, 'jubula/datadir')
-    data = File.join(WorkDir, 'jubula/data')
-    [data, data_dir, ResultDir].each { |path| FileUtils.makedirs(path, verbose: true) unless File.directory?(path) }
-    begin # threads << Thread.new do
-      test_exe_log_file = File.join(ResultDir, "#{@test_name}_test_exe.log")
-      this_worked = %(
-/opt/jubula_8.2.0.021/jubula/testexec \
---server 172.17.0.244  --port 6333 \
--resultdir /opt/src/elexis-jubula/results \
--datadir elexis/datadir \
--data elexis/data \
--dburl 'jdbc:h2:/opt/src/elexis-jubula/work/database/embedded;MVCC=TRUE;AUTO_SERVER=TRUE;DB_CLOSE_ON_EXIT=FALSE' -dbuser 'sa' -dbpw '' \
--autid elexis -version 1.0 -language en_US -project Screenshot -testsuite ScreenSuite
-)
-      # It must be possible to override all default arguments via the test.yaml!
-      cmd = "#{@testexec} -port #{Config[:port_number]} -server localhost \
--resultdir #{ResultDir} \
--datadir #{data_dir} \
--data #{data} \
-#{@jubula_test_db_params} \
-#{@test_params[:testexec_params]} \
-2>&1 | /usr/bin/tee #{test_exe_log_file}"
-      sleep 1.5
-      puts "Starting testexec: #{cmd}"
-      File.open(File.join(WorkDir, 'testexec.tmp'), 'w+') { |f| f.puts cmd }
-      system(cmd)
-
-      cmd = "#{@stopautagent} -p #{Config[:port_number]} -stop"
-      puts "Stopping in 1 second autagent via #{cmd}"
-      sleep 1
-      system(cmd)
-      @docker ? @docker.exec_in_docker(cmd) : system(cmd)
-    end
-    threads.join if threads.size > 0
+    start_aut
+    sleep 5
+    run_test_exec
+    stop_agent
   ensure
-     @docker ? @docker.stop_docker : system("killall --quiet #{@test_params[:exe_name]}")
+    @docker ? @docker.stop_docker : system("killall --quiet #{@test_params[:exe_name]}", MAY_FAIL)
   end
 
   def show_configuration
     puts "Configuration is:\n#{Config}"
-    puts "Testparams for #{test2run} are:\n#{@test_params}"
+    puts "Testparams for #{@test_name} are:\n#{@test_params}"
   end
 
   def run_test_suite(use_docker = false)
-    @docker  = DockerRunner.new(@test_name) if use_docker
     saved_dir = Dir.pwd
+    if use_docker
+      patch_acl_for_elexis_and_current_user
+      @docker = DockerRunner.new(@test_name)
+    end
     FileUtils.makedirs(WorkDir) unless File.directory?(WorkDir)
     Dir.chdir(WorkDir)
+    ensure_presence_of_jubula
     prepare_jubula
     gen_wrapper_script(File.join(WorkDir, 'runner.bat'))
     run_prepared_jubula

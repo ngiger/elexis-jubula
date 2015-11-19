@@ -1,3 +1,4 @@
-module Elexis_Jubula
-  Version = '0.1'
+# Helper module to avoid name clashes
+module ElexisJubula
+  VERSION = '0.1'
 end
