@@ -1,0 +1,25 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-SymbolicName: ch.ngiger.elexis.jubula.tests
+Bundle-Version: 0.1.0.qualifier
+Bundle-Vendor: elexis.ch
+Bundle-Vendor: Eclipse Jubula
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-ActivationPolicy: lazy
+Bundle-ClassPath: .
+Require-Bundle: org.eclipse.jubula.tools,
+ org.eclipse.jubula.client.api,
+ org.eclipse.jubula.client.api.commands,
+ org.apache.commons.codec,
+ org.eclipse.jubula.communication,
+ org.eclipse.jubula.toolkit.api,
+ org.eclipse.jubula.toolkit.base.api,
+ org.eclipse.jubula.toolkit.concrete.api,
+ org.eclipse.jubula.toolkit.gef.api,
+ org.eclipse.jubula.toolkit.rcp.api,
+ org.eclipse.jubula.toolkit.swt.api,
+ org.slf4j.api,
+ org.apache.commons.lang,
+ org.xmlpull,
+ com.thoughtworks.xstream
+Import-Package: org.eclipse.jubula.client.api.converter.annotations

@@ -20,6 +20,7 @@ elexis
 scripts/override
 wheezy/Gemfile
 wheezy/autagent*
+user/
 
 # File generated, because this is the home on docker
 .bash_history
@@ -27,8 +28,6 @@ wheezy/autagent*
 .byebug_history
 .fontconfig/
 .install4j
-.java/
-.jubula/
 .oracle_jre_usage/
 .viminfo
 Gemfile.lock

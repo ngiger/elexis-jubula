@@ -32,11 +32,12 @@ end
 desc 'Build, commit, tag, push && docker push the current state'
 task :docker_publish do
   puts "Publishing #{Elexis_Jubula::Version} to docker"
-  system("git commit -m 'Publishing #{Elexis_Jubula::Version}'")
+#  system("git commit -m 'Publishing #{Elexis_Jubula::Version}'")
   puts "Log-In to to docker"
   raise "login to docker failed" unless system("docker login")
-  raise "git tagging failed" unless system("git tag #{Elexis_Jubula::Version}")
-  raise "git push failed" unless system("git push --tags")
+#  raise "git tagging failed" unless system("git tag #{Elexis_Jubula::Version}")
+#  raise "git push failed" unless system("git push --tags")
+  raise "Tagging failed" unless system( "docker tag ngiger/jubula_runner ngiger/jubula_runner:#{Elexis_Jubula::Version}")
   cmd = "docker push ngiger/jubula_runner:#{Elexis_Jubula::Version}"
   puts cmd
   raise "Pushing to docker failed" unless system(cmd)

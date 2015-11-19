@@ -1,0 +1,11 @@
+<project xsi:schemaLocation='http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd' xmlns='http://maven.apache.org/POM/4.0.0' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'>
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>jubula-target</artifactId>
+  <packaging>eclipse-target-definition</packaging>
+  <name>Target definition for running Jubula tests for Elexis</name>
+  <parent>
+    <groupId>elexis-jubula</groupId>
+    <artifactId>root</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+  </parent>
+</project>
