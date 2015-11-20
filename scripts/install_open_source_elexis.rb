@@ -17,3 +17,4 @@ unless (elexis = Dir.glob('*lexis*.ini')).size > 0
 end
 Elexis = elexis[0].sub('.ini', '')
 puts "elexis seems to be installed as #{Elexis}"
+patch_ini_file_for_jubula_rc

@@ -31,6 +31,11 @@ task :elexis_install_os do
   fail 'elexis_install_os failed!' unless system('scripts/install_open_source_elexis.rb')
 end
 
+desc 'Run Jubula-GUI tests for Elexis OpenSource'
+task :jubula_screenshot do
+  fail 'Running failed' unless system('scripts/jubularunner.rb Screenshot')
+end
+
 desc 'Build, commit, tag, push && docker push the current state'
 task :docker_publish do
   puts "Publishing #{Elexis_Jubula::Version} to docker"

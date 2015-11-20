@@ -9,22 +9,36 @@
  *     BREDEX GmbH - initial API and implementation and/or initial documentation
  *******************************************************************************/
 package ch.ngiger.jubula;
-import java.awt.Button;
-import java.awt.Label;
-import java.awt.TextComponent;
+
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import org.eclipse.jubula.client.AUT;
 import org.eclipse.jubula.client.AUTAgent;
 import org.eclipse.jubula.client.MakeR;
 import org.eclipse.jubula.client.ObjectMapping;
+import org.eclipse.jubula.client.Result;
 import org.eclipse.jubula.client.exceptions.CheckFailedException;
 import org.eclipse.jubula.client.launch.AUTConfiguration;
+import org.eclipse.jubula.toolkit.base.components.GraphicsComponent;
+import org.eclipse.jubula.toolkit.concrete.components.TextComponent;
+import org.eclipse.jubula.toolkit.concrete.components.TextInputComponent;
+import org.eclipse.jubula.toolkit.enums.ValueSets.InteractionMode;
+import org.eclipse.jubula.toolkit.enums.ValueSets.Operator;
 import org.eclipse.jubula.toolkit.rcp.config.RCPAUTConfiguration;
+import org.eclipse.jubula.toolkit.swt.SwtComponents;
+import org.eclipse.jubula.toolkit.swt.components.Button;
+import org.eclipse.jubula.toolkit.swt.components.Label;
+import org.eclipse.jubula.toolkit.swt.components.Text;
 import org.eclipse.jubula.tools.AUTIdentifier;
-import org.eclipse.jubula.tools.internal.exception.Assert;
+import org.eclipse.jubula.tools.ComponentIdentifier;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /** @author BREDEX GmbH */
 public class ElexisTest {
@@ -49,8 +63,8 @@ public class ElexisTest {
     @SuppressWarnings("unchecked")
     @BeforeClass
     public static void loadObjectMapping() throws Exception {
-        URL input = SimpleAdder.class.getClassLoader().getResource(
-                "objectMapping_SimpleAdderRCP.properties"); //$NON-NLS-1$
+        URL input = ElexisTest.class.getClassLoader().getResource(
+                "objectMapping_ElexisTestRCP.properties"); //$NON-NLS-1$
 
         ObjectMapping om = MakeR.createObjectMapping(input.openStream());
 
@@ -77,15 +91,11 @@ public class ElexisTest {
         m_agent.connect();
 
         final String autID = "SimpleAdder_rcp"; //$NON-NLS-1$
-        System.out.println(Locale.getDefault());
-        Locale loc_to_use =  Locale.getDefault();
-        loc_to_use = Locale.US;
-        System.out.println(loc_to_use);
         AUTConfiguration config = new RCPAUTConfiguration(
                 "api.aut.conf.simple.adder.rcp", //$NON-NLS-1$
-                autID, "/opt/jubula_8.2.0.021/examples/AUTs/SimpleAdder/rcp/linux/gtk/x86_64/SimpleAdder", //$NON-NLS-1$
-                "/opt/jubula_8.2.0.021/examples/AUTs/SimpleAdder/rcp/linux/gtk/x86_64", //$NON-NLS-1$
-                null, loc_to_use, loc_to_use);
+                autID, "SimpleAdder.exe", //$NON-NLS-1$
+                "..\\examples\\AUTs\\SimpleAdder\\rcp\\win32\\win32\\x86\\", //$NON-NLS-1$
+                null, Locale.getDefault(), Locale.getDefault());
 
         AUTIdentifier id = m_agent.startAUT(config);
         if (id != null) {
