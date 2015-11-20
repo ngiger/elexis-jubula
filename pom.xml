@@ -18,12 +18,13 @@
   </modules>
   <repositories>
     <repository>
-      <id>local-api-repo</id>
+      <id>Jubula nightly + patch fo 482517</id>
       <!--url>file://${jubula.installation.dir}/development/api/m2-repo</url-->
-      <url>file:///opt/src/jubula/org.eclipse.jubula.feature.api/m2-repo</url>
+      <url>http://download.elexis.info/jubula/bug_482517/</url>
+      <layout>p2</layout>
     </repository>
     <repository>
-      <id>Jubula-Luna</id>
+      <id>Jubula-Mars</id>
       <url>http://download.eclipse.org/jubula/release/mars</url>
       <!--
       nightly had problems with org.junig
