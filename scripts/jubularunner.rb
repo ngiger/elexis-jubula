@@ -228,9 +228,7 @@ class JubulaRunner
     show_configuration if $VERBOSE || DRY_RUN
     @jubula_test_db_params = get_h2_db_params(File.join(WorkDir, 'database/embedded'))
     @jubula_test_data_dir  = File.join(WorkDir, 'database/data')
-    @rcp_support = File.expand_path(File.join(File.dirname(__FILE__), '..', 'assets', 'rcp-support.zip'))
-    Dir.chdir(File.join(WorkDir, 'plugins'))
-    unzip(@rcp_support, 'org.eclipse.jubula.rc.rcp_*.jar')
+    install_rcp_support_for_jubula
     patch_ini_file_for_jubula_rc
   end
 end

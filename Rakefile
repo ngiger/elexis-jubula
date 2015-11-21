@@ -36,6 +36,21 @@ task :jubula_screenshot do
   fail 'Running failed' unless system('scripts/jubularunner.rb Screenshot')
 end
 
+desc 'Run Jubula-GUI tests via Maven'
+task :jubula_xvfb => :elexis_install_os do
+  begin
+    port = 6333 # Don't change it or under mv/xvfb you will have problems!
+    autagent = get_full_file_path_or_fail(File.join(Config[:jubula_root], 'server/autagent'))
+    fail "Could not start autagent" unless system("#{autagent} start -p #{port} &")
+
+    ARGV.delete('jubula_xvfb')
+    cmd = "mvn integration-test  -Dtest=ch.ngiger.jubula.testsuites.#{ARGV[0]}"
+    fail 'Running mvn failed' unless system(cmd)
+  ensure
+    system("#{autagent} -stop localhost -p #{port}")
+  end
+end
+
 desc 'Build, commit, tag, push && docker push the current state'
 task :docker_publish do
   puts "Publishing #{Elexis_Jubula::Version} to docker"

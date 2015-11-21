@@ -76,6 +76,13 @@ def patch_acl_for_elexis_and_current_user(force=false)
   end
 end
 
+def install_rcp_support_for_jubula
+  return if DRY_RUN
+  rcp_support = File.expand_path(File.join(File.dirname(__FILE__), '..', 'assets', 'rcp-support.zip'))
+  Dir.chdir(File.join(WorkDir, 'plugins'))
+  unzip(rcp_support, 'org.eclipse.jubula.rc.rcp_*.jar')
+end
+
 def patch_ini_file_for_jubula_rc
   return if DRY_RUN
   ini_name = Dir.glob(File.join(WorkDir, '**/configuration/config.ini')).first
