@@ -39,6 +39,13 @@ end
 desc 'Run Jubula-GUI tests via Maven'
 task :jubula_mvn => :elexis_install_os do
   begin
+    # The next 5 lines are just for making https://srv.elexis.info/jenkins/job/Elexis-3.0-Jubula-Matrix-Linux
+    # work with minimal fuss
+    src = File.join(Dir.pwd, 'work', 'ch.elexis.core.p2site-3.1.0-SNAPSHOT-linux.gtk.x86_64.zip')
+    dst = File.join(Dir.pwd, 'work', 'ch.elexis.core.application.ElexisApp-linux.gtk.x86_64.zip')
+    if File.exist?(src) && !File.exist?(dst)
+      FileUtils.ln_s(src, dst)
+    end
     port = 6333 # Don't change it or via xvfb you will have problems!
     autagent = get_full_file_path_or_fail(File.join(Config[:jubula_root], 'server/autagent'))
     fail "Could not start autagent" unless system("#{autagent} start -p #{port} &")
