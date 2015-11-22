@@ -22,15 +22,15 @@ public class Screenshot {
 	static private AUT_run runner = null;
 	@BeforeClass
 	public static void setup() throws Exception {
-		AUT_run.dbg_msg("setup started");
+		System.out.println("setup started");
 		runner = new AUT_run();
 		AUT_run.setUp();
-		AUT_run.dbg_msg("setup done");
+		System.out.println("setup done");
 	}
 
 	@Test()
 	public void screenshot_active_window() throws Exception{
-		AUT_run.dbg_msg("screenshot_active_window");
+		System.out.println("screenshot_active_window");
 		try {
 			org.eclipse.jubula.toolkit.concrete.components.Application application =
 				SwtComponents.createApplication();
@@ -51,13 +51,13 @@ public class Screenshot {
 		} finally {
 			Assert.assertTrue(true);
 		}
-		AUT_run.dbg_msg("screenshot_active_window done");
+		System.out.println("screenshot_active_window done");
 	}
 
 	@AfterClass
 	public static void teardown() throws Exception {
-		AUT_run.dbg_msg("teardown started");
+		System.out.println("teardown started");
 		runner.tearDown();
-		AUT_run.dbg_msg("teardown done");
+		System.out.println("teardown done");
 	}
 }

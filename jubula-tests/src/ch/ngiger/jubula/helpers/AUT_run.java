@@ -1,15 +1,20 @@
 package ch.ngiger.jubula.helpers;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Paths;
+import java.nio.file.attribute.FileAttribute;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Hashtable;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.jubula.client.AUT;
 import org.eclipse.jubula.client.AUTAgent;
@@ -46,11 +51,25 @@ public class AUT_run {
 	private static void setupConfig(){
 		config.put(Constants.AGENT_HOST, "localhost");
 		config.put(Constants.AGENT_PORT, "6333");
-		config.put(Constants.RESULT_DIR,
-			Paths.get("../results").toAbsolutePath().normalize().toString());
+		java.nio.file.Path rPath = Paths.get("../results").toAbsolutePath().normalize();
+		config.put(Constants.RESULT_DIR, rPath.toString());
+		boolean foundFile = Files.exists(rPath, LinkOption.NOFOLLOW_LINKS);
+		if (!foundFile) {
+			Set<PosixFilePermission> perms = PosixFilePermissions.fromString("rwxr-x---");
+			FileAttribute<Set<PosixFilePermission>> attr =
+				PosixFilePermissions.asFileAttribute(perms);
+			try {
+				Files.createDirectories(rPath, attr);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				Assert.fail("Could not create " + rPath.toString());
+			}
+		}
+		dbg_msg("RESULT DIR " + config.get(Constants.RESULT_DIR) + " exists? " + foundFile);
 		results = config.get(Constants.RESULT_DIR);
 		config.put(Constants.WORK_DIR, USER_DIR);
-			config.put(Constants.AUT_EXE,
+		config.put(Constants.AUT_EXE,
 			Paths.get(USER_DIR + "/../work/Elexis3").toAbsolutePath().normalize().toString());
 		config.put(Constants.AUT_LOCALE, "de_CH");
 		config.put(Constants.AUT_ID, "elexis");
@@ -75,12 +94,13 @@ public class AUT_run {
 		}
 	}
 
-	public static void dbg_msg(String msg)
-	{
-		String timeStamp = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss").format(Calendar.getInstance().getTime());
+	public static void dbg_msg(String msg){
+		String timeStamp =
+			new SimpleDateFormat("dd.MM.yyyy HH:mm:ss").format(Calendar.getInstance().getTime());
 		System.out.println(timeStamp + ": " + msg);
 		log.info(msg);
 	}
+
 	@BeforeClass
 	public static void setUp() throws Exception{
 		setupConfig();
@@ -116,7 +136,8 @@ public class AUT_run {
 			+ "\n  workdir:" + config.get(Constants.WORK_DIR) + "\n  AUT_ID: "
 			+ config.get(Constants.AUT_ID));
 		if (!(new File(config.get(Constants.AUT_EXE))).canExecute()) {
-			Assert.fail("EXE File "+ config.get(Constants.AUT_EXE) + " does not exist or cannot be executed");
+			Assert.fail("EXE File " + config.get(Constants.AUT_EXE)
+				+ " does not exist or cannot be executed");
 		}
 		AUTConfiguration aut_config = new RCPAUTConfiguration("ch.elexis.core.application", //$NON-NLS-1$
 			config.get(Constants.AUT_ID), config.get(Constants.AUT_EXE),

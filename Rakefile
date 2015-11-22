@@ -38,24 +38,26 @@ end
 
 desc 'Run Jubula-GUI test (default Screenshot) via Maven'
 task :jubula_mvn, [:test_to_run] => :elexis_install_os do  |target, args|
+  port = 6333 # Don't change it or via xvfb you will have problems!
   begin
     args.with_default(:test_to_run  => 'Screenshot')
     # The next 5 lines are just for making https://srv.elexis.info/jenkins/job/Elexis-3.0-Jubula-Matrix-Linux
     # work with minimal fuss
     src = File.join(Dir.pwd, 'work', 'ch.elexis.core.p2site-3.1.0-SNAPSHOT-linux.gtk.x86_64.zip')
     dst = File.join(Dir.pwd, 'work', 'ch.elexis.core.application.ElexisApp-linux.gtk.x86_64.zip')
+    FileUtils.rm_rf(File.join(Dir.pwd, 'workdir'))
+    FileUtils.rm_rf(File.join(Dir.pwd, 'workspace'))
     if File.exist?(src) && !File.exist?(dst)
       FileUtils.ln_s(src, dst)
     end
-    port = 6333 # Don't change it or via xvfb you will have problems!
     autagent = get_full_file_path_or_fail(File.join(Config[:jubula_root], 'server/autagent'))
-    fail "Could not start autagent" unless system("#{autagent} start -p #{port} &")
-
-    cmd = "mvn clean integration-test  -Dtest=ch.ngiger.jubula.testsuites.#{args[:test_to_run]}"
+    Thread.new do
+      fail "Could not start autagent" unless system("#{autagent} start -p #{port}")
+    end
+    cmd = "mvn --offline clean integration-test  -Dtest=ch.ngiger.jubula.testsuites.#{args[:test_to_run]}"
     fail 'Running mvn failed' unless system(cmd)
-  ensure
-    system("#{autagent} -stop localhost -p #{port}")
   end
+  system("#{autagent} -stop localhost -p #{port}")
 end
 
 desc 'Build, commit, tag, push && docker push the current state'
