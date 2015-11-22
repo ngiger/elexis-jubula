@@ -37,13 +37,13 @@ task :jubula_screenshot do
 end
 
 desc 'Run Jubula-GUI tests via Maven'
-task :jubula_xvfb => :elexis_install_os do
+task :jubula_mvn => :elexis_install_os do
   begin
-    port = 6333 # Don't change it or under mv/xvfb you will have problems!
+    port = 6333 # Don't change it or via xvfb you will have problems!
     autagent = get_full_file_path_or_fail(File.join(Config[:jubula_root], 'server/autagent'))
     fail "Could not start autagent" unless system("#{autagent} start -p #{port} &")
 
-    ARGV.delete('jubula_xvfb')
+    ARGV.delete('jubula_mvn')
     cmd = "mvn integration-test  -Dtest=ch.ngiger.jubula.testsuites.#{ARGV[0]}"
     fail 'Running mvn failed' unless system(cmd)
   ensure
