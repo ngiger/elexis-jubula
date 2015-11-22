@@ -30,4 +30,6 @@ user/
 .install4j
 .oracle_jre_usage/
 .viminfo
+.java
+.jubula
 Gemfile.lock
