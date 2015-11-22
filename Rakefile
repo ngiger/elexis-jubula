@@ -51,7 +51,7 @@ task :jubula_mvn => :elexis_install_os do
     fail "Could not start autagent" unless system("#{autagent} start -p #{port} &")
 
     ARGV.delete('jubula_mvn')
-    cmd = "mvn integration-test  -Dtest=ch.ngiger.jubula.testsuites.#{ARGV[0]}"
+    cmd = "mvn clean integration-test  -Dtest=ch.ngiger.jubula.testsuites.#{ARGV[0]}"
     fail 'Running mvn failed' unless system(cmd)
   ensure
     system("#{autagent} -stop localhost -p #{port}")

@@ -5,6 +5,8 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Hashtable;
 import java.util.Locale;
 import java.util.Map;
@@ -39,6 +41,7 @@ public class AUT_run {
 	public static final String AUT_ID = "elexis_3_1"; //$NON-NLS-1$
 	public static Application app = null;
 	public static Map<String, String> config = new Hashtable<String, String>();
+	public static final String USER_DIR = System.getProperty("user.dir");
 
 	private static void setupConfig(){
 		config.put(Constants.AGENT_HOST, "localhost");
@@ -46,8 +49,9 @@ public class AUT_run {
 		config.put(Constants.RESULT_DIR,
 			Paths.get("../results").toAbsolutePath().normalize().toString());
 		results = config.get(Constants.RESULT_DIR);
-		config.put(Constants.WORK_DIR, "/opt/src/elexis-jubula/work/");
-		config.put(Constants.AUT_EXE, "/opt/src/elexis-jubula/work/Elexis3");
+		config.put(Constants.WORK_DIR, USER_DIR);
+			config.put(Constants.AUT_EXE,
+			Paths.get(USER_DIR + "/../work/Elexis3").toAbsolutePath().normalize().toString());
 		config.put(Constants.AUT_LOCALE, "de_CH");
 		config.put(Constants.AUT_ID, "elexis");
 		config.put(Constants.AUT_ARGS,
@@ -67,31 +71,53 @@ public class AUT_run {
 			if (value != null) {
 				config.put(entry.getKey(), value);
 			}
-			log.info("Config : " + entry.getKey() + " is: " + entry.getValue());
+			dbg_msg("Config : " + entry.getKey() + " is: " + entry.getValue());
 		}
 	}
 
+	public static void dbg_msg(String msg)
+	{
+		String timeStamp = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss").format(Calendar.getInstance().getTime());
+		System.out.println(timeStamp + ": " + msg);
+		log.info(msg);
+	}
 	@BeforeClass
 	public static void setUp() throws Exception{
 		setupConfig();
+		String logback_test = "logback-test.xml";
+		URL logback = AUT_run.class.getClassLoader().getResource(logback_test); //$NON-NLS-1$
+		if (logback == null) {
+			Assert.fail("could not open resource: " + logback_test);
+			return;
+		}
+		System.out.println(
+			"Testing logback_test" + logback_test + " user.dir " + System.getProperty("user.dir"));
+		dbg_msg("Testing logback_test" + logback_test);
 		URL input = AUT_run.class.getClassLoader().getResource(RuntimeContext.OM_Resource_Name); //$NON-NLS-1$
 		if (input == null) {
-			Assert.fail("could not open resource" + RuntimeContext.OM_Resource_Name);
+			Assert.fail("could not open resource: " + RuntimeContext.OM_Resource_Name);
 			return;
 		}
 		om = MakeR.createObjectMapping(input.openStream());
 		/* Connecting to external Jubula AUT Agent which
 		   must be started manually BEFORE test execution! */
-		System.out.println("AUT_run.setup port : " + Constants.AGENT_PORT + " is: "
+		String msg = "AUT_run.setup port : " + Constants.AGENT_PORT + " is: "
 			+ config.get(Constants.AGENT_PORT) + " env: "
 			+ System.getenv().get(Constants.AGENT_PORT) + " property: "
-			+ System.getProperty(Constants.AGENT_PORT));
+			+ System.getProperty(Constants.AGENT_PORT);
+		dbg_msg(msg);
 		m_agent = MakeR.createAUTAgent(config.get(Constants.AGENT_HOST),
 			new Integer(config.get(Constants.AGENT_PORT)));
 		m_agent.connect();
 		String[] args = {
 			config.get(Constants.AUT_ARGS)
 		};
+		dbg_msg("Start AUT: arg " + args[0] + "\n   exe: " + config.get(Constants.AUT_EXE)
+			+ "\n  workdir:" + config.get(Constants.WORK_DIR) + "\n  AUT_ID: "
+			+ config.get(Constants.AUT_ID));
+		if (!(new File(config.get(Constants.AUT_EXE))).canExecute()) {
+			Assert.fail("EXE File "+ config.get(Constants.AUT_EXE) + " does not exist or cannot be executed");
+		}
 		AUTConfiguration aut_config = new RCPAUTConfiguration("ch.elexis.core.application", //$NON-NLS-1$
 			config.get(Constants.AUT_ID), config.get(Constants.AUT_EXE),
 			config.get(Constants.WORK_DIR), args,
@@ -106,18 +132,22 @@ public class AUT_run {
 			Assert.fail("AUT did not start as expected? Why"); //$NON-NLS-1$
 		}
 		app = SwtComponents.createApplication();
+		dbg_msg("AUT created");
 		m_aut.execute(app.activate(AUTActivationMethod.titlebar), null);
+		Thread.sleep(1000);
+		dbg_msg("AUT created and activated");
 	}
 
 	public void takeScreenshotActiveWindow(String imageName){
 		String fullname =
 			new File(config.get(Constants.RESULT_DIR) + "/" + imageName).getAbsolutePath();
+		dbg_msg("Request takeScreenshotActiveWindow " + fullname + " for " + imageName);
 		m_aut.execute(
 			app.takeScreenshotOfActiveWindow(fullname, 0, "rename", 100, true, 0, 0, 0, 0), null);
 		boolean foundFile =
 			Files.exists(new File(config.get(Constants.RESULT_DIR) + "/" + imageName).toPath(),
 				LinkOption.NOFOLLOW_LINKS);
-		log.info("Created " + fullname + " exists " + foundFile);
+		dbg_msg("Created " + fullname + " exists " + foundFile);
 		Assert.assertTrue(foundFile);
 	}
 

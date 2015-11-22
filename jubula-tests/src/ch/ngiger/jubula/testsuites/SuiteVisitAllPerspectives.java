@@ -5,25 +5,19 @@ import org.eclipse.jubula.toolkit.swt.SwtComponents;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import ch.ngiger.jubula.helpers.AUT_run;
 import ch.ngiger.jubula.helpers.VisitAllPerspectives;
 
 public class SuiteVisitAllPerspectives {
-	/** the logger */
-	private static Logger log = LoggerFactory.getLogger(Screenshot.class);
 
 	/** test generating a snapshot of all perspectives */
 
 	static private AUT_run runner = null;
 	@BeforeClass
 	public static void setup() throws Exception {
-		log.info("setup");
 		runner = new AUT_run();
 		AUT_run.setUp();
-		log.info("setup done");
 	}
 
 	@Test()

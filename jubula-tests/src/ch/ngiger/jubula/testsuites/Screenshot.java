@@ -12,30 +12,25 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import ch.ngiger.jubula.helpers.AUT_run;
 
 public class Screenshot {
-
-	/** the logger */
-	private static Logger log = LoggerFactory.getLogger(Screenshot.class);
 
 	/** test generating a snapshot of the currently active window */
 
 	static private AUT_run runner = null;
 	@BeforeClass
 	public static void setup() throws Exception {
-		log.info("setup");
+		AUT_run.dbg_msg("setup started");
 		runner = new AUT_run();
 		AUT_run.setUp();
-		log.info("setup done");
+		AUT_run.dbg_msg("setup done");
 	}
 
 	@Test()
 	public void screenshot_active_window() throws Exception{
-		log.info("screenshot_active_window");
+		AUT_run.dbg_msg("screenshot_active_window");
 		try {
 			org.eclipse.jubula.toolkit.concrete.components.Application application =
 				SwtComponents.createApplication();
@@ -46,6 +41,8 @@ public class Screenshot {
 			Files.deleteIfExists(shot_2);
 			Assert.assertFalse(Files.exists(shot_2, LinkOption.NOFOLLOW_LINKS));
 			runner.takeScreenshotActiveWindow(image_name);
+			// If you use a logger here, running via mvn will block before
+			// running this test. Don't know why
 			System.out.println("screenshot_active_window " + shot_2.toString()+" is "+ Files.exists(shot_2, LinkOption.NOFOLLOW_LINKS));
 			Assert.assertTrue(Files.exists(shot_2, LinkOption.NOFOLLOW_LINKS));
 		} catch (CheckFailedException | AssertionError e) {
@@ -54,12 +51,13 @@ public class Screenshot {
 		} finally {
 			Assert.assertTrue(true);
 		}
-		log.info("screenshot_active_window");
+		AUT_run.dbg_msg("screenshot_active_window done");
 	}
 
 	@AfterClass
 	public static void teardown() throws Exception {
-		log.info("teardown");
+		AUT_run.dbg_msg("teardown started");
 		runner.tearDown();
+		AUT_run.dbg_msg("teardown done");
 	}
 }
