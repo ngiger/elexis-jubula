@@ -25,14 +25,13 @@ import org.eclipse.jubula.toolkit.swt.components.Table;
 import org.eclipse.jubula.tools.ComponentIdentifier;
 import org.junit.Assert;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /** @author BREDEX GmbH */
 public class VisitAllPerspectives {
 
-	/** the logger */
-	private static Logger log = LoggerFactory.getLogger(VisitAllPerspectives.class);
+	// When using a logger the output is not shown in the maven output
+	// Don't know where it disappears
+	// private static Logger log = LoggerFactory.getLogger(VisitAllViews.class);
 
 	/** test visiting all perspectives */
 	@Test
