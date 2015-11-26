@@ -53,7 +53,8 @@ USER elexis
 VOLUME /home/elexis
 # we want to allow storing the maven repository in a different directory to speed things up!
 VOLUME /home/elexis/.m2
-
+# expose a debug port for Java
+EXPOSE 8000
 CMD /bin/bash
 WORKDIR /home/elexis
 

@@ -22,7 +22,6 @@ public class Screenshot {
 	static private AUT_run runner = null;
 	@BeforeClass
 	public static void setup() throws Exception {
-		AUT_run.dbg_msg("setup started");
 		runner = new AUT_run();
 		AUT_run.setUp();
 		AUT_run.dbg_msg("setup done");
@@ -37,7 +36,7 @@ public class Screenshot {
 			Thread.sleep(1000); // Don't know why this is needed!
 			AUT_run.m_aut.execute(application.activate(AUTActivationMethod.titlebar), null);
 			String image_name = "subdir/take_screenshot_active_window.png";
-			Path shot_2 = new File(AUT_run.results + "/" + image_name).toPath();
+			Path shot_2 = new File(AUT_run.SAVE_RESULTS_DIR + "/" + image_name).toPath();
 			Files.deleteIfExists(shot_2);
 			Assert.assertFalse(Files.exists(shot_2, LinkOption.NOFOLLOW_LINKS));
 			runner.takeScreenshotActiveWindow(image_name);

@@ -2,8 +2,11 @@ package ch.ngiger.jubula.helpers;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
@@ -40,7 +43,7 @@ public class AUT_run {
 	/** the AUT */
 	public static AUT m_aut;
 	public static ObjectMapping om = null;
-	public static String results = null;
+	public static String SAVE_RESULTS_DIR = null;
 
 	/** the logger */
 	// private static Logger log = LoggerFactory.getLogger(AUT_run.class);
@@ -48,66 +51,97 @@ public class AUT_run {
 	public static Application app = null;
 	public static Map<String, String> config = new Hashtable<String, String>();
 	public static final String USER_DIR = System.getProperty("user.dir");
+	public static String RESULT_DIR = null;
+	private static PrintWriter writer = null;
 
-	public static boolean run_system_cmd(String args[]) {
-        String s = null;
+	public static void dbg_msg(String msg){
+		String timeStamp =
+			new SimpleDateFormat("dd.MM.yyyy HH:mm:ss").format(Calendar.getInstance().getTime());
+		// log.info(msg);
+		if (writer == null) {
+			String log_name = null;
+			if (SAVE_RESULTS_DIR != null) {
+				log_name = SAVE_RESULTS_DIR + "/AUT_run.log";
+			} else {
+				log_name = USER_DIR + "/AUT_run.log";
+			}
+			try {
+				writer = new PrintWriter(log_name, "UTF-8");
+			} catch (FileNotFoundException | UnsupportedEncodingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			System.out.println("log_name writer is: " + log_name);
+		}
+		// System.out.println(timeStamp + ": dbg_msg " + msg);
+		writer.println(timeStamp + ": " + msg);
+		writer.flush();
+	}
 
-        try {
-        	dbg_msg("run_system_cmd: " +  StringUtils.join(args, " "));
-            Process p = Runtime.getRuntime().exec(args);
+	public static boolean run_system_cmd(String args[]){
+		String s = null;
 
-            BufferedReader stdInput = new BufferedReader(new
-                 InputStreamReader(p.getInputStream()));
+		try {
+			dbg_msg("run_system_cmd: " + StringUtils.join(args, " "));
+			Process p = Runtime.getRuntime().exec(args);
 
-            BufferedReader stdError = new BufferedReader(new
-                 InputStreamReader(p.getErrorStream()));
+			BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
 
-            // read the output from the command
-            // dbg_msg("Here is the standard output of the command:\n");
-            while ((s = stdInput.readLine()) != null) {
-                dbg_msg(s);
-            }
+			BufferedReader stdError = new BufferedReader(new InputStreamReader(p.getErrorStream()));
 
-            // read any errors from the attempted command
-            // dbg_msg("Here is the standard error of the command (if any):\n");
-            while ((s = stdError.readLine()) != null) {
-                dbg_msg(s);
-            }
-            return true;
-        }
-        catch (IOException e) {
-            dbg_msg("exception happened - here's what I know: ");
-            e.printStackTrace();
-            return false;
-            // System.exit(-1);
-        }
-    }
-	private static void setupConfig(){
-		config.put(Constants.AGENT_HOST, "localhost");
-		config.put(Constants.AGENT_PORT, "6333");
+			// read the output from the command
+			// dbg_msg("Here is the standard output of the command:\n");
+			while ((s = stdInput.readLine()) != null) {
+				dbg_msg(s);
+			}
+
+			// read any errors from the attempted command
+			// dbg_msg("Here is the standard error of the command (if any):\n");
+			while ((s = stdError.readLine()) != null) {
+				dbg_msg(s);
+			}
+			return true;
+		} catch (IOException e) {
+			dbg_msg("exception happened - here's what I know: ");
+			e.printStackTrace();
+			return false;
+			// System.exit(-1);
+		}
+	}
+
+	private static void setupResultDir(){
 		java.nio.file.Path rPath = Paths.get("../results").toAbsolutePath().normalize();
 		config.put(Constants.RESULT_DIR, rPath.toString());
 		boolean foundFile = Files.exists(rPath, LinkOption.NOFOLLOW_LINKS);
-		if (!foundFile) {
+		if (foundFile) {
+			SAVE_RESULTS_DIR = rPath.toString();
+		} else {
 			Set<PosixFilePermission> perms = PosixFilePermissions.fromString("rwxr-x---");
 			FileAttribute<Set<PosixFilePermission>> attr =
 				PosixFilePermissions.asFileAttribute(perms);
 			try {
 				Files.createDirectories(rPath, attr);
+				SAVE_RESULTS_DIR = rPath.toString();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 				Assert.fail("Could not create " + rPath.toString());
 			}
 		}
-		dbg_msg("RESULT DIR " + config.get(Constants.RESULT_DIR) + " exists? " + foundFile);
-		results = config.get(Constants.RESULT_DIR);
+		System.out.println("SAVE_RESULTS_DIR is: " + SAVE_RESULTS_DIR);
+	}
+
+	private static void setupConfig(){
+		config.put(Constants.AGENT_HOST, "localhost");
+		config.put(Constants.AGENT_PORT, "6333");
 		config.put(Constants.WORK_DIR, USER_DIR);
 		config.put(Constants.AUT_EXE,
 			Paths.get(USER_DIR + "/../work/Elexis3").toAbsolutePath().normalize().toString());
 		config.put(Constants.AUT_LOCALE, "de_CH");
 		config.put(Constants.AUT_ID, "elexis");
-		config.put(Constants.AUT_ARGS,
+		config.put(Constants.AUT_PROGRAM_ARGS, "-Xdebug -Xrunjdwp:transport=dt_socket,server=y,address=8000");
+
+		config.put(Constants.AUT_VM_ARGS,
 			"-nl " + config.get(Constants.AUT_LOCALE)
 				+ " -clean -vmargs -Declipse.p2.unsignedPolicy=allow" + " -Dautagent_port="
 				+ config.get(Constants.AGENT_PORT) + " -Dautagent_host="
@@ -128,15 +162,9 @@ public class AUT_run {
 		}
 	}
 
-	public static void dbg_msg(String msg){
-		String timeStamp =
-			new SimpleDateFormat("dd.MM.yyyy HH:mm:ss").format(Calendar.getInstance().getTime());
-	 	System.out.println(timeStamp + ": " + msg);
-		// log.info(msg);
-	}
-
 	@BeforeClass
 	public static void setUp() throws Exception{
+		setupResultDir();
 		setupConfig();
 		URL input = AUT_run.class.getClassLoader().getResource(RuntimeContext.OM_Resource_Name); //$NON-NLS-1$
 		if (input == null) {
@@ -155,7 +183,7 @@ public class AUT_run {
 			new Integer(config.get(Constants.AGENT_PORT)));
 		m_agent.connect();
 		String[] args = {
-			config.get(Constants.AUT_ARGS)
+			config.get(Constants.AUT_VM_ARGS)
 		};
 		dbg_msg("Start AUT: arg " + args[0] + "\n   exe: " + config.get(Constants.AUT_EXE)
 			+ "\n  workdir:" + config.get(Constants.WORK_DIR) + "\n  AUT_ID: "
@@ -169,24 +197,42 @@ public class AUT_run {
 			config.get(Constants.WORK_DIR), args,
 			Locale.forLanguageTag(config.get(Constants.AUT_LOCALE)),
 			Locale.forLanguageTag(config.get(Constants.AUT_KEYBOARD)));
+		dbg_msg("Got aut_config as " + aut_config);
+		Thread.sleep(1000);
 
+		dbg_msg("Calling startAUT ");
 		AUTIdentifier id = m_agent.startAUT(aut_config);
 		if (id != null) {
-			dbg_msg("started AUT as " + id.getID());
+			dbg_msg("started AUT as " + id.getID() + " will sleep 2 seconds");
+			Thread.sleep(2000);
 			m_aut = m_agent.getAUT(id, SwtComponents.getToolkitInformation());
+			dbg_msg("AUT will connect");
+			Thread.sleep(1000);
 			m_aut.connect();
+			dbg_msg("AUT connected");
 		} else {
 			Assert.fail("AUT did not start as expected? Why"); //$NON-NLS-1$
 		}
+		Thread.sleep(1000);
+		dbg_msg("AUT createApplication");
 		app = SwtComponents.createApplication();
 		dbg_msg("AUT created");
 		Thread.sleep(1000);
-		run_system_cmd(new String[] { "/bin/ps", "-f", "-C", "Xvfb" });
-		run_system_cmd(new String[] { "/bin/ps", "-f", "-C", "autagent" });
-		run_system_cmd(new String[] { "/bin/ps", "-f", "-C", "Elexis3" });
+		run_system_cmd(new String[] {
+			"/bin/ps", "-f", "-C", "Xvfb"
+		});
+		run_system_cmd(new String[] {
+			"/bin/ps", "-f", "-C", "autagent"
+		});
+		run_system_cmd(new String[] {
+			"/bin/ps", "-f", "-C", "Elexis3"
+		});
+		dbg_msg("AUT activate via titlebar");
 		m_aut.execute(app.activate(AUTActivationMethod.titlebar), null);
 		Thread.sleep(1000);
-		run_system_cmd(new String[] { "/bin/ps", "-f", "-C", "Elexis3" });
+		run_system_cmd(new String[] {
+			"/bin/ps", "-f", "-C", "Elexis3"
+		});
 		dbg_msg("AUT created and activated");
 	}
 
@@ -206,9 +252,8 @@ public class AUT_run {
 	/** cleanup */
 	@AfterClass
 	public void tearDown() throws Exception{
-		return;
-		// TODO: cleanup
-		/*
+		dbg_msg("AUT_run.tearDown ");
+		writer.close();
 		if (m_aut != null && m_aut.isConnected()) {
 			m_aut.disconnect();
 			m_agent.stopAUT(m_aut.getIdentifier());
@@ -216,7 +261,6 @@ public class AUT_run {
 		if (m_agent != null && m_agent.isConnected()) {
 			m_agent.disconnect();
 		}
-		*/
 	}
 
 }

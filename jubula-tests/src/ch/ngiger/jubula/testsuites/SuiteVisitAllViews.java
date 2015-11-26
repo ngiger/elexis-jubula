@@ -21,7 +21,6 @@ public class SuiteVisitAllViews {
 
 	@BeforeClass
 	public static void setup() throws Exception{
-		log.info("setup");
 		runner = new AUT_run();
 		AUT_run.setUp();
 		log.info("setup done");

@@ -52,7 +52,7 @@ task :jubula_mvn, [:test_to_run] => :elexis_install_os do  |target, args|
   port = 6333 # Don't change it or via xvfb you will have problems!
   autagent = get_full_file_path_or_fail(File.join(Config[:jubula_root], 'server/autagent'))
   at_exit do
-    $stderr.puts "Stoppin autagent"
+    $stderr.puts "Stopping autagent"
     system("#{autagent} -stop localhost -p #{port}")
   end
   begin

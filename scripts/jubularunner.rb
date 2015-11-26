@@ -32,6 +32,7 @@ class DockerRunner
     cmd += " --workdir=#{workdir}" if workdir
     cmd += " -v #{@container_home}:/home/elexis"
     cmd += " -v #{@m2_repo}:/home/elexis/.m2"
+    cmd += " --publish=#{local_ip}:8000:8000" # debug port for java
     cmd += " --publish=#{local_ip}:6333:6333" if false
     cmd += " --name=jubula-#{@test_name} ngiger/jubula_runner"
     cmd += ' ' + cmd_in_docker

@@ -8,7 +8,8 @@ public class Constants {
 	final static public String WORK_DIR = "work_dir"; //$NON-NLS-1$
 	final static public String AUT_ID = "aut_id"; //$NON-NLS-1$
 	final static public String AUT_EXE = "aut_exe"; //$NON-NLS-1$
-	final static public String AUT_ARGS = "aut_args"; //$NON-NLS-1$
+	final static public String AUT_PROGRAM_ARGS = "aut_program_args"; //$NON-NLS-1$
+	final static public String AUT_VM_ARGS = "aut_vm_args"; //$NON-NLS-1$
 	final static public String AUT_LOCALE = "aut_locale"; //$NON-NLS-1$
 	final static public String AUT_KEYBOARD = "aut_keyboard"; //$NON-NLS-1$
 	final static public String AGENT_HOST = "agent_host"; //$NON-NLS-1$
