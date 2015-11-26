@@ -23,6 +23,7 @@ wheezy/autagent*
 user/
 
 # File generated, because this is the home on docker
+.m2
 .bash_history
 .bundle/
 .byebug_history

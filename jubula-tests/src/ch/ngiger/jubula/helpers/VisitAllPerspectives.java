@@ -41,7 +41,7 @@ public class VisitAllPerspectives {
 			String window_title = "Open Perspective";
 			while (true) {
 				j++;
-				System.out.println("Visiting perspective number " + j);
+				AUT_run.dbg_msg("Visiting perspective number " + j);
 				MenuBarComponent mbr = SwtComponents.createMenu();
 				mbr.waitForComponent(1000, 1000);
 				AUT_run.m_aut.execute(

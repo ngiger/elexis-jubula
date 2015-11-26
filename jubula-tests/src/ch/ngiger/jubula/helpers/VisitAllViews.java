@@ -50,19 +50,19 @@ public class VisitAllViews {
 			String window_title = "Show View";
 			while (true) {
 				mayor++;
-				System.out.println("Visiting view " + nr_views + " in row " + mayor);
+				AUT_run.dbg_msg("Visiting view " + nr_views + " in row " + mayor);
 				minor = 0;
 				while (true) {
 					mbr.waitForComponent(1000, 1000);
 					AUT_run.m_aut.execute(mbr.selectMenuEntryByTextpath(
 						"Fenster.*/Ansicht.*/Other.*", Operator.matches), null);
 					AUT_run.app.waitForWindow(window_title, Operator.matches, 1000, 50);
-					System.out.println("user 1");
+					AUT_run.dbg_msg("user 1");
 					minor++;
 					new_pos = Integer.toString(mayor) + "/" + Integer.toString(minor);
 					new_pos2 = Integer.toString(mayor) + "_" + Integer.toString(minor);
 					runner.takeScreenshotActiveWindow("iterate/pos_" + new_pos2 + ".png");
-					System.out.println("Visiting view new_pos " + new_pos);
+					AUT_run.dbg_msg("Visiting view new_pos " + new_pos);
 					try {
 						//						m_aut.execute(treeComp.checkEnablementOfContextMenuEntryByIndexpath(new_pos,
 						//true, InteractionMode.primary), null);
@@ -77,7 +77,7 @@ public class VisitAllViews {
 						runner.takeScreenshotActiveWindow("view_" + new_pos2 + ".png");
 						nr_views++;
 					} catch (ComponentNotFoundException e) {
-						System.out.println("ComponentNotFoundException with " + new_pos);
+						AUT_run.dbg_msg("ComponentNotFoundException with " + new_pos);
 						if (nr_views > 20) {
 							runner.takeScreenshotActiveWindow(
 								"list_too_long_after_" + nr_views + ".png");
@@ -86,9 +86,9 @@ public class VisitAllViews {
 						}
 						break;
 					} catch (ActionException e) {
-						System.out.println("ActionException minor with " + new_pos);
+						AUT_run.dbg_msg("ActionException minor with " + new_pos);
 						if (minor == 1) {
-							System.out.println("ActionException minor with " + new_pos
+							AUT_run.dbg_msg("ActionException minor with " + new_pos
 								+ " -> No more entries found for mayor" + ". Found " + nr_views
 								+ " views!");
 							return; // No more entries found for mayor
@@ -102,7 +102,7 @@ public class VisitAllViews {
 				}
 			}
 		} catch (ActionException e) {
-			System.out.println("ActionException major with " + nr_views + " pos " + new_pos);
+			AUT_run.dbg_msg("ActionException major with " + nr_views + " pos " + new_pos);
 			if (nr_views == 0)
 				e.printStackTrace();
 			if (nr_views <= 10) {

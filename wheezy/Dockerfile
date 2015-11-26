@@ -9,7 +9,7 @@ RUN apt-get update && \
     apt-get install -y abiword \
     iceweasel \
     icedove \
-    libxext-dev libxrender-dev libxtst-dev wget unzip sudo vim \
+    libxext-dev libxrender-dev libxtst-dev wget unzip \
     libwebkitgtk-1.0-0 \
     xvfb xterm x11-xserver-utils x11-apps awesome
 # x11-apps: to be able to take a screen-shot inside the container using xwd  -root -out screen.xwd
@@ -18,7 +18,7 @@ RUN apt-get update && \
 # Install Oracle Java-8 and accept automatically its license
 RUN echo "deb http://ppa.launchpad.net/webupd8team/java/ubuntu trusty main" | tee /etc/apt/sources.list.d/webupd8team-java.list && \
     apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys EEA14886 && \
-    echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | sudo /usr/bin/debconf-set-selections && \
+    echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | /usr/bin/debconf-set-selections && \
     apt-get update && \
     apt-get install -y oracle-java8-installer locales-all ruby zip
 
@@ -31,18 +31,29 @@ RUN apt-get clean && \
 ADD jubula.zip /root/jubula.zip
 RUN cd / && /usr/bin/unzip /root/jubula.zip
 
+# install some debugging tools
+RUN apt-get update && \
+    apt-get install -y maven htop lsof strace sudo vim
+# http://support.xored.com/support/solutions/articles/3000028645
+RUN export DEBIAN_FRONTEND=noninteractive && \
+    apt-get update && \
+    apt-get install -y console-setup
+RUN apt-get install -y git fluxbox xinit metacity vnc4server xvnc4viewer
+
+RUN apt-get remove --purge -y awesome
+
 RUN useradd --uid 1200 --user-group --create-home --shell /bin/bash elexis && \
     echo "elexis ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/elexis && \
     chmod 0440 /etc/sudoers.d/elexis && \
     mkdir -p elexis /home/elexis/work /home/elexis/results
-ADD Gemfile /home/elexis/Gemfile
-RUN gem install --no-ri --no-rdoc bundler
-RUN cd /home/elexis && sudo -Hu elexis bundle install --without debugger
-VOLUME /home/elexis
-
-# keep EXPOSE (the port) in sync with scripts/defaults.yaml
-EXPOSE 6333
-CMD /bin/bash
 USER elexis
+# ADD Gemfile /home/elexis/Gemfile
+# RUN gem install --no-ri --no-rdoc bundler
+# RUN cd /home/elexis && sudo -Hu elexis bundle install --without debugger
+VOLUME /home/elexis
+# we want to allow storing the maven repository in a different directory to speed things up!
+VOLUME /home/elexis/.m2
+
+CMD /bin/bash
 WORKDIR /home/elexis
 

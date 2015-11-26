@@ -69,6 +69,7 @@ def get_full_file_path_or_fail(path)
 end
 
 def patch_acl_for_elexis_and_current_user(force=false)
+  system("chmod -R o+rw #{RootDir} 2>/dev/null", MAY_FAIL)
   return unless force && `getfacl #{RootDir} | grep user:1200`
   ['1200', ENV['USER']].each do |user|
     system("setfacl -R -m user:#{user}:rwX #{RootDir}")
@@ -127,10 +128,11 @@ end
 
 def system(cmd, may_fail = false)
   cmd2history = "#{cmd}#{may_fail ? '# may_fail' : ''}"
-  puts cmd2history
-  return true if DRY_RUN
+  if DRY_RUN
+    puts cmd2history
+    return true
+  end
   full_cmd = "cd #{Dir.pwd} && " + cmd
-  puts full_cmd if $VERBOSE
   res = Kernel.system(full_cmd)
   return true if res
   puts Dir.pwd

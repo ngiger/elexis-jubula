@@ -22,7 +22,6 @@ public class SMOKETEST {
     private RuntimeContext rtc = null;
 
     public SMOKETEST (AUT _aut) {
-    	System.out.println("SMOKTEST aut is " + (_aut != null));
     	if (_aut != null){
     		rtc = new RuntimeContext(_aut, true, false, false, true);
     	}

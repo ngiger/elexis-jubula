@@ -31,9 +31,20 @@ task :elexis_install_os do
   fail 'elexis_install_os failed!' unless system('scripts/install_open_source_elexis.rb')
 end
 
-desc 'Run Jubula-GUI tests for Elexis OpenSource'
-task :jubula_screenshot do
-  fail 'Running failed' unless system('scripts/jubularunner.rb Screenshot')
+desc 'Run Jubula-GUI test (default Screenshot) for Elexis OpenSource locally'
+task :jubula_test, [:test_to_run] => :elexis_install_os do  |target, args|
+  test_to_run =  args[:test_to_run]
+  test_to_run ||= 'Screenshot'
+  # TODO: publish signed image and ensure that it can be
+  # system('scripts/jubularunner.rb docker_build') unless system('docker images ngiger/jubula_runner', MAY_FAIL)
+  fail 'Running failed' unless system("scripts/jubularunner.rb #{test_to_run}")
+end
+
+desc 'Run Jubula-GUI test (default Screenshot) for Elexis OpenSource via docker'
+task :jubula_docker, [:test_to_run] do  |target, args|
+  test_to_run =  args[:test_to_run]
+  test_to_run ||= 'Screenshot'
+  fail 'Running failed' unless system("scripts/jubularunner.rb #{test_to_run} run_in_docker")
 end
 
 desc 'Run Jubula-GUI test (default Screenshot) via Maven'
@@ -46,6 +57,8 @@ task :jubula_mvn, [:test_to_run] => :elexis_install_os do  |target, args|
   end
   begin
     args.with_default(:test_to_run  => 'Screenshot')
+  test_to_run =  args[:test_to_run]
+    test_to_run ||= 'Screenshot'
     # The next 5 lines are just for making https://srv.elexis.info/jenkins/job/Elexis-3.0-Jubula-Matrix-Linux
     # work with minimal fuss
     src = File.join(Dir.pwd, 'work', 'ch.elexis.core.p2site-3.1.0-SNAPSHOT-linux.gtk.x86_64.zip')
@@ -60,7 +73,8 @@ task :jubula_mvn, [:test_to_run] => :elexis_install_os do  |target, args|
     Thread.new do
       fail "Could not start autagent" unless system("#{autagent} start -p #{port}")
     end
-    cmd = "mvn --offline clean integration-test  -Dtest=ch.ngiger.jubula.testsuites.#{args[:test_to_run]}"
+    cmd = "mvn clean integration-test  -Dtest=ch.ngiger.jubula.testsuites.#{test_to_run}"
+    puts "Will call #{cmd}"
     fail 'Running mvn failed' unless system(cmd)
   end
 end

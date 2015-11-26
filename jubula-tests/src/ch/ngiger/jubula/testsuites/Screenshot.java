@@ -22,15 +22,15 @@ public class Screenshot {
 	static private AUT_run runner = null;
 	@BeforeClass
 	public static void setup() throws Exception {
-		System.out.println("setup started");
+		AUT_run.dbg_msg("setup started");
 		runner = new AUT_run();
 		AUT_run.setUp();
-		System.out.println("setup done");
+		AUT_run.dbg_msg("setup done");
 	}
 
 	@Test()
 	public void screenshot_active_window() throws Exception{
-		System.out.println("screenshot_active_window");
+		AUT_run.dbg_msg("screenshot_active_window");
 		try {
 			org.eclipse.jubula.toolkit.concrete.components.Application application =
 				SwtComponents.createApplication();
@@ -43,7 +43,7 @@ public class Screenshot {
 			runner.takeScreenshotActiveWindow(image_name);
 			// If you use a logger here, running via mvn will block before
 			// running this test. Don't know why
-			System.out.println("screenshot_active_window " + shot_2.toString()+" is "+ Files.exists(shot_2, LinkOption.NOFOLLOW_LINKS));
+			AUT_run.dbg_msg("screenshot_active_window " + shot_2.toString()+" is "+ Files.exists(shot_2, LinkOption.NOFOLLOW_LINKS));
 			Assert.assertTrue(Files.exists(shot_2, LinkOption.NOFOLLOW_LINKS));
 		} catch (CheckFailedException | AssertionError e) {
 			e.printStackTrace();
@@ -51,13 +51,13 @@ public class Screenshot {
 		} finally {
 			Assert.assertTrue(true);
 		}
-		System.out.println("screenshot_active_window done");
+		AUT_run.dbg_msg("screenshot_active_window done");
 	}
 
 	@AfterClass
 	public static void teardown() throws Exception {
-		System.out.println("teardown started");
+		AUT_run.dbg_msg("teardown started");
 		runner.tearDown();
-		System.out.println("teardown done");
+		AUT_run.dbg_msg("teardown done");
 	}
 }
