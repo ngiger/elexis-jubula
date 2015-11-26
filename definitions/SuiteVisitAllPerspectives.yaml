@@ -1,0 +1,4 @@
+---
+:exe_name:    Elexis3
+:test_to_run: test=ch.ngiger.jubula.testsuites.SuiteVisitAllPerspectives
+:agent_port:  6333
