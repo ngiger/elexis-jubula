@@ -6,7 +6,7 @@ require 'tmpdir'
 
 # Helper class to use docker for the Jubula AUT
 class DockerRunner
-  attr_reader :container_home
+  attr_reader :container_home, :cleanup_in_container
   # http://stackoverflow.com/questions/14112955/how-to-get-my-machines-ip-address-from-ruby-without-leveraging-from-other-ip-ad
   def local_ip
     orig, Socket.do_not_reverse_lookup = Socket.do_not_reverse_lookup, true # turn off reverse DNS resolution temporarily
@@ -20,7 +20,6 @@ class DockerRunner
 
   def start_docker(cmd_in_docker, env = nil, workdir = nil)
     # First cleanup possible remnants of old runs
-    stop_docker
     [ @m2_repo, @container_home].each do |dir|
       next if File.exist?(dir)
       FileUtils.makedirs(dir, :verbose => true)
@@ -50,8 +49,11 @@ class DockerRunner
   end
 
   def stop_docker
-    system("docker kill jubula-#{@test_name}", true)
-    system("docker rm jubula-#{@test_name}", true)
+   if Kernel.system("docker ps  | grep jubula-#{@test_name}")
+      exec_in_docker(@cleanup_in_container)
+      Kernel.system("docker kill jubula-#{@test_name}")
+      Kernel.system("docker rm jubula-#{@test_name}")
+    end
   end
 
   def initialize(test_name)
@@ -59,6 +61,7 @@ class DockerRunner
     # @container_home = Dir.mktmpdir('jubula_test_')
     @container_home =  File.join(RootDir, 'container_home')
     @m2_repo =  File.join(RootDir, 'container_home_m2')
+    @cleanup_in_container = 'chmod --silent --recursive o+rwX /home/elexis'
   end
 end
 
@@ -102,7 +105,7 @@ class JubulaRunner
       /usr/bin/metacity-message disable-keybindings
       /usr/bin/xclock &
     "
-      start_xvfb = 'Xvfb :1 -screen 5 1280x10240x24 -nolisten tcp'
+      start_xvfb = 'Xvfb :1 -screen 5 8192x4096x24 -nolisten tcp'
       store_cmd('start_xvfb.sh', start_xvfb)
       @docker.start_docker('./start_xvfb.sh', 'DISPLAY=:1.5')
       sleep(0.5)
@@ -121,6 +124,8 @@ class JubulaRunner
   end
 
   def prepare_docker
+    @docker.stop_docker
+    at_exit { @docker.stop_docker }
     FileUtils.rm_rf(@docker.container_home, :verbose => true)
     raise "Must be possible to remove container_home #{@docker.container_home}" if File.exist?(@docker.container_home)
     ['.git', 'pom.xml', 'jubula-target', 'jubula-tests'].each do |item|
@@ -142,7 +147,7 @@ mkdir -p /home/elexis/results
 #{@mvn_cmd}
 echo run_test_in_docker done
 sleep 1
-/bin/chmod --silent --recursive o+rwX /home/elexis
+#{@docker.cleanup_in_container}
 # chmod exited with 1, therefore must run another command
 echo cleanup done
 "
@@ -154,21 +159,24 @@ echo cleanup done
       sleep(0.5)
     ensure
       # this is needed that copying  the results and log files will not fail
-      @docker.exec_in_docker('chmod --silent --recursive o+rwX /home/elexis')
+      @docker.exec_in_docker(@docker.cleanup_in_container)
     end
     begin
+      now = Time.now.strftime(Time.now.strftime('%d.%m.%Y_%H_%M_%S'))
       src = "#{@docker.container_home}/results"
       FileUtils.cp_r(src,  RootDir, :verbose => true) if File.directory?(src)
       files = Dir.glob("#{@docker.container_home}/**/*.log**")
       files.each do |f|
         next unless f && File.file?(f)
         next if /\.jar$/i.match(f)
-        dest = File.join(File.join(RootDir, 'results'), File.basename(f) ? File.basename(f) : Time.now.strftime(Time.now.strftime('%d.%m.%Y_%H_%M_%S'))+'.log')
+        dest = File.join(File.join(RootDir, 'results'), File.basename(f) ? File.basename(f) : now +'.log')
         FileUtils.cp(f, dest, :verbose => true)
       end
     ensure
       # stop container if we were unable to copy the result and/or log files
       @docker.stop_docker
+      FileUtils.rm_rf("#{@my_results}*", :verbose => true)
+      FileUtils.mv(File.join(RootDir, 'results'), @my_results + '.' + now, :verbose => true)
       FileUtils.rm_rf(@docker.container_home, :verbose => true, :noop => true)
     end
     exit res ? 0 : 1
@@ -202,7 +210,8 @@ echo cleanup done
     FileUtils.makedirs(File.join(RootDir, 'results'))
     Dir.chdir(WorkDir)
     ensure_presence_of_jubula
-    @mvn_cmd = "mvn clean integration-test -D#{@test_params[:test_to_run]}"
+    @mvn_cmd = "mvn integration-test -D#{@test_params[:test_to_run]}"
+    @my_results = File.join(RootDir, 'results.' + @test_params[:test_to_run].split('.')[-1])
     @docker ? run_test_in_docker : run_test_exec
   ensure
     diff_time = (Time.now - @start_time).to_i
