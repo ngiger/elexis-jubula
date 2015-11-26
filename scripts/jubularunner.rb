@@ -21,12 +21,17 @@ class DockerRunner
   def start_docker(cmd_in_docker, env = nil, workdir = nil)
     # First cleanup possible remnants of old runs
     stop_docker
-    FileUtils.makedirs(container_home) if not File.exist?(@container_home)
+    @m2_repo =  File.join(RootDir, 'container_home_m2')
+    [ @m2_repo, @container_home].each do |dir|
+      next if File.exist?(dir)
+      FileUtils.makedirs(dir, :verbose => true)
+      FileUtils.chmod(0777, dir)
+    end
     cmd = 'docker run --detach'
     cmd += " --env=#{env}" if env
     cmd += " --workdir=#{workdir}" if workdir
     cmd += " -v #{@container_home}:/home/elexis"
-    cmd += " -v #{File.join(RootDir, 'container_home_m2')}:/home/elexis/.m2"
+    cmd += " -v #{@m2_repo}:/home/elexis/.m2"
     cmd += " --publish=#{local_ip}:6333:6333" if false
     cmd += " --name=jubula-#{@test_name} ngiger/jubula_runner"
     cmd += ' ' + cmd_in_docker

@@ -81,6 +81,9 @@ It took my quite a few hours to overcome the following problems
 * Neither fluxbox nor awesome were window manager which allow (at least not without furter modification) to connect to the AUT (calling app.activate(AUTActivationMethod.titlebar) failed or hanged)
 * metacity seems to work, but need another 100 MB. Is starting the dbus the difference?
 * When calling start_agent via shell script inside the docker, m_agent.startAUT(aut_config) failed and blocked
+* When I invoked @system@ inside rake when call rake jubula_docker, starting the AUT failed, too.
+* Calling directly @scripts/jubularunner.rb run_in_docker Screenshot@ blocked also
+* Calling @rake jubula_docker@ worked
 
 h3. Object mapping
 
