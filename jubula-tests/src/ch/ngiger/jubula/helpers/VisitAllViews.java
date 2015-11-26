@@ -62,7 +62,7 @@ public class VisitAllViews {
 					new_pos = Integer.toString(mayor) + "/" + Integer.toString(minor);
 					new_pos2 = Integer.toString(mayor) + "_" + Integer.toString(minor);
 					runner.takeScreenshotActiveWindow("iterate/pos_" + new_pos2 + ".png");
-					AUT_run.dbg_msg("Visiting view new_pos " + new_pos);
+					AUT_run.dbg_msg("Visiting view " + nr_views + " new_pos " + new_pos);
 					try {
 						//						m_aut.execute(treeComp.checkEnablementOfContextMenuEntryByIndexpath(new_pos,
 						//true, InteractionMode.primary), null);

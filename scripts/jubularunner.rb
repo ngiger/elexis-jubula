@@ -97,26 +97,12 @@ class JubulaRunner
     puts "Starting autagent with port #{Config[:agent_port]}"
     autagent_cmd = "#{@autagent} -l -p #{Config[:agent_port]}"
     if @docker
-      if false # did not work
-        start_cmd = "startx -- /usr/bin/Xvfb :1 -screen 5 1024x768x16"
-        start_cmd = "
-        echo password > /tmp/tmp
-        echo password >> /tmp/tmp
-        /usr/bin/vnc4passwd < /tmp/tmp
-        touch $HOME/.Xauthority
-        vncserver :5 -geometry 1280x1024 -depth 24 &
-        /usr/bin/metacity display=$DISPLAY --replace --sm-disable &
-        sleep 1
-        /usr/bin/metacity-message disable-keybindings
-        /usr/bin/xclock &
-      "
-      end
       start_meta = "/usr/bin/metacity display=$DISPLAY --replace --sm-disable &
       sleep 1
       /usr/bin/metacity-message disable-keybindings
       /usr/bin/xclock &
     "
-      start_xvfb = 'Xvfb :1 -screen 5 1280x1024x24 -nolisten tcp'
+      start_xvfb = 'Xvfb :1 -screen 5 1280x10240x24 -nolisten tcp'
       store_cmd('start_xvfb.sh', start_xvfb)
       @docker.start_docker('./start_xvfb.sh', 'DISPLAY=:1.5')
       sleep(0.5)
@@ -147,10 +133,12 @@ class JubulaRunner
   def run_test_in_docker
     prepare_docker
     Dir.chdir(WorkDir)
+    FileUtils.rm_f('jubula-tests/AUT_run.log', :verbose => true) if File.exist?('jubula-tests/AUT_run.log')
     start_autagent
     sleep 0.5
     cmd = "ps -ef | grep autagent
 ps -ef
+mkdir -p /home/elexis/results
 #{@mvn_cmd}
 echo run_test_in_docker done
 sleep 1
@@ -160,27 +148,37 @@ echo cleanup done
 "
     puts "Starting testexec in docker: #{cmd}"
     store_cmd('testexec.sh', cmd)
+    begin
       res = @docker.exec_in_docker('./testexec.sh')
       puts "res of testexec.sh is #{res}"
       sleep(0.5)
+    ensure
+      # this is needed that copying  the results and log files will not fail
       @docker.exec_in_docker('chmod --silent --recursive o+rwX /home/elexis')
-      @docker.stop_docker
-    FileUtils.cp_r("#{@docker.container_home}/results",  File.join(RootDir, 'results'), :verbose => true)
-    files = Dir.glob("#{@docker.container_home}/**/*.log**")
-    files.each do |f|
-      next unless f && File.file?(f)
-      next if /\.jar$/i.match(f)
-      dest = File.join(File.join(RootDir, 'results'), File.basename(f) ? File.basename(f) : Time.now.strftime(Time.now.strftime('%d.%m.%Y_%H_%M_%S'))+'.log')
-      FileUtils.cp(f, dest, :verbose => true)
     end
-    FileUtils.rm_rf(@docker.container_home, :verbose => true, :noop => true)
+    begin
+      src = "#{@docker.container_home}/results"
+      FileUtils.cp_r(src,  RootDir, :verbose => true) if File.directory?(src)
+      files = Dir.glob("#{@docker.container_home}/**/*.log**")
+      files.each do |f|
+        next unless f && File.file?(f)
+        next if /\.jar$/i.match(f)
+        dest = File.join(File.join(RootDir, 'results'), File.basename(f) ? File.basename(f) : Time.now.strftime(Time.now.strftime('%d.%m.%Y_%H_%M_%S'))+'.log')
+        FileUtils.cp(f, dest, :verbose => true)
+      end
+    ensure
+      # stop container if we were unable to copy the result and/or log files
+      @docker.stop_docker
+      FileUtils.rm_rf(@docker.container_home, :verbose => true, :noop => true)
+    end
+    exit res ? 0 : 1
   end
 
   def run_test_exec
     results = File.join(RootDir, 'results')
     Dir.chdir RootDir
     puts "Will run #{@mvn_cmd}"
-    system(@mvn_cmd)
+    system(@mvn_cmd) # + ' --offline')
   ensure
     system("killall --quiet #{@test_params[:exe_name]}", MAY_FAIL)
   end
