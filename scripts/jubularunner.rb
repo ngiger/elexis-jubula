@@ -21,7 +21,6 @@ class DockerRunner
   def start_docker(cmd_in_docker, env = nil, workdir = nil)
     # First cleanup possible remnants of old runs
     stop_docker
-    @m2_repo =  File.join(RootDir, 'container_home_m2')
     [ @m2_repo, @container_home].each do |dir|
       next if File.exist?(dir)
       FileUtils.makedirs(dir, :verbose => true)
@@ -47,7 +46,7 @@ class DockerRunner
     cmd += " jubula-#{@test_name} "
     cmd += command
     puts cmd
-    system(cmd)
+    Kernel.system(cmd)
   end
 
   def stop_docker
@@ -57,7 +56,9 @@ class DockerRunner
 
   def initialize(test_name)
     @test_name = test_name
-    @container_home = Dir.mktmpdir('jubula_test_')
+    # @container_home = Dir.mktmpdir('jubula_test_')
+    @container_home =  File.join(RootDir, 'container_home')
+    @m2_repo =  File.join(RootDir, 'container_home_m2')
   end
 end
 
@@ -159,10 +160,11 @@ echo cleanup done
 "
     puts "Starting testexec in docker: #{cmd}"
     store_cmd('testexec.sh', cmd)
-    @docker.exec_in_docker('./testexec.sh')
-    sleep(0.5)
-    # @docker.exec_in_docker('chmod --silent --recursive o+rwX /home/elexis')
-    @docker.stop_docker
+      res = @docker.exec_in_docker('./testexec.sh')
+      puts "res of testexec.sh is #{res}"
+      sleep(0.5)
+      @docker.exec_in_docker('chmod --silent --recursive o+rwX /home/elexis')
+      @docker.stop_docker
     FileUtils.cp_r("#{@docker.container_home}/results",  File.join(RootDir, 'results'), :verbose => true)
     files = Dir.glob("#{@docker.container_home}/**/*.log**")
     files.each do |f|
