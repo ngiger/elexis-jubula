@@ -9,13 +9,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ch.ngiger.jubula.helpers.AUT_run;
-import ch.ngiger.jubula.helpers.VisitAllViews;
+import ch.ngiger.jubula.helpers.VisitAllPreferencePages;
 
-public class SuiteVisitAllViews {
+public class SuiteVisitAllPreferencePages {
 	/** test generating a snapshot of the currently active window */
 
 	/** the logger */
-	private static Logger log = LoggerFactory.getLogger(SuiteVisitAllViews.class);
+	private static Logger log = LoggerFactory.getLogger(SuiteVisitAllPreferencePages.class);
 
 	static private AUT_run runner = null;
 
@@ -27,13 +27,13 @@ public class SuiteVisitAllViews {
 	}
 
 	@Test()
-	public void suite_visit_all_views() throws Exception{
-		VisitAllViews all = new VisitAllViews();
+	public void suite_visit_all_preferencePages() throws Exception{
+		VisitAllPreferencePages all = new VisitAllPreferencePages();
 		org.eclipse.jubula.toolkit.concrete.components.Application application =
 			SwtComponents.createApplication();
 		Thread.sleep(1000); // Don't know why this is needed!
 		AUT_run.m_aut.execute(application.activate(AUTActivationMethod.titlebar), null);
-		all.visit_all_views(runner);
+		all.visit_all_preferencePages(runner);
 	}
 
 	@AfterClass

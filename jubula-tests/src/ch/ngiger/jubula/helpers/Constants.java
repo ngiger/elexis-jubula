@@ -22,4 +22,5 @@ public class Constants {
 	// Often a value of 1000 (aka 1 second) is better if you
 	// want to diagnose the flow!
 	final static public int NR_MS_WAIT_AFTER_ACTION = 0;
+	final static public int ONE_SECOND = 1000;
 }

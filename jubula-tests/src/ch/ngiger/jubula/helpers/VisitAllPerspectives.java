@@ -26,6 +26,8 @@ import org.eclipse.jubula.tools.ComponentIdentifier;
 import org.junit.Assert;
 import org.junit.Test;
 
+import ch.ngiger.jubula.Messages;
+
 /** @author BREDEX GmbH */
 public class VisitAllPerspectives {
 
@@ -38,24 +40,24 @@ public class VisitAllPerspectives {
 	public void visit_all_perspectives(AUT_run runner) throws Exception{
 		int j = 0;
 		try {
-			String window_title = "Open Perspective";
+			String window_title = Messages.getString("VisitAllPerspectives.0"); //$NON-NLS-1$
 			while (true) {
 				j++;
-				AUT_run.dbg_msg("Visiting perspective number " + j);
+				AUT_run.dbg_msg("Visiting perspective number " + j); //$NON-NLS-1$
 				MenuBarComponent mbr = SwtComponents.createMenu();
 				mbr.waitForComponent(1000, 1000);
 				AUT_run.m_aut.execute(
-					mbr.selectMenuEntryByTextpath("Fenster/Perspektive/Other...", Operator.equals),
+					mbr.selectMenuEntryByTextpath(Messages.getString("VisitAllPerspectives.2"), Operator.equals), //$NON-NLS-1$
 					null);
 				AUT_run.app.waitForWindow(window_title, Operator.matches, 1000,
 					Constants.NR_MS_WAIT_AFTER_ACTION);
-				ComponentIdentifier<Table> tbl = runner.om.get("OpenPerspective_ViewTree_grc");
+				ComponentIdentifier<Table> tbl = runner.om.get("OpenPerspective_ViewTree_grc"); //$NON-NLS-1$
 				TableComponent tableComp = org.eclipse.jubula.toolkit.concrete.ConcreteComponents
 					.createTableComponent(tbl);
-				AUT_run.m_aut.execute(tableComp.selectCell(Integer.toString(j), Operator.equals, "1",
+				AUT_run.m_aut.execute(tableComp.selectCell(Integer.toString(j), Operator.equals, "1", //$NON-NLS-1$
 					Operator.equals, new Integer(1), new Integer(50), Unit.percent, new Integer(50),
 					Unit.percent, ValueSets.BinaryChoice.no, InteractionMode.primary), null);
-				ComponentIdentifier<Button> ok_btn = runner.om.get("ShowView_OkButton_grc");
+				ComponentIdentifier<Button> ok_btn = runner.om.get("ShowView_OkButton_grc"); //$NON-NLS-1$
 				ButtonComponent ok_btn_comp = org.eclipse.jubula.toolkit.concrete.ConcreteComponents
 					.createButtonComponent(ok_btn);
 				AUT_run.m_aut.execute(ok_btn_comp.click(1, InteractionMode.primary), null);
@@ -63,11 +65,11 @@ public class VisitAllPerspectives {
 					Constants.NR_MS_WAIT_AFTER_ACTION);
 				AUT_run.app.waitForWindow(window_title, Operator.matches, 1000,
 					Constants.NR_MS_WAIT_AFTER_ACTION);
-				runner.takeScreenshotActiveWindow("Perspective_" + j + ".png");
+				runner.takeScreenshotActiveWindow("Perspective_" + j + ".png"); //$NON-NLS-1$ //$NON-NLS-2$
 			}
 		} catch (ActionException e) {
 			if (j <= 3) {
-				Assert.fail("We should have more than 3 perspectives to visit!");
+				Assert.fail("We should have more than 3 perspectives to visit!"); //$NON-NLS-1$
 			}
 
 		} catch (CheckFailedException | AssertionError e) {
