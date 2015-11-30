@@ -22,14 +22,14 @@ The following improvements are planned. Order may be varied depending whether we
 * Add some -rake tasks to easily test core components- and publishing the docker image
 * -Rework visiting all Views and Perspectives to use the Jubula-provided tools-
 * -Migrate to use Java-based UI test automation. This should ease the pain from other developpers to get a head start-
+** -Visit all preferences-
 * Pending migration work items are
-** Visit all preferences
 ** Import Artikelstamm
-** Create patient
+** Create patient (Date should be read from a yaml file. See also https://marketplace.eclipse.org/content/yedit). Use snakeyaml (1.1.16)
 ** Create consultation
 ** Add article to consultation
 ** Invoice consultation
-** Create Patient
+** Show installation details
 ** Install all possible features
 ** Test upgrade
 * Add a custom articlestamm.xml with a good selection of drugs to make a good demo
