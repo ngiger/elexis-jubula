@@ -1,10 +1,8 @@
 package ch.ngiger.jubula.helpers;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
@@ -21,13 +19,11 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
 import org.eclipse.jubula.client.AUT;
 import org.eclipse.jubula.client.AUTAgent;
 import org.eclipse.jubula.client.MakeR;
 import org.eclipse.jubula.client.ObjectMapping;
 import org.eclipse.jubula.client.launch.AUTConfiguration;
-import org.eclipse.jubula.qa.api.converter.target.rcp.RuntimeContext;
 import org.eclipse.jubula.toolkit.concrete.components.Application;
 import org.eclipse.jubula.toolkit.enums.ValueSets.AUTActivationMethod;
 import org.eclipse.jubula.toolkit.rcp.config.RCPAUTConfiguration;
@@ -44,15 +40,16 @@ public class AUT_run {
 	public static AUT m_aut;
 	public static ObjectMapping om = null;
 	public static String SAVE_RESULTS_DIR = null;
+	public static Application app = null;
 
 	/** the logger */
 	// private static Logger log = LoggerFactory.getLogger(AUT_run.class);
 	public static final String AUT_ID = "elexis_3_1"; //$NON-NLS-1$
-	public static Application app = null;
 	public static Map<String, String> config = new Hashtable<String, String>();
 	public static final String USER_DIR = System.getProperty("user.dir");
 	public static String RESULT_DIR = null;
 	private static PrintWriter writer = null;
+	private static AUTIdentifier id = null;
 
 	public static void dbg_msg(String msg){
 		String timeStamp =
@@ -76,37 +73,6 @@ public class AUT_run {
 		// System.out.println(timeStamp + ": dbg_msg " + msg);
 		writer.println(timeStamp + ": " + msg);
 		writer.flush();
-	}
-
-	public static boolean run_system_cmd(String args[]){
-		String s = null;
-
-		try {
-			dbg_msg("run_system_cmd: " + StringUtils.join(args, " "));
-			Process p = Runtime.getRuntime().exec(args);
-
-			BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
-
-			BufferedReader stdError = new BufferedReader(new InputStreamReader(p.getErrorStream()));
-
-			// read the output from the command
-			// dbg_msg("Here is the standard output of the command:\n");
-			while ((s = stdInput.readLine()) != null) {
-				dbg_msg(s);
-			}
-
-			// read any errors from the attempted command
-			// dbg_msg("Here is the standard error of the command (if any):\n");
-			while ((s = stdError.readLine()) != null) {
-				dbg_msg(s);
-			}
-			return true;
-		} catch (IOException e) {
-			dbg_msg("exception happened - here's what I know: ");
-			e.printStackTrace();
-			return false;
-			// System.exit(-1);
-		}
 	}
 
 	private static void setupResultDir(){
@@ -139,7 +105,7 @@ public class AUT_run {
 			Paths.get(USER_DIR + "/../work/Elexis3").toAbsolutePath().normalize().toString());
 		config.put(Constants.AUT_LOCALE, "de_CH");
 		config.put(Constants.AUT_ID, "elexis");
-		config.put(Constants.AUT_PROGRAM_ARGS, "-Xdebug -Xrunjdwp:transport=dt_socket,server=y,address=8000");
+		config.put(Constants.AUT_PROGRAM_ARGS, ""); // "-Xdebug -Xrunjdwp:transport=dt_socket,server=y,address=8000");
 
 		config.put(Constants.AUT_VM_ARGS,
 			"-nl " + config.get(Constants.AUT_LOCALE)
@@ -166,11 +132,7 @@ public class AUT_run {
 	public static void setUp() throws Exception{
 		setupResultDir();
 		setupConfig();
-		URL input = AUT_run.class.getClassLoader().getResource(RuntimeContext.OM_Resource_Name); //$NON-NLS-1$
-		if (input == null) {
-			Assert.fail("could not open resource: " + RuntimeContext.OM_Resource_Name);
-			return;
-		}
+		URL input = AUT_run.class.getClassLoader().getResource("om.properties"); //$NON-NLS-1$
 		om = MakeR.createObjectMapping(input.openStream());
 		/* Connecting to external Jubula AUT Agent which
 		   must be started manually BEFORE test execution! */
@@ -201,42 +163,27 @@ public class AUT_run {
 		Thread.sleep(1000);
 
 		dbg_msg("Calling startAUT ");
-		AUTIdentifier id = m_agent.startAUT(aut_config);
+		id = m_agent.startAUT(aut_config);
 		if (id != null) {
 			dbg_msg("started AUT as " + id.getID() + " will sleep 2 seconds");
 			Thread.sleep(2000);
 			m_aut = m_agent.getAUT(id, SwtComponents.getToolkitInformation());
-			dbg_msg("AUT will connect");
+			dbg_msg("AUT will connect to id " + id.getID());
 			Thread.sleep(1000);
 			m_aut.connect();
 			dbg_msg("AUT connected");
 		} else {
 			Assert.fail("AUT did not start as expected? Why"); //$NON-NLS-1$
 		}
-		Thread.sleep(1000);
-		dbg_msg("AUT createApplication");
+		dbg_msg("SwtComponents.createApplication");
 		app = SwtComponents.createApplication();
-		dbg_msg("AUT created");
-		Thread.sleep(1000);
-		run_system_cmd(new String[] {
-			"/bin/ps", "-f", "-C", "Xvfb"
-		});
-		run_system_cmd(new String[] {
-			"/bin/ps", "-f", "-C", "autagent"
-		});
-		run_system_cmd(new String[] {
-			"/bin/ps", "-f", "-C", "Elexis3"
-		});
 		dbg_msg("AUT activate via titlebar");
 		m_aut.execute(app.activate(AUTActivationMethod.titlebar), null);
 		Thread.sleep(1000);
-		run_system_cmd(new String[] {
-			"/bin/ps", "-f", "-C", "Elexis3"
-		});
-		dbg_msg("AUT created and activated");
+		dbg_msg("AUT created and activated " + id);
 	}
 
-	public void takeScreenshotActiveWindow(String imageName){
+	public static void takeScreenshotActiveWindow(String imageName){
 		String fullname =
 			new File(config.get(Constants.RESULT_DIR) + "/" + imageName).getAbsolutePath();
 		dbg_msg("Request takeScreenshotActiveWindow " + fullname + " for " + imageName);
