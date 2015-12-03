@@ -10,5 +10,7 @@ It assumes a Jubula 8.2.0.021 installed under /opt/jubula_8.2.0.021.
 
 You need to execute @chmod +x  /opt/jubula_8.2.0.021/examples/AUTs/SimpleAdder/rcp/linux/gtk/x86_64/SimpleAdder@ to make it executable.
 
-Calling @mvn clean integration-test -Dtest=org.eclipse.jubula.examples.api.adder.rcp.run_test.Screenshot@ will start compiling and running a Jubula GUI test which should just create a snapshot from the AUT SimpleAdder.
+Calling @mvn clean integration-test@ will start compiling and running a Jubula GUI test which should just create a snapshot from the AUT SimpleAdder.
+
+The jubula-test/pom.xml sets the test property of the surefire-test plug to org.eclipse.jubula.examples.api.adder.rcp.run_test.Screenshot, as the source files does not correspond to the default layout for junit tests.
 

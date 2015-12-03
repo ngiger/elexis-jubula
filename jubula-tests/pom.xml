@@ -11,4 +11,19 @@
     <version>1.0.0-SNAPSHOT</version>
   </parent>
   <packaging>eclipse-test-plugin</packaging>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.eclipse.tycho</groupId>
+        <artifactId>tycho-surefire-plugin</artifactId>
+        <version>${tycho-version}</version>
+        <configuration>
+          <test>org.eclipse.jubula.examples.api.adder.rcp.run_test.Screenshot</test>
+          <useUIThread>false</useUIThread>
+          <useUIHarness>false</useUIHarness>
+          <showEclipseLog>true</showEclipseLog>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>
