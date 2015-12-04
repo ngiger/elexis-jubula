@@ -9,7 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ch.ngiger.jubula.helpers.AUT_run;
-import ch.ngiger.jubula.helpers.VisitAllPreferencePages;
+import ch.ngiger.jubula.helpers.PreferencePages;
 
 public class SuiteVisitAllPreferencePages {
 	/** test generating a snapshot of the currently active window */
@@ -28,7 +28,7 @@ public class SuiteVisitAllPreferencePages {
 
 	@Test()
 	public void suite_visit_all_preferencePages() throws Exception{
-		VisitAllPreferencePages all = new VisitAllPreferencePages();
+		PreferencePages all = new PreferencePages();
 		org.eclipse.jubula.toolkit.concrete.components.Application application =
 			SwtComponents.createApplication();
 		Thread.sleep(1000); // Don't know why this is needed!

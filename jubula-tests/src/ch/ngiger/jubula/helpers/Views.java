@@ -13,29 +13,63 @@ package ch.ngiger.jubula.helpers;
 import org.eclipse.jubula.client.exceptions.ActionException;
 import org.eclipse.jubula.client.exceptions.CheckFailedException;
 import org.eclipse.jubula.client.exceptions.ComponentNotFoundException;
-import org.eclipse.jubula.toolkit.concrete.components.ButtonComponent;
+import org.eclipse.jubula.toolkit.concrete.ConcreteComponents;
 import org.eclipse.jubula.toolkit.concrete.components.MenuBarComponent;
+import org.eclipse.jubula.toolkit.concrete.components.TableComponent;
 import org.eclipse.jubula.toolkit.concrete.components.TreeComponent;
 import org.eclipse.jubula.toolkit.enums.ValueSets;
+import org.eclipse.jubula.toolkit.enums.ValueSets.BinaryChoice;
 import org.eclipse.jubula.toolkit.enums.ValueSets.InteractionMode;
 import org.eclipse.jubula.toolkit.enums.ValueSets.Modifier;
 import org.eclipse.jubula.toolkit.enums.ValueSets.Operator;
 import org.eclipse.jubula.toolkit.enums.ValueSets.SearchType;
 import org.eclipse.jubula.toolkit.swt.SwtComponents;
-import org.eclipse.jubula.toolkit.swt.components.Button;
 import org.eclipse.jubula.toolkit.swt.components.Tree;
+import org.eclipse.jubula.toolkit.swt.components.TreeTable;
 import org.eclipse.jubula.tools.ComponentIdentifier;
 import org.junit.Assert;
 import org.junit.Test;
 
 import ch.ngiger.jubula.Messages;
-
 /** @author BREDEX GmbH */
-public class VisitAllViews {
+public class Views {
 	/** the logger */
 	// When using a logger the output is not shown in the maven output
 	// Don't know where it disappears
 	// private static Logger log = LoggerFactory.getLogger(VisitAllViews.class);
+
+	static void openViewByName(String name){
+		MenuBarComponent mbr = SwtComponents.createMenu();
+		mbr.waitForComponent(Constants.ONE_SECOND, 10);
+
+		AUT_run.m_aut.execute(
+			mbr.selectMenuEntryByTextpath("Fenster.*/Ansicht.*/Other.*", Operator.matches), null);
+		Common.waitForWindow("Show View", Constants.ONE_SECOND);
+
+		org.eclipse.jubula.toolkit.concrete.components.TextInputComponent viewTxt = ConcreteComponents.createTextInputComponent(AUT_run.om.get("ShowView_SelView_cti"));
+		viewTxt.replaceText(name);
+//		Common.synchronizedTextReplace("ShowView_SelView_cti", name);//$NON-NLS-1$
+
+		@SuppressWarnings("unchecked")
+		TableComponent tableComp =
+			ConcreteComponents.createTableComponent(AUT_run.om.get("ShowView_ViewTree_grc"));//$NON-NLS-1$
+		TreeTable tbl2 = SwtComponents.createTreeTable(AUT_run.om.get("ShowView_ViewTree_grc")) ;//$NON-NLS-1$
+		tbl2.waitForComponent(Constants.ONE_SECOND, 10);
+		AUT_run.m_aut.execute(tableComp.click(new Integer(1), InteractionMode.primary), null);
+		// Ub_tre_selectNode_byTextpath
+		AUT_run.m_aut.execute(tbl2.selectNodeByTextpath(SearchType.absolute,new Integer(0), name, Operator.matches, 1, InteractionMode.primary, BinaryChoice.no), null);
+
+		Common.clickButton("ShowView_OkButton_grc");
+
+		// Wait a little bit (workaround for Codes/Codes
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		Common.waitForElexisMainWindow(Constants.ONE_SECOND);
+	}
 
 	/** test visiting all views */
 	@Test
@@ -48,10 +82,7 @@ public class VisitAllViews {
 		Assert.assertNotNull("ShowView_ViewTree_grc may not be null", tree);
 		TreeComponent treeComp =
 			org.eclipse.jubula.toolkit.concrete.ConcreteComponents.createTreeComponent(tree);
-		ComponentIdentifier<Button> okay_id = AUT_run.om.get("ShowView_OkButton_grc"); //$NON-NLS-1$
-		Assert.assertNotNull("ShowView_OkButton_grc may not be null", okay_id);
-		ButtonComponent ok_btn_comp =
-			org.eclipse.jubula.toolkit.concrete.ConcreteComponents.createButtonComponent(okay_id);
+		Common.clickButton("ShowView_OkButton_grc"); //$NON-NLS-1$
 		try {
 			String window_title = Messages.getString("VisitAllViews.4"); //$NON-NLS-1$
 			while (true) {
@@ -77,7 +108,7 @@ public class VisitAllViews {
 						AUT_run.m_aut.execute(treeComp.selectNodeByIndexpath(SearchType.absolute,
 							new Integer(0), new_pos, new Integer(1), InteractionMode.primary,
 							ValueSets.BinaryChoice.no), null);
-						AUT_run.m_aut.execute(ok_btn_comp.click(1, InteractionMode.primary), null);
+						Common.clickButton("ShowView_OkButton_grc"); //$NON-NLS-1$
 						AUT_run.app.waitForWindowToClose(window_title, Operator.matches, 1000,
 							Constants.NR_MS_WAIT_AFTER_ACTION);
 						AUT_run.app.waitForWindow(window_title, Operator.matches, 1000,
@@ -107,7 +138,7 @@ public class VisitAllViews {
 							return; // No more entries found for mayor
 						}
 						minor = 0;
-						AUT_run.m_aut.execute(ok_btn_comp.click(1, InteractionMode.primary), null);
+						Common.clickButton("ShowView_OkButton_grc"); //$NON-NLS-1$
 						AUT_run.app.waitForWindowToClose(window_title, Operator.matches, 1000,
 							Constants.NR_MS_WAIT_AFTER_ACTION);
 						AUT_run.app.waitForWindow(window_title, Operator.matches, 1000,

@@ -12,7 +12,6 @@ package ch.ngiger.jubula.helpers;
 
 import org.eclipse.jubula.client.exceptions.ActionException;
 import org.eclipse.jubula.client.exceptions.CheckFailedException;
-import org.eclipse.jubula.toolkit.concrete.components.ButtonComponent;
 import org.eclipse.jubula.toolkit.concrete.components.MenuBarComponent;
 import org.eclipse.jubula.toolkit.concrete.components.TableComponent;
 import org.eclipse.jubula.toolkit.enums.ValueSets;
@@ -20,7 +19,6 @@ import org.eclipse.jubula.toolkit.enums.ValueSets.InteractionMode;
 import org.eclipse.jubula.toolkit.enums.ValueSets.Operator;
 import org.eclipse.jubula.toolkit.enums.ValueSets.Unit;
 import org.eclipse.jubula.toolkit.swt.SwtComponents;
-import org.eclipse.jubula.toolkit.swt.components.Button;
 import org.eclipse.jubula.toolkit.swt.components.Table;
 import org.eclipse.jubula.tools.ComponentIdentifier;
 import org.junit.Assert;
@@ -29,11 +27,15 @@ import org.junit.Test;
 import ch.ngiger.jubula.Messages;
 
 /** @author BREDEX GmbH */
-public class VisitAllPerspectives {
+public class Perspectives {
 
-	// When using a logger the output is not shown in the maven output
-	// Don't know where it disappears
-	// private static Logger log = LoggerFactory.getLogger(VisitAllViews.class);
+	void resetPerspective(){
+		MenuBarComponent mbr = SwtComponents.createMenu();
+		mbr.waitForComponent(1000, 10);
+		AUT_run.m_aut.execute(
+			mbr.selectMenuEntryByTextpath("Fenster/Perspektive/Reset.*", Operator.matches), null);
+		Common.clickButton("ResetPerspektive_OkButton_grc"); //$NON-NLS-1$
+	}
 
 	/** test visiting all perspectives */
 	@Test
@@ -47,20 +49,20 @@ public class VisitAllPerspectives {
 				MenuBarComponent mbr = SwtComponents.createMenu();
 				mbr.waitForComponent(1000, 1000);
 				AUT_run.m_aut.execute(
-					mbr.selectMenuEntryByTextpath(Messages.getString("VisitAllPerspectives.2"), Operator.equals), //$NON-NLS-1$
+					mbr.selectMenuEntryByTextpath(Messages.getString("VisitAllPerspectives.2"), //$NON-NLS-1$
+						Operator.equals),
 					null);
 				AUT_run.app.waitForWindow(window_title, Operator.matches, 1000,
 					Constants.NR_MS_WAIT_AFTER_ACTION);
 				ComponentIdentifier<Table> tbl = runner.om.get("OpenPerspective_ViewTree_grc"); //$NON-NLS-1$
 				TableComponent tableComp = org.eclipse.jubula.toolkit.concrete.ConcreteComponents
 					.createTableComponent(tbl);
-				AUT_run.m_aut.execute(tableComp.selectCell(Integer.toString(j), Operator.equals, "1", //$NON-NLS-1$
+				AUT_run.m_aut.execute(tableComp.selectCell(Integer.toString(j), Operator.equals,
+					"1", //$NON-NLS-1$
 					Operator.equals, new Integer(1), new Integer(50), Unit.percent, new Integer(50),
 					Unit.percent, ValueSets.BinaryChoice.no, InteractionMode.primary), null);
-				ComponentIdentifier<Button> ok_btn = runner.om.get("ShowView_OkButton_grc"); //$NON-NLS-1$
-				ButtonComponent ok_btn_comp = org.eclipse.jubula.toolkit.concrete.ConcreteComponents
-					.createButtonComponent(ok_btn);
-				AUT_run.m_aut.execute(ok_btn_comp.click(1, InteractionMode.primary), null);
+				Common.clickButton("ShowView_OkButton_grc");
+
 				AUT_run.app.waitForWindowToClose(window_title, Operator.matches, 1000,
 					Constants.NR_MS_WAIT_AFTER_ACTION);
 				AUT_run.app.waitForWindow(window_title, Operator.matches, 1000,

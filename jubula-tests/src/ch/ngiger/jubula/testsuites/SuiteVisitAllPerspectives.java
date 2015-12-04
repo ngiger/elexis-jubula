@@ -7,7 +7,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import ch.ngiger.jubula.helpers.AUT_run;
-import ch.ngiger.jubula.helpers.VisitAllPerspectives;
+import ch.ngiger.jubula.helpers.Perspectives;
 
 public class SuiteVisitAllPerspectives {
 
@@ -22,7 +22,7 @@ public class SuiteVisitAllPerspectives {
 
 	@Test()
 	public void suite_visit_all_perspectives() throws Exception{
-		VisitAllPerspectives all = new VisitAllPerspectives();
+		Perspectives all = new Perspectives();
 		org.eclipse.jubula.toolkit.concrete.components.Application application =
 				SwtComponents.createApplication();
 			Thread.sleep(1000); // Don't know why this is needed!

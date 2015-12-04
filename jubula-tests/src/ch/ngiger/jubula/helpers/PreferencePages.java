@@ -28,7 +28,7 @@ import org.junit.Test;
 import ch.ngiger.jubula.Messages;
 
 /** @author BREDEX GmbH */
-public class VisitAllPreferencePages {
+public class PreferencePages {
 	/** the logger */
 	// When using a logger the output is not shown in the maven output
 	// Don't know where it disappears

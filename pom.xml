@@ -13,6 +13,10 @@
     <jubula.installation.dir>/opt/jubula_8.2.0.021</jubula.installation.dir>
   </properties>
   <modules>
+    <module>org.eclipse.jubula.product.autagent.product</module>
+    <!-- we must first call mvn p2:site in the subdirectory snakeyaml to create the P2 repository
+    <module>snakeyaml</module>
+    -->
     <module>jubula-target</module>
     <module>jubula-tests</module>
   </modules>

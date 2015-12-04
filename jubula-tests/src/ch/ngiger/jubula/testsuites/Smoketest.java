@@ -9,13 +9,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ch.ngiger.jubula.helpers.AUT_run;
-import ch.ngiger.jubula.helpers.Views;
+import ch.ngiger.jubula.helpers.Common;
+import ch.ngiger.jubula.helpers.Patients;
 
-public class SuiteVisitAllViews {
+public class Smoketest {
 	/** test generating a snapshot of the currently active window */
 
 	/** the logger */
-	private static Logger log = LoggerFactory.getLogger(SuiteVisitAllViews.class);
+	private static Logger log = LoggerFactory.getLogger(Smoketest.class);
 
 	static private AUT_run runner = null;
 
@@ -27,13 +28,17 @@ public class SuiteVisitAllViews {
 	}
 
 	@Test()
-	public void suite_visit_all_views() throws Exception{
-		Views all = new Views();
+	public void smoketest() throws Exception{
+		Common.synchronizedTextReplace("Patienten_SelectName_grc", "Smoketest");//$NON-NLS-1$
+		// Das nächste läuft schief!!
+		// Common.synchronizedTextReplace("Patienten_SelectName_grc", "äöüèéç/<>$?=*%&(){},.-;:_$£][~");//$NON-NLS-1$
+
+		Patients all = new Patients();
 		org.eclipse.jubula.toolkit.concrete.components.Application application =
 			SwtComponents.createApplication();
 		Thread.sleep(1000); // Don't know why this is needed!
 		AUT_run.m_aut.execute(application.activate(AUTActivationMethod.titlebar), null);
-		all.visit_all_views(runner);
+		all.createPatient("Testperson", "ArmesWesen", "31.01.1990");
 	}
 
 	@AfterClass

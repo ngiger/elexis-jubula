@@ -1,0 +1,8 @@
+---
+patients:
+  - name: Testperson
+    firstname:  ArmesWese
+    birthday: 31.11.1980
+  - name: Bush
+    firstname:  Georges W.
+    birthday: 15.12.1950

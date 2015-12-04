@@ -137,9 +137,10 @@ public class AUT_run {
 		config.put(Constants.WORK_DIR, USER_DIR);
 		config.put(Constants.AUT_EXE,
 			Paths.get(USER_DIR + "/../work/Elexis3").toAbsolutePath().normalize().toString());
-		config.put(Constants.AUT_LOCALE, "de_CH");
+		config.put(Constants.AUT_LOCALE, "de_DE");
 		config.put(Constants.AUT_ID, "elexis");
-		config.put(Constants.AUT_PROGRAM_ARGS, "-Xdebug -Xrunjdwp:transport=dt_socket,server=y,address=8000");
+		config.put(Constants.AUT_PROGRAM_ARGS,
+			"-Xdebug -Xrunjdwp:transport=dt_socket,server=y,address=8000");
 
 		config.put(Constants.AUT_VM_ARGS,
 			"-nl " + config.get(Constants.AUT_LOCALE)
@@ -148,7 +149,7 @@ public class AUT_run {
 				+ config.get(Constants.AGENT_HOST)
 				+ " -Dorg.eclipse.swt.browser.DefaultType=mozilla -Dch.elexis.username=007"
 				+ " -Dch.elexis.password=topsecret -Delexis-run-mode=RunFromScratch");
-		config.put(Constants.AUT_KEYBOARD, "us");
+		config.put(Constants.AUT_KEYBOARD, "de_DE");
 		for (Map.Entry<String, String> entry : config.entrySet()) {
 			String from_env = System.getenv(entry.getKey());
 			if (from_env != null) {
@@ -164,6 +165,7 @@ public class AUT_run {
 
 	@BeforeClass
 	public static void setUp() throws Exception{
+		//		Patients.testLoadFromStream();
 		setupResultDir();
 		setupConfig();
 		URL input = AUT_run.class.getClassLoader().getResource(RuntimeContext.OM_Resource_Name); //$NON-NLS-1$
@@ -192,12 +194,14 @@ public class AUT_run {
 			Assert.fail("EXE File " + config.get(Constants.AUT_EXE)
 				+ " does not exist or cannot be executed");
 		}
+		System.out.println("Languageis " + config.get(Constants.AUT_LOCALE));
+		System.out.println("Keyboard Layout is " + config.get(Constants.AUT_KEYBOARD));
+		System.out.println("Default is " + Locale.getDefault());
+		System.out.println("German is " + Locale.GERMANY + " " + Locale.GERMAN);
 		AUTConfiguration aut_config = new RCPAUTConfiguration("ch.elexis.core.application", //$NON-NLS-1$
 			config.get(Constants.AUT_ID), config.get(Constants.AUT_EXE),
-			config.get(Constants.WORK_DIR), args,
-			Locale.forLanguageTag(config.get(Constants.AUT_LOCALE)),
-			Locale.forLanguageTag(config.get(Constants.AUT_KEYBOARD)));
-		dbg_msg("Got aut_config as " + aut_config);
+			config.get(Constants.WORK_DIR), args, Locale.GERMANY, Locale.GERMANY);
+		dbg_msg("Got aut_config as " + aut_config.getLaunchInformation());
 		Thread.sleep(1000);
 
 		dbg_msg("Calling startAUT ");
