@@ -90,15 +90,13 @@ public class Views {
 				AUT_run.dbg_msg("Visiting view " + nr_views + " in row " + mayor); //$NON-NLS-1$ //$NON-NLS-2$
 				minor = 0;
 				while (true) {
-					mbr.waitForComponent(1000, 1000);
-					AUT_run.m_aut.execute(mbr.selectMenuEntryByTextpath(
-						Messages.getString("VisitAllViews.7"), Operator.matches), null); //$NON-NLS-1$
-					AUT_run.app.waitForWindow(window_title, Operator.matches, 1000, 50);
+					Common.openMenu(Messages.getString("VisitAllViews.7")); //$NON-NLS-1$
+					Common.waitForWindow(window_title, Constants.ONE_SECOND);
 					AUT_run.dbg_msg("user 1"); //$NON-NLS-1$
 					minor++;
 					new_pos = Integer.toString(mayor) + "/" + Integer.toString(minor); //$NON-NLS-1$
 					new_pos2 = Integer.toString(mayor) + "_" + Integer.toString(minor); //$NON-NLS-1$
-					runner.takeScreenshotActiveWindow("iterate/pos_" + new_pos2 + ".png"); //$NON-NLS-1$ //$NON-NLS-2$
+					AUT_run.takeScreenshotActiveWindow("iterate/pos_" + new_pos2 + ".png"); //$NON-NLS-1$ //$NON-NLS-2$
 					AUT_run.dbg_msg("Visiting view " + nr_views + " new_pos " + new_pos); //$NON-NLS-1$ //$NON-NLS-2$
 					try {
 						//						m_aut.execute(treeComp.checkEnablementOfContextMenuEntryByIndexpath(new_pos,
@@ -109,10 +107,7 @@ public class Views {
 							new Integer(0), new_pos, new Integer(1), InteractionMode.primary,
 							ValueSets.BinaryChoice.no), null);
 						Common.clickButton("ShowView_OkButton_grc"); //$NON-NLS-1$
-						AUT_run.app.waitForWindowToClose(window_title, Operator.matches, 1000,
-							Constants.NR_MS_WAIT_AFTER_ACTION);
-						AUT_run.app.waitForWindow(window_title, Operator.matches, 1000,
-							Constants.NR_MS_WAIT_AFTER_ACTION);
+						Common.waitForWindow(window_title, Constants.ONE_SECOND);
 						Thread.sleep(Constants.ONE_SECOND); // give view time to stabilize, eg. load a web page/patient
 						// Maximize window by pressing Ctrl-M
 						AUT_run.m_aut.execute(AUT_run.app.externalKeyCombination(new Modifier[] {
@@ -139,10 +134,7 @@ public class Views {
 						}
 						minor = 0;
 						Common.clickButton("ShowView_OkButton_grc"); //$NON-NLS-1$
-						AUT_run.app.waitForWindowToClose(window_title, Operator.matches, 1000,
-							Constants.NR_MS_WAIT_AFTER_ACTION);
-						AUT_run.app.waitForWindow(window_title, Operator.matches, 1000,
-							Constants.NR_MS_WAIT_AFTER_ACTION);
+						Common.waitForWindowClose(window_title, Constants.ONE_SECOND);
 						break;
 					}
 				}

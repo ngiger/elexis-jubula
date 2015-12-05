@@ -16,7 +16,6 @@ import org.eclipse.jubula.toolkit.concrete.components.MenuBarComponent;
 import org.eclipse.jubula.toolkit.concrete.components.TreeComponent;
 import org.eclipse.jubula.toolkit.enums.ValueSets;
 import org.eclipse.jubula.toolkit.enums.ValueSets.InteractionMode;
-import org.eclipse.jubula.toolkit.enums.ValueSets.Operator;
 import org.eclipse.jubula.toolkit.enums.ValueSets.SearchType;
 import org.eclipse.jubula.toolkit.swt.SwtComponents;
 import org.eclipse.jubula.toolkit.swt.components.Button;
@@ -36,17 +35,10 @@ public class PreferencePages {
 
 	private boolean gotoPreferencPage(AUT_run runner, String position) {
 		String window_title = Messages.getString("VisitAllPreferencePages.4"); //$NON-NLS-1$
-		String elexisMainWindow = ".*Elexis.*";
-		try  {
-		AUT_run.app.waitForWindowToClose(window_title, Operator.matches, 1000,
-			Constants.NR_MS_WAIT_AFTER_ACTION);
-		AUT_run.app.waitForWindow(elexisMainWindow, Operator.matches, 1000,
-			Constants.NR_MS_WAIT_AFTER_ACTION);
-
-		mbr.waitForComponent(Constants.ONE_SECOND, Constants.NR_MS_WAIT_AFTER_ACTION);
-		mbr.waitForComponent(Constants.ONE_SECOND, Constants.NR_MS_WAIT_AFTER_ACTION);
-		AUT_run.m_aut.execute(mbr.selectMenuEntryByTextpath(
-			Messages.getString("VisitAllPreferencePages.7"), Operator.matches), null); //$NON-NLS-1$
+		Common.waitForWindowClose(window_title, Constants.ONE_SECOND);
+		Common.waitForElexisMainWindow(Constants.ONE_SECOND);
+		Common.openMenu(Messages.getString("VisitAllPreferencePages.7")); //$NON-NLS-1$
+		try {
 		AUT_run.m_aut.execute(treeComp.selectNodeByIndexpath(SearchType.absolute,
 			                                                       new Integer(0), position, new Integer(1), InteractionMode.primary,
 			                                                       ValueSets.BinaryChoice.no), null);

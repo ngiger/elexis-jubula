@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ARTIKELSTAMM xmlns="http://elexis.ch/Elexis_Artikelstamm_v003" CREATION_DATETIME="2015-12-01T05:48:33.000+01:00" LANG="de" MONTH="12" YEAR="2015" CUMUL_VER="36" TYPE="P" DATA_QUALITY="3">
+    <ITEM>
+        <GTIN>768057190025</GTIN>
+        <PHAR>3552119</PHAR>
+        <DSCR>VOLUVEN balanced Inf Lös 6 % 500ml Freeflex 20 Stk</DSCR>
+        <PEXF>367.71</PEXF>
+        <PPUB>418.45</PPUB>
+    </ITEM>
+    <ITEM>
+        <GTIN>7680336700282</GTIN>
+        <PHAR>58985</PHAR>
+        <DSCR>ASPIRIN C Brausetabl 10 Stk</DSCR>
+        <ATC>N02BA51</ATC>
+        <COMP>
+            <GLN>7601001002593</GLN>
+        </COMP>
+        <PEXF>6.43</PEXF>
+        <PPUB>10.2</PPUB>
+        <PKG_SIZE>10</PKG_SIZE>
+        <IKSCAT>D</IKSCAT>
+        <PRODNO>336701</PRODNO>
+    </ITEM>
+    <ITEM>
+        <GTIN>7680336700367</GTIN>
+        <PHAR>1258605</PHAR>
+        <DSCR>ASPIRIN C Brausetabl 20 Stk</DSCR>
+        <ATC>N02BA51</ATC>
+        <COMP>
+            <GLN>7601001002593</GLN>
+        </COMP>
+        <PEXF>11.25</PEXF>
+        <PPUB>17.35</PPUB>
+        <PKG_SIZE>20</PKG_SIZE>
+        <IKSCAT>D</IKSCAT>
+        <PRODNO>336701</PRODNO>
+    </ITEM>
+    <ITEM>
+        <GTIN>7680337020198</GTIN>
+        <PHAR>870586</PHAR>
+        <DSCR>FOLVITE Tabl 1 mg 100 Stk</DSCR>
+        <ATC>B03BB01</ATC>
+        <COMP>
+            <GLN>7601001000162</GLN>
+        </COMP>
+        <PEXF>39.77</PEXF>
+        <PPUB>58.3</PPUB>
+        <PKG_SIZE>100</PKG_SIZE>
+        <IKSCAT>B</IKSCAT>
+        <PRODNO>337021</PRODNO>
+    </ITEM>
+    <ITEM>
+        <GTIN>7680337410494</GTIN>
+        <PHAR>1567482</PHAR>
+        <DSCR>CYKLOKAPRON Tabl 500 mg 30 Stk</DSCR>
+        <ATC>B02AA02</ATC>
+        <COMP>
+            <GLN>7601001000162</GLN>
+        </COMP>
+        <PEXF>15.6906</PEXF>
+        <PPUB>34.4</PPUB>
+        <PKG_SIZE>30</PKG_SIZE>
+        <SL_ENTRY>true</SL_ENTRY>
+        <IKSCAT>B</IKSCAT>
+        <DEDUCTIBLE>10</DEDUCTIBLE>
+        <PRODNO>337411</PRODNO>
+    </ITEM>
+    <ITEM>
+        <GTIN>7680337670133</GTIN>
+        <PHAR>1245726</PHAR>
+        <DSCR>INHALANT Lös 30 ml</DSCR>
+        <ATC>R05X</ATC>
+        <COMP>
+            <GLN>7601001000810</GLN>
+        </COMP>
+        <PEXF>12.49</PEXF>
+        <PPUB>19.25</PPUB>
+        <PKG_SIZE>30</PKG_SIZE>
+        <IKSCAT>D</IKSCAT>
+        <PRODNO>337671</PRODNO>
+    </ITEM>
+</ARTIKELSTAMM>

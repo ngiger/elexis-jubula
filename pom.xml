@@ -17,6 +17,7 @@
     <!-- we must first call mvn p2:site in the subdirectory snakeyaml to create the P2 repository
     <module>snakeyaml</module>
     -->
+    <module>org.eclipse.jubula.client.api.keyboard</module>
     <module>jubula-target</module>
     <module>jubula-tests</module>
   </modules>

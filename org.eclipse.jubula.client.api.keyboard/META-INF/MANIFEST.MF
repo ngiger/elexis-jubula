@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Keyboard
+Bundle-SymbolicName: org.eclipse.jubula.client.api.keyboard
+Bundle-Version: 0.1.0.qualifier
+Fragment-Host: org.eclipse.jubula.client.api
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8

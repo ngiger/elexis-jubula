@@ -26,6 +26,7 @@ import org.eclipse.jubula.client.AUT;
 import org.eclipse.jubula.client.AUTAgent;
 import org.eclipse.jubula.client.MakeR;
 import org.eclipse.jubula.client.ObjectMapping;
+import org.eclipse.jubula.client.exceptions.ActionException;
 import org.eclipse.jubula.client.launch.AUTConfiguration;
 import org.eclipse.jubula.qa.api.converter.target.rcp.RuntimeContext;
 import org.eclipse.jubula.toolkit.concrete.components.Application;
@@ -52,7 +53,10 @@ public class AUT_run {
 	public static Map<String, String> config = new Hashtable<String, String>();
 	public static final String USER_DIR = System.getProperty("user.dir");
 	public static String RESULT_DIR = null;
+	public static final Locale Keyboard_Locale = Locale.GERMANY;// Locale.US;
 	private static PrintWriter writer = null;
+	private static AUTIdentifier aut_id = null;
+	private static AUTConfiguration aut_config = null;
 
 	public static void dbg_msg(String msg){
 		String timeStamp =
@@ -163,9 +167,51 @@ public class AUT_run {
 		}
 	}
 
+	private static void startAUT(){
+		try {
+			dbg_msg("Calling startAUT ");
+			aut_id = m_agent.startAUT(aut_config);
+			if (aut_id != null) {
+				dbg_msg("started AUT as " + aut_id.getID() + " will sleep 2 seconds");
+				Thread.sleep(2000);
+				m_aut = m_agent.getAUT(aut_id, SwtComponents.getToolkitInformation());
+				dbg_msg("AUT will connect");
+				Thread.sleep(1000);
+				m_aut.connect();
+				dbg_msg("AUT connected");
+			} else {
+				Assert.fail("AUT did not start as expected? Why"); //$NON-NLS-1$
+			}
+			Thread.sleep(1000);
+			dbg_msg("AUT createApplication");
+			app = SwtComponents.createApplication();
+			dbg_msg("AUT created");
+			Thread.sleep(1000);
+			run_system_cmd(new String[] {
+				"/bin/ps", "-f", "-C", "Xvfb"
+			});
+			run_system_cmd(new String[] {
+				"/bin/ps", "-f", "-C", "autagent"
+			});
+			run_system_cmd(new String[] {
+				"/bin/ps", "-f", "-C", "Elexis3"
+			});
+			dbg_msg("AUT activate via titlebar");
+			m_aut.execute(app.activate(AUTActivationMethod.titlebar), null);
+			Thread.sleep(1000);
+			run_system_cmd(new String[] {
+				"/bin/ps", "-f", "-C", "Elexis3"
+			});
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		dbg_msg("AUT created and activated");
+
+	}
+
 	@BeforeClass
 	public static void setUp() throws Exception{
-		//		Patients.testLoadFromStream();
 		setupResultDir();
 		setupConfig();
 		URL input = AUT_run.class.getClassLoader().getResource(RuntimeContext.OM_Resource_Name); //$NON-NLS-1$
@@ -198,59 +244,36 @@ public class AUT_run {
 		System.out.println("Keyboard Layout is " + config.get(Constants.AUT_KEYBOARD));
 		System.out.println("Default is " + Locale.getDefault());
 		System.out.println("German is " + Locale.GERMANY + " " + Locale.GERMAN);
-		AUTConfiguration aut_config = new RCPAUTConfiguration("ch.elexis.core.application", //$NON-NLS-1$
+		System.out.println("Swiss_German is " + Locale.forLanguageTag("de_CH"));
+		System.out.println("Keyboard_Locale: " + Keyboard_Locale.toString());
+		aut_config = new RCPAUTConfiguration("ch.elexis.core.application", //$NON-NLS-1$
 			config.get(Constants.AUT_ID), config.get(Constants.AUT_EXE),
-			config.get(Constants.WORK_DIR), args, Locale.GERMANY, Locale.GERMANY);
+			config.get(Constants.WORK_DIR), args, Locale.getDefault(), Keyboard_Locale);
+		// config.get(Constants.WORK_DIR), args, Locale.getDefault(), Locale.getDefault());
+		//		config.get(Constants.WORK_DIR), args, Locale.GERMANY, Locale.getDefault());
 		dbg_msg("Got aut_config as " + aut_config.getLaunchInformation());
 		Thread.sleep(1000);
 
-		dbg_msg("Calling startAUT ");
-		AUTIdentifier id = m_agent.startAUT(aut_config);
-		if (id != null) {
-			dbg_msg("started AUT as " + id.getID() + " will sleep 2 seconds");
-			Thread.sleep(2000);
-			m_aut = m_agent.getAUT(id, SwtComponents.getToolkitInformation());
-			dbg_msg("AUT will connect");
-			Thread.sleep(1000);
-			m_aut.connect();
-			dbg_msg("AUT connected");
-		} else {
-			Assert.fail("AUT did not start as expected? Why"); //$NON-NLS-1$
-		}
-		Thread.sleep(1000);
-		dbg_msg("AUT createApplication");
-		app = SwtComponents.createApplication();
-		dbg_msg("AUT created");
-		Thread.sleep(1000);
-		run_system_cmd(new String[] {
-			"/bin/ps", "-f", "-C", "Xvfb"
-		});
-		run_system_cmd(new String[] {
-			"/bin/ps", "-f", "-C", "autagent"
-		});
-		run_system_cmd(new String[] {
-			"/bin/ps", "-f", "-C", "Elexis3"
-		});
-		dbg_msg("AUT activate via titlebar");
-		m_aut.execute(app.activate(AUTActivationMethod.titlebar), null);
-		Thread.sleep(1000);
-		run_system_cmd(new String[] {
-			"/bin/ps", "-f", "-C", "Elexis3"
-		});
-		dbg_msg("AUT created and activated");
+		startAUT();
 	}
 
-	public void takeScreenshotActiveWindow(String imageName){
+	public static void takeScreenshotActiveWindow(String imageName){
 		String fullname =
 			new File(config.get(Constants.RESULT_DIR) + "/" + imageName).getAbsolutePath();
 		dbg_msg("Request takeScreenshotActiveWindow " + fullname + " for " + imageName);
+		// m_aut.execute(app.activate(AUTActivationMethod.none), null);
+		try {
 		m_aut.execute(
 			app.takeScreenshotOfActiveWindow(fullname, 0, "rename", 100, true, 0, 0, 0, 0), null);
-		boolean foundFile =
-			Files.exists(new File(config.get(Constants.RESULT_DIR) + "/" + imageName).toPath(),
-				LinkOption.NOFOLLOW_LINKS);
-		dbg_msg("Created " + fullname + " exists " + foundFile);
-		Assert.assertTrue(foundFile);
+			boolean foundFile =
+				Files.exists(new File(config.get(Constants.RESULT_DIR) + "/" + imageName).toPath(),
+					LinkOption.NOFOLLOW_LINKS);
+			dbg_msg("Created " + fullname + " exists " + foundFile);
+			Assert.assertTrue(foundFile);
+		} catch ( ActionException e) {
+			dbg_msg("Action Exception " + fullname  + " reason: " + e.getMessage());
+//			Assert.fail("Unable to create screenshot " + imageName);
+		}
 	}
 
 	/** cleanup */
@@ -265,6 +288,12 @@ public class AUT_run {
 		if (m_agent != null && m_agent.isConnected()) {
 			m_agent.disconnect();
 		}
+	}
+
+	public static void restartApp(){
+		dbg_msg("AUT_run.restartApp ");
+		m_agent.stopAUT(aut_id);
+		startAUT();
 	}
 
 }

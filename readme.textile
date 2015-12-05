@@ -9,6 +9,8 @@ h2. TODO
 
 The following improvements are planned. Order may be varied depending whether we will encounter unforeseen problems.
 
+h3. Catch up with previous capabilities
+
 * -Move to current Jubula-Version 8.2.-
 * Simplify vastly the ruby scripts. Ideas are:
 ** -Move all config-variables in one (or more) YAML-files- "see":defaults.yaml. They may be overriden be putting your changes into config.yaml
@@ -23,15 +25,22 @@ The following improvements are planned. Order may be varied depending whether we
 * -Rework visiting all Views and Perspectives to use the Jubula-provided tools-
 * -Migrate to use Java-based UI test automation. This should ease the pain from other developpers to get a head start-
 * Pending migration work items are
-** Visit all preferences
-** Import Artikelstamm
-** Create patient
+** -Visit all preferences-
+** -Import Artikelstamm- but it fails, because it has changed from 3.0 to 3.1
+** -Create patient-
 ** Create consultation
 ** Add article to consultation
 ** Invoice consultation
-** Create Patient
 ** Install all possible features
 ** Test upgrade
+
+h3. Improvements
+
+* Artikelstamm
+** Support OpenSource useage of Artikelstamm
+** Show migration of legecy (stock, billing)
+** Check whether we need any scripts from the db_check
+* -Test whether we are able to input umlauts and other special characters-
 * Add a custom articlestamm.xml with a good selection of drugs to make a good demo
 * Find a way to properly identify each tab of a combo, e.g. the various articlestamm
 * Rework some Elexis-GUI elements, e.g.
@@ -88,6 +97,10 @@ It took my quite a few hours to overcome the following problems
 h3. Object mapping
 
 I always had a hard time to find that Ctrl-Shift-Q (default was Ctrl-Shift-A) was the default key to collect a compontent from Elexis. This is configured under Preferences..Test..Object Mapping
+
+h3. keyboard bindings
+
+On December 5 2015 I tried to add a keyboard binding file for de_CH, but I am not sure whether it worth the time. Because when I configured my KDE workspace to use a swiss german keyboard, most of the the tests passed when using the US keyboard in the AUTConfiguration. What did not work where the german Umlauts. Maybe we will be better off to just not use these characters in our test and warn about it in methods like Common.synchronizedTextReplace
 
 h1. pitfalls
 

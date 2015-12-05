@@ -24,4 +24,4 @@ Require-Bundle: org.eclipse.jubula.tools,
  org.eclipse.jubula.client.api.converter;bundle-version="4.0.0",
  org.eclipse.jubula.client.api.converter.annotations;bundle-version="4.0.0",
  org.junit;bundle-version="4.11.0",
- org.yaml.snakeyaml
+ com.google.gson;bundle-version="2.2.4"
