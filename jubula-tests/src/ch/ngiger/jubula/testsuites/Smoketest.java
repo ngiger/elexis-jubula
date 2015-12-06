@@ -18,10 +18,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ch.ngiger.jubula.helpers.AUT_run;
-import ch.ngiger.jubula.helpers.Artikelstamm;
 import ch.ngiger.jubula.helpers.Common;
 import ch.ngiger.jubula.helpers.Patients;
-import ch.ngiger.jubula.helpers.SW_Installation;
+import ch.ngiger.jubula.helpers.Software;
 
 public class Smoketest {
 	/** test generating a snapshot of the currently active window */
@@ -78,9 +77,11 @@ public class Smoketest {
 
 	@Test()
 	public void smoketest() throws Exception{
-		Artikelstamm.importArtikelstamm(null);
-		SW_Installation.installAllFeatures();
+		Software.showAbout("first");
+		Software.installAllFeatures();
 		AUT_run.restartApp();
+		Software.showAbout("second");
+		// Artikelstamm.importArtikelstamm(null); // Fails at the moment
 		// testAllChars();
 		// as the text field is special and tries to
 		Patients all = new Patients();

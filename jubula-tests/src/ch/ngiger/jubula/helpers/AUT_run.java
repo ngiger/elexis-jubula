@@ -57,6 +57,7 @@ public class AUT_run {
 	private static AUTIdentifier aut_id = null;
 	private static AUTConfiguration aut_config = null;
 	private static java.nio.file.Path ElexisLog = Paths.get(System.getProperty("user.home") + "/elexis/logs/elexis-3.log");
+
 	public static void dbg_msg(String msg){
 		String timeStamp =
 			new SimpleDateFormat("dd.MM.yyyy HH:mm:ss").format(Calendar.getInstance().getTime());
@@ -303,14 +304,18 @@ public class AUT_run {
 	 try {
 		java.nio.file.Files.copy(ElexisLog, newdir);
 	} catch (IOException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
+		// Just ignore this error, probably we had no elexis log
 	}
 	}
 
 	public static void restartApp(){
 		dbg_msg("AUT_run.restartApp ");
 		m_agent.stopAUT(aut_id);
+		dbg_msg("AUT_run.stoppedAUT ");
+		m_agent.disconnect();
+		dbg_msg("m_agent.disconnected ");
+		m_agent.connect();
+		dbg_msg("m_agent.connected ");
 		startAUT();
 	}
 
