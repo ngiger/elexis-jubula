@@ -17,7 +17,9 @@
     <!-- we must first call mvn p2:site in the subdirectory snakeyaml to create the P2 repository
     <module>snakeyaml</module>
     -->
-    <module>org.eclipse.jubula.client.api.keyboard</module>
+    <!-- TOOD: adding a de_CH keyboard mapping did not made a clear difference
+        <module>org.eclipse.jubula.client.api.keyboard</module>
+    -->
     <module>jubula-target</module>
     <module>jubula-tests</module>
   </modules>

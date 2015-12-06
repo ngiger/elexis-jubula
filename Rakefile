@@ -50,6 +50,7 @@ end
 desc 'Run Jubula-GUI test (default Screenshot) via Maven'
 task :jubula_mvn, [:test_to_run] => :elexis_install_os do  |target, args|
   port = 6333 # Don't change it or via xvfb you will have problems!
+  savedDir = Dir.pwd
   autagent = get_full_file_path_or_fail(File.join(Config[:jubula_root], 'server/autagent'))
   at_exit do
     $stderr.puts "Stopping autagent"
@@ -73,7 +74,9 @@ task :jubula_mvn, [:test_to_run] => :elexis_install_os do  |target, args|
     Thread.new do
       fail "Could not start autagent" unless system("#{autagent} start -p #{port}")
     end
-    cmd = "mvn clean integration-test  -Dtest=ch.ngiger.jubula.testsuites.#{test_to_run}"
+    puts "Before calling mvn #{Dir.pwd} savedDir #{savedDir}"
+    Dir.chdir savedDir.
+    cmd = "pwd && mvn clean integration-test  -Dtest=ch.ngiger.jubula.testsuites.#{test_to_run}"
     puts "Will call #{cmd}"
     fail 'Running mvn failed' unless system(cmd)
   end

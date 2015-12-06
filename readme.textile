@@ -28,7 +28,8 @@ h3. Catch up with previous capabilities
 ** -Visit all preferences-
 ** -Import Artikelstamm- but it fails, because it has changed from 3.0 to 3.1
 ** -Create patient-
-** Create consultation
+** create case
+** create consultation
 ** Add article to consultation
 ** Invoice consultation
 ** Install all possible features
