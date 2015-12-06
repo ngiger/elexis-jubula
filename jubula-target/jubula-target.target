@@ -1,9 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<?pde version="3.8"?><target name="api-OSGi" sequenceNumber="18">
+<?pde version="3.8"?><target name="api-OSGi" sequenceNumber="19">
 <locations>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="slicer" includeSource="true" type="InstallableUnit">
-<repository location="file:///opt/src/jubula-gui/snakeyaml/target/repository"/>
-<unit id="org.yaml.snakeyaml" version="0.0.0"/>
+<unit id="org.eclipse.jubula.feature.api.converter.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.jubula.feature.api.core.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.jubula.feature.api.core.source.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.jubula.feature.api.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.jubula.feature.api.source.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.jubula.feature.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.jubula.feature.launch.java.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.jubula.feature.launch.rcp.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.jubula.feature.rc.feature.group" version="0.0.0"/>
+<repository location="http://download.eclipse.org/jubula/nightly/repo"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="slicer" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.platform.feature.group" version="0.0.0"/>
@@ -35,18 +43,6 @@
 <unit id="org.eclipse.mylyn.wikitext_feature.feature.group" version="0.0.0"/>
 <unit id="org.eclipse.jdt.annotation" version="0.0.0"/>
 <repository location="http://download.eclipse.org/releases/luna"/>
-</location>
-<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="slicer" includeSource="true" type="InstallableUnit">
-<repository location="http://download.eclipse.org/jubula/nightly/repo"/>
-<unit id="org.eclipse.jubula.feature.api.converter.feature.group" version="0.0.0"/>
-<unit id="org.eclipse.jubula.feature.api.core.feature.group" version="0.0.0"/>
-<unit id="org.eclipse.jubula.feature.api.core.source.feature.group" version="0.0.0"/>
-<unit id="org.eclipse.jubula.feature.api.feature.group" version="0.0.0"/>
-<unit id="org.eclipse.jubula.feature.api.source.feature.group" version="0.0.0"/>
-<unit id="org.eclipse.jubula.feature.feature.group" version="0.0.0"/>
-<unit id="org.eclipse.jubula.feature.launch.java.feature.group" version="0.0.0"/>
-<unit id="org.eclipse.jubula.feature.launch.rcp.feature.group" version="0.0.0"/>
-<unit id="org.eclipse.jubula.feature.rc.feature.group" version="0.0.0"/>
 </location>
 </locations>
 </target>

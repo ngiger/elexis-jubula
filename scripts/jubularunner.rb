@@ -20,48 +20,50 @@ class DockerRunner
 
   def start_docker(cmd_in_docker, env = nil, workdir = nil)
     # First cleanup possible remnants of old runs
-    [ @m2_repo, @container_home].each do |dir|
-      next if File.exist?(dir)
-      FileUtils.makedirs(dir, :verbose => true)
+    [ @m2_repo, @container_home, @result_dir].each do |dir|
+      FileUtils.makedirs(dir, :verbose => true) unless File.exist?(dir)
       FileUtils.chmod(0777, dir)
     end
     cmd = 'docker run --detach'
     cmd += " --env=#{env}" if env
     cmd += " --workdir=#{workdir}" if workdir
     cmd += " -v #{@container_home}:/home/elexis"
+    cmd += " -v #{@result_dir}:/home/elexis/results"
     cmd += " -v #{@m2_repo}:/home/elexis/.m2"
     cmd += " --publish=#{local_ip}:8000:8000" # debug port for java
     cmd += " --publish=#{local_ip}:6333:6333" if false
-    cmd += " --name=jubula-#{@test_name} ngiger/jubula_runner"
+    cmd += " --name=#{@docker_name} ngiger/jubula_runner"
     cmd += ' ' + cmd_in_docker
     puts cmd
     system(cmd)
+    # system("docker inspect #{@docker_name}") # Only for debugging!
   end
 
   def exec_in_docker(command, options = {})
     cmd = "docker exec #{options[:detach] ? '--detach' : ''}" # do it in the background
     cmd += " --env=#{options[:env]} " if options[:env]
     cmd += " --workdir=#{options[:workdir]}" if options[:workdir]
-    cmd += " jubula-#{@test_name} "
+    cmd += " #{@docker_name} "
     cmd += command
     puts cmd
     Kernel.system(cmd)
   end
 
   def stop_docker
-   if Kernel.system("docker ps  | grep jubula-#{@test_name}")
+   if Kernel.system("docker ps  | grep #{@docker_name}")
       exec_in_docker(@cleanup_in_container)
-      Kernel.system("docker kill jubula-#{@test_name}")
-      Kernel.system("docker rm jubula-#{@test_name}")
+      Kernel.system("docker kill #{@docker_name}")
+      Kernel.system("docker rm #{@docker_name}")
     end
   end
 
-  def initialize(test_name)
+  def initialize(test_name, result_dir)
     @test_name = test_name
-    # @container_home = Dir.mktmpdir('jubula_test_')
+    @result_dir = result_dir
+    @docker_name = "jubula-#{@test_name}"
     @container_home =  File.join(RootDir, 'container_home')
     @m2_repo =  File.join(RootDir, 'container_home_m2')
-    @cleanup_in_container = 'chmod --silent --recursive o+rwX /home/elexis'
+    @cleanup_in_container = 'chmod --silent --recursive o+rwX /home/elexis; rm -rf /home/elexis/.jubula'
   end
 end
 
@@ -128,7 +130,7 @@ class JubulaRunner
     at_exit { @docker.stop_docker }
     FileUtils.rm_rf(@docker.container_home, :verbose => true)
     raise "Must be possible to remove container_home #{@docker.container_home}" if File.exist?(@docker.container_home)
-    ['.git', 'pom.xml', 'jubula-target', 'jubula-tests'].each do |item|
+    ['.git', 'pom.xml', 'jubula-target', 'jubula-tests', 'org.eclipse.jubula.product.autagent.product'].each do |item|
       FileUtils.cp_r(File.join(RootDir, item), @docker.container_home, :verbose => true, :preserve => true)
     end
     FileUtils.makedirs(@docker.container_home)
@@ -141,15 +143,21 @@ class JubulaRunner
     FileUtils.rm_f('jubula-tests/AUT_run.log', :verbose => true) if File.exist?('jubula-tests/AUT_run.log')
     start_autagent
     sleep 0.5
-    cmd = "ps -ef | grep autagent
+    cmd = "status=99
+ps -ef | grep autagent
 ps -ef
 mkdir -p /home/elexis/results
+cp $0 /home/elexis/results
 #{@mvn_cmd}
+status=$?
 echo run_test_in_docker done
 sleep 1
 #{@docker.cleanup_in_container}
-# chmod exited with 1, therefore must run another command
-echo cleanup done
+#{@autagent} -stop -p #{Config[:agent_port]}
+rm -rf ~/.jubula
+ls -lR /home/elexis/results
+sleep 1
+exit $status
 "
     puts "Starting testexec in docker: #{cmd}"
     store_cmd('testexec.sh', cmd)
@@ -160,24 +168,8 @@ echo cleanup done
     ensure
       # this is needed that copying  the results and log files will not fail
       @docker.exec_in_docker(@docker.cleanup_in_container)
-    end
-    begin
-      now = Time.now.strftime(Time.now.strftime('%d.%m.%Y_%H_%M_%S'))
-      src = "#{@docker.container_home}/results"
-      FileUtils.cp_r(src,  RootDir, :verbose => true) if File.directory?(src)
-      files = Dir.glob("#{@docker.container_home}/**/*.log**")
-      files.each do |f|
-        next unless f && File.file?(f)
-        next if /\.jar$/i.match(f)
-        dest = File.join(File.join(RootDir, 'results'), File.basename(f) ? File.basename(f) : now +'.log')
-        FileUtils.cp(f, dest, :verbose => true)
-      end
-    ensure
       # stop container if we were unable to copy the result and/or log files
       @docker.stop_docker
-      FileUtils.rm_rf("#{@my_results}*", :verbose => true)
-      FileUtils.mv(File.join(RootDir, 'results'), @my_results + '.' + now, :verbose => true)
-      FileUtils.rm_rf(@docker.container_home, :verbose => true, :noop => true)
     end
     exit res ? 0 : 1
   end
@@ -201,17 +193,18 @@ echo cleanup done
   end
 
   def run_test_suite(use_docker = false)
+    @result_dir = File.join(RootDir, 'results')
     saved_dir = Dir.pwd
     if use_docker
       patch_acl_for_elexis_and_current_user
-      @docker = DockerRunner.new(@test_name)
+      @docker = DockerRunner.new(@test_name, @result_dir)
     end
     FileUtils.makedirs(WorkDir) unless File.directory?(WorkDir)
-    FileUtils.makedirs(File.join(RootDir, 'results'))
+    FileUtils.rm_rf(@result_dir)
+    FileUtils.makedirs(@result_dir)
     Dir.chdir(WorkDir)
     ensure_presence_of_jubula
     @mvn_cmd = "mvn integration-test -D#{@test_params[:test_to_run]}"
-    @my_results = File.join(RootDir, 'results.' + @test_params[:test_to_run].split('.')[-1])
     @docker ? run_test_in_docker : run_test_exec
   ensure
     diff_time = (Time.now - @start_time).to_i

@@ -74,8 +74,8 @@ task :jubula_mvn, [:test_to_run] => :elexis_install_os do  |target, args|
     Thread.new do
       fail "Could not start autagent" unless system("#{autagent} start -p #{port}")
     end
-    puts "Before calling mvn #{Dir.pwd} savedDir #{savedDir}"
-    Dir.chdir savedDir.
+    puts "Before calling mvn #{Dir.pwd} savedDir #{savedDir} test_to_run #{test_to_run}"
+    Dir.chdir savedDir
     cmd = "pwd && mvn clean integration-test  -Dtest=ch.ngiger.jubula.testsuites.#{test_to_run}"
     puts "Will call #{cmd}"
     fail 'Running mvn failed' unless system(cmd)

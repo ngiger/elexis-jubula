@@ -37,7 +37,6 @@ import org.eclipse.jubula.tools.AUTIdentifier;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-
 public class AUT_run {
 	/** the AUT-Agent */
 	public static AUTAgent m_agent;
@@ -57,7 +56,7 @@ public class AUT_run {
 	private static PrintWriter writer = null;
 	private static AUTIdentifier aut_id = null;
 	private static AUTConfiguration aut_config = null;
-
+	private static java.nio.file.Path ElexisLog = Paths.get(System.getProperty("user.home") + "/elexis/logs/elexis-3.log");
 	public static void dbg_msg(String msg){
 		String timeStamp =
 			new SimpleDateFormat("dd.MM.yyyy HH:mm:ss").format(Calendar.getInstance().getTime());
@@ -214,6 +213,13 @@ public class AUT_run {
 	public static void setUp() throws Exception{
 		setupResultDir();
 		setupConfig();
+		 try {
+			java.nio.file.Files.delete(ElexisLog);
+			dbg_msg("Deleted old " + ElexisLog.toAbsolutePath());
+		} catch (IOException e) {
+			dbg_msg("Did not delete " + ElexisLog.toAbsolutePath());
+		}
+
 		URL input = AUT_run.class.getClassLoader().getResource(RuntimeContext.OM_Resource_Name); //$NON-NLS-1$
 		if (input == null) {
 			Assert.fail("could not open resource: " + RuntimeContext.OM_Resource_Name);
@@ -263,16 +269,17 @@ public class AUT_run {
 		dbg_msg("Request takeScreenshotActiveWindow " + fullname + " for " + imageName);
 		// m_aut.execute(app.activate(AUTActivationMethod.none), null);
 		try {
-		m_aut.execute(
-			app.takeScreenshotOfActiveWindow(fullname, 0, "rename", 100, true, 0, 0, 0, 0), null);
+			m_aut.execute(
+				app.takeScreenshotOfActiveWindow(fullname, 0, "rename", 100, true, 0, 0, 0, 0),
+				null);
 			boolean foundFile =
 				Files.exists(new File(config.get(Constants.RESULT_DIR) + "/" + imageName).toPath(),
 					LinkOption.NOFOLLOW_LINKS);
 			dbg_msg("Created " + fullname + " exists " + foundFile);
 			Assert.assertTrue(foundFile);
-		} catch ( ActionException e) {
-			dbg_msg("Action Exception " + fullname  + " reason: " + e.getMessage());
-//			Assert.fail("Unable to create screenshot " + imageName);
+		} catch (ActionException e) {
+			dbg_msg("Action Exception " + fullname + " reason: " + e.getMessage());
+			//			Assert.fail("Unable to create screenshot " + imageName);
 		}
 	}
 
@@ -288,6 +295,17 @@ public class AUT_run {
 		if (m_agent != null && m_agent.isConnected()) {
 			m_agent.disconnect();
 		}
+		saveLogs();
+	}
+
+	private void saveLogs(){
+	 java.nio.file.Path	 newdir = Paths.get(SAVE_RESULTS_DIR, "elexis-3.log");
+	 try {
+		java.nio.file.Files.copy(ElexisLog, newdir);
+	} catch (IOException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
 	}
 
 	public static void restartApp(){
