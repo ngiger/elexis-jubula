@@ -9,7 +9,7 @@ import org.eclipse.jubula.qa.api.converter.target.rcp.RuntimeContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ch.ngiger.jubula.elexiscore.testcases.autmodules.helpers.Elexis_SlowDown_Necessary;
+import ch.ngiger.jubula.elexiscore.testcases.autmodules.helpers.SlowDown_Necessary;
 import ch.ngiger.jubula.elexiscore.testcases.autmodules.helpers.OpenPerspectiveByName;
 import ch.ngiger.jubula.elexiscore.testcases.autmodules.helpers.ResetPerspective;
 import ch.ngiger.jubula.elexiscore.testcases.autmodules.helpers.Screenshot;
@@ -137,7 +137,7 @@ public class Import_Artikelstamm {
             );
 
         // SlowDown
-        new Elexis_SlowDown_Necessary(
+        new SlowDown_Necessary(
                 rtc
             ).execute(
             );
@@ -177,7 +177,7 @@ public class Import_Artikelstamm {
             ).execute(
             );
 
-        new Elexis_SlowDown_Necessary(
+        new SlowDown_Necessary(
                 rtc
             ).execute(
             );
@@ -197,7 +197,7 @@ public class Import_Artikelstamm {
                 "screenshots/import_artikelstamm/" + FILENAME + ".png"
             );
 
-        new Elexis_SlowDown_Necessary(
+        new SlowDown_Necessary(
                 rtc
             ).execute(
             );
@@ -267,7 +267,7 @@ public class Import_Artikelstamm {
             );
 
         // Give Elexis some time to show the drug
-        new Elexis_SlowDown_Necessary(
+        new SlowDown_Necessary(
                 rtc
             ).execute(
             );

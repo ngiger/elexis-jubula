@@ -31,6 +31,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import ch.ngiger.jubula.Messages;
+import ch.ngiger.jubula.elexiscore.OM;
 /** @author BREDEX GmbH */
 public class Views {
 	/** the logger */
@@ -46,20 +47,20 @@ public class Views {
 			mbr.selectMenuEntryByTextpath("Fenster.*/Ansicht.*/Other.*", Operator.matches), null);
 		Common.waitForWindow("Show View", Constants.ONE_SECOND);
 
-		org.eclipse.jubula.toolkit.concrete.components.TextInputComponent viewTxt = ConcreteComponents.createTextInputComponent(AUT_run.om.get("ShowView_SelView_cti"));
+		org.eclipse.jubula.toolkit.concrete.components.TextInputComponent viewTxt = ConcreteComponents.createTextInputComponent(OM.ShowView_SelView_cti);
 		viewTxt.replaceText(name);
-//		Common.synchronizedTextReplace("ShowView_SelView_cti", name);//$NON-NLS-1$
+//		Common.synchronizedTextReplace(OM.ShowView_SelView_cti, name);//$NON-NLS-1$
 
 		@SuppressWarnings("unchecked")
 		TableComponent tableComp =
-			ConcreteComponents.createTableComponent(AUT_run.om.get("ShowView_ViewTree_grc"));//$NON-NLS-1$
-		TreeTable tbl2 = SwtComponents.createTreeTable(AUT_run.om.get("ShowView_ViewTree_grc")) ;//$NON-NLS-1$
+			ConcreteComponents.createTableComponent(OM.ShowView_ViewTree_grc);//$NON-NLS-1$
+		TreeTable tbl2 = SwtComponents.createTreeTable(OM.ShowView_ViewTree_grc) ;//$NON-NLS-1$
 		tbl2.waitForComponent(Constants.ONE_SECOND, 10);
 		AUT_run.m_aut.execute(tableComp.click(new Integer(1), InteractionMode.primary), null);
 		// Ub_tre_selectNode_byTextpath
 		AUT_run.m_aut.execute(tbl2.selectNodeByTextpath(SearchType.absolute,new Integer(0), name, Operator.matches, 1, InteractionMode.primary, BinaryChoice.no), null);
 
-		Common.clickButton("ShowView_OkButton_grc");
+		Common.clickComponent(OM.ShowView_OkButton_grc);
 
 		// Wait a little bit (workaround for Codes/Codes
 		try {
@@ -78,11 +79,11 @@ public class Views {
 		int mayor = 0, minor = 0, nr_views = 0;
 		String new_pos = "first_time", new_pos2 = ""; //$NON-NLS-1$ //$NON-NLS-2$
 		MenuBarComponent mbr = SwtComponents.createMenu();
-		ComponentIdentifier<Tree> tree = AUT_run.om.get("ShowView_ViewTree_grc"); //$NON-NLS-1$
+		ComponentIdentifier<Tree> tree = OM.ShowView_ViewTree_grc; //$NON-NLS-1$
 		Assert.assertNotNull("ShowView_ViewTree_grc may not be null", tree);
 		TreeComponent treeComp =
 			org.eclipse.jubula.toolkit.concrete.ConcreteComponents.createTreeComponent(tree);
-		Common.clickButton("ShowView_OkButton_grc"); //$NON-NLS-1$
+		Common.clickComponent(OM.ShowView_OkButton_grc); //$NON-NLS-1$
 		try {
 			String window_title = Messages.getString("VisitAllViews.4"); //$NON-NLS-1$
 			while (true) {
@@ -91,7 +92,7 @@ public class Views {
 				minor = 0;
 				while (true) {
 					Common.openMenu(Messages.getString("VisitAllViews.7")); //$NON-NLS-1$
-					Common.waitForWindow(window_title, Constants.ONE_SECOND);
+					Common.waitForWindow(window_title);
 					AUT_run.dbg_msg("user 1"); //$NON-NLS-1$
 					minor++;
 					new_pos = Integer.toString(mayor) + "/" + Integer.toString(minor); //$NON-NLS-1$
@@ -106,19 +107,19 @@ public class Views {
 						AUT_run.m_aut.execute(treeComp.selectNodeByIndexpath(SearchType.absolute,
 							new Integer(0), new_pos, new Integer(1), InteractionMode.primary,
 							ValueSets.BinaryChoice.no), null);
-						Common.clickButton("ShowView_OkButton_grc"); //$NON-NLS-1$
-						Common.waitForWindow(window_title, Constants.ONE_SECOND);
+						Common.clickComponent(OM.ShowView_OkButton_grc); //$NON-NLS-1$
+						Common.waitForWindow(window_title);
 						Thread.sleep(Constants.ONE_SECOND); // give view time to stabilize, eg. load a web page/patient
 						// Maximize window by pressing Ctrl-M
 						AUT_run.m_aut.execute(AUT_run.app.externalKeyCombination(new Modifier[] {
 							Modifier.control
 						}, "m"), null); //$NON-NLS-1$
-						runner.takeScreenshotActiveWindow("view_" + new_pos2 + ".png"); //$NON-NLS-1$ //$NON-NLS-2$
+						AUT_run.takeScreenshotActiveWindow("view_" + new_pos2 + ".png"); //$NON-NLS-1$ //$NON-NLS-2$
 						nr_views++;
 					} catch (ComponentNotFoundException e) {
 						AUT_run.dbg_msg("ComponentNotFoundException with " + new_pos); //$NON-NLS-1$
 						if (nr_views > 20) {
-							runner.takeScreenshotActiveWindow(
+							AUT_run.takeScreenshotActiveWindow(
 								"list_too_long_after_" + nr_views + ".png"); //$NON-NLS-1$ //$NON-NLS-2$
 							Assert.fail("We cannot handle very long lists of vies"); //$NON-NLS-1$
 							// breaks when nr_views == 52
@@ -133,8 +134,8 @@ public class Views {
 							return; // No more entries found for mayor
 						}
 						minor = 0;
-						Common.clickButton("ShowView_OkButton_grc"); //$NON-NLS-1$
-						Common.waitForWindowClose(window_title, Constants.ONE_SECOND);
+						Common.clickComponent(OM.ShowView_OkButton_grc); //$NON-NLS-1$
+						Common.waitForWindowClose(window_title);
 						break;
 					}
 				}

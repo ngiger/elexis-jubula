@@ -23,6 +23,8 @@ import org.eclipse.jubula.toolkit.swt.SwtComponents;
 import org.eclipse.jubula.toolkit.swt.components.ToolItem;
 import org.junit.Assert;
 
+import ch.ngiger.jubula.elexiscore.OM;
+
 /** @author Niklaus Giger niklaus.giger@member.fsf.org */
 public class Artikelstamm {
 	static public String checkDefaultArtiketlstamm(String filename){
@@ -51,10 +53,10 @@ public class Artikelstamm {
 
 		AUT_run.dbg_msg("Importing " + stamm.getAbsolutePath()); //$NON-NLS-1$
 		AUT_run.takeScreenshotActiveWindow("import_artikelstamm/p_artikel.png"); //$NON-NLS-1$
-		TabComponent ctab = SwtComponents.createTabComponent(AUT_run.om.get("CTab_Artikel")); //$NON-NLS-1$
+		TabComponent ctab = SwtComponents.createTabComponent(OM.CTab_Artikel); //$NON-NLS-1$
 		AUT_run.m_aut.execute(ctab.selectTabByValue("Artikelstamm", Operator.equals), null);
 
-		ToolItem toolbarMenu = SwtComponents.createToolItem(AUT_run.om.get("Artikelstamm_ToolbarMenu"));
+		ToolItem toolbarMenu = SwtComponents.createToolItem(OM.Artikelstamm_ToolbarMenu);
 
 		AUT_run.takeScreenshotActiveWindow("import_artikelstamm/tab_artikel.png"); //$NON-NLS-1$
 		Common.sleep1second();
@@ -63,10 +65,10 @@ public class Artikelstamm {
 		String import_name = "Datenimport";
 		Common.waitForWindow(import_name, Constants.ONE_SECOND);
 
-		Common.synchronizedTextReplace("Artikelstamm_import_file", stamm.getAbsolutePath()); //$NON-NLS-1$
+		Common.synchronizedTextReplace(OM.Artikelstamm_import_file, stamm.getAbsolutePath()); //$NON-NLS-1$
 		AUT_run.takeScreenshotActiveWindow("import_artikelstamm/" + stamm.getName() + ".png"); //$NON-NLS-1$
 
-		Common.clickButton("CreatePatient_OkButton_grc"); //$NON-NLS-1$
+		Common.clickComponent(OM.CreatePatient_OkButton_grc); //$NON-NLS-1$
 		// Importing the artikelstamm may take a long time
 		Common.waitForWindowClose(import_name, 120 * Constants.ONE_SECOND);
 		/*
@@ -91,17 +93,17 @@ public class Artikelstamm {
 		AUT_run.takeScreenshotActiveWindow("import_artikelstamm/Artikelstamm_Import_done.png"); //$NON-NLS-1$
 
 		// Enter Aspirin to search
-		Common.synchronizedTextReplace("Artikelstamm_Bezeichung_txt", "Aspirin"); //$NON-NLS-1$
+		Common.synchronizedTextReplace(OM.Artikelstamm_Bezeichung_txt, "Aspirin"); //$NON-NLS-1$
 
 		// Refresh Artikelstamm
-		Common.clickButton("Artikelstamm_refresh_btn"); //$NON-NLS-1$
+		Common.clickComponent(OM.Artikelstamm_refresh_btn); //$NON-NLS-1$
 
 		// Give Elexis some time to show the drug
 		Common.sleep1second();
 
 		// Select first article
 		TableComponent artTabl =
-			ConcreteComponents.createTableComponent(AUT_run.om.get("Artikelstamm_Table_1_tbl"));
+			ConcreteComponents.createTableComponent(OM.Artikelstamm_Table_1_tbl);
 		AUT_run.m_aut.execute(artTabl.clickInComponent(new Integer(1), InteractionMode.primary,
 			new Integer(50), Unit.percent, new Integer(50), Unit.percent), null);
 

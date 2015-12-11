@@ -34,6 +34,7 @@ import org.eclipse.jubula.toolkit.enums.ValueSets.AUTActivationMethod;
 import org.eclipse.jubula.toolkit.rcp.config.RCPAUTConfiguration;
 import org.eclipse.jubula.toolkit.swt.SwtComponents;
 import org.eclipse.jubula.tools.AUTIdentifier;
+import org.eclipse.jubula.tools.ComponentIdentifier;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -227,6 +228,17 @@ public class AUT_run {
 			return;
 		}
 		om = MakeR.createObjectMapping(input.openStream());
+		// String[] ids_to_test = new String[] {"Install_SW_Details"};
+		@SuppressWarnings("rawtypes")
+		ComponentIdentifier id1 = om.get("Install_SW_Details");
+		dbg_msg("id rbi" + id1);
+		Assert.assertNotNull(id1);
+
+		@SuppressWarnings("rawtypes")
+		ComponentIdentifier id2 = om.get("Cases_Neuer_Fall_tbi");
+		dbg_msg("id2 " + id2);
+		Assert.assertNotNull(id2);
+
 		/* Connecting to external Jubula AUT Agent which
 		   must be started manually BEFORE test execution! */
 		String msg = "AUT_run.setup port : " + Constants.AGENT_PORT + " is: "

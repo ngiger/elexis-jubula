@@ -34,7 +34,7 @@ public class RuntimeContext {
     /** the logger */
     private static Logger log = LoggerFactory
             .getLogger(RuntimeContext.class);
-    public static final String OM_Resource_Name = "om.properties";
+    public static final String OM_Resource_Name = "rsc/om.properties";
     public static final String DEFAULT_ARTIKELSTAMM = "rsc/artikelstamm_first_v3.xml";
 
     private static class ContinueExecutionHandler

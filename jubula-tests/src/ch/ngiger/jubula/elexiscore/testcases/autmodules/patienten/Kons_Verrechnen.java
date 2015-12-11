@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ch.ngiger.jubula.elexiscore.testcases.autmodules.helpers.ClickInMiddleOfComponent;
-import ch.ngiger.jubula.elexiscore.testcases.autmodules.helpers.Elexis_SlowDown_Necessary;
+import ch.ngiger.jubula.elexiscore.testcases.autmodules.helpers.SlowDown_Necessary;
 import ch.ngiger.jubula.elexiscore.testcases.autmodules.helpers.OpenViewByName;
 import ch.ngiger.jubula.elexiscore.testcases.autmodules.helpers.Screenshot;
 import ch.ngiger.jubula.elexiscore.testcases.autmodules.helpers.SelectTopLeftCell;
@@ -58,7 +58,7 @@ public class Kons_Verrechnen {
             ).execute(
             );
 
-        new Elexis_SlowDown_Necessary(
+        new SlowDown_Necessary(
                 rtc
             ).execute(
             );

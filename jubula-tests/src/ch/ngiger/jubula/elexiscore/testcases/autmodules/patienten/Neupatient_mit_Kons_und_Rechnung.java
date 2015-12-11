@@ -21,7 +21,7 @@ import ch.ngiger.jubula.elexiscore.testcases.autmodules.patienten.SelectPatientF
 import ch.ngiger.jubula.elexiscore.testcases.autmodules.patienten.Fall_Erfassen;
 import ch.ngiger.jubula.elexiscore.testcases.autmodules.patienten.Konsultation_Erfassen;
 import ch.ngiger.jubula.elexiscore.testcases.autmodules.patienten.MedikamentHinzufuegen;
-import ch.ngiger.jubula.elexiscore.testcases.autmodules.helpers.Elexis_SlowDown_Necessary;
+import ch.ngiger.jubula.elexiscore.testcases.autmodules.helpers.SlowDown_Necessary;
 import ch.ngiger.jubula.elexiscore.testcases.autmodules.patienten.Kons_Verrechnen;
 import ch.ngiger.jubula.elexiscore.testcases.autmodules.helpers.RestartElexisAndImportArtikelstamm;
 
@@ -91,8 +91,8 @@ public class Neupatient_mit_Kons_und_Rechnung {
         
         new Konsultation_Erfassen(
                 rtc,
-                rtc.getIdentifier("Elexis300qualifier00737_CTabFolder_2_tpn"),
-                rtc.getIdentifier("Elexis300qualifier0070_Konsultation_ToolItem_1_tbi")
+                rtc.getIdentifier("CTabFolder_2_tpn"),
+                rtc.getIdentifier("Konsultation_ToolItem_1_tbi")
             ).execute(
                 "Erste Konsultation wegen Molemax"
             );
@@ -103,7 +103,7 @@ public class Neupatient_mit_Kons_und_Rechnung {
                 "Aspirin"
             );
         
-        new Elexis_SlowDown_Necessary(
+        new SlowDown_Necessary(
                 rtc
             ).execute(
             );

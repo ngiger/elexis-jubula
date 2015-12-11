@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import ch.ngiger.jubula.elexiscore.testcases.autmodules.contacts.Kontakt_Auswahl_by_Familyname;
 import ch.ngiger.jubula.elexiscore.testcases.autmodules.helpers.ClickInMiddleOfComponent;
-import ch.ngiger.jubula.elexiscore.testcases.autmodules.helpers.Elexis_SlowDown_Necessary;
+import ch.ngiger.jubula.elexiscore.testcases.autmodules.helpers.SlowDown_Necessary;
 import ch.ngiger.jubula.elexiscore.testcases.autmodules.helpers.SelectTopLeftCell;
 import ch.ngiger.jubula.elexiscore.testcases.unboundmodules.SynchronizedClick;
 import ch.ngiger.jubula.elexiscore.testcases.unboundmodules.SynchronizedReplaceText;
@@ -138,7 +138,7 @@ public class Fall_Erfassen {
                 "21.04.2014"
             );
 
-        new Elexis_SlowDown_Necessary(
+        new SlowDown_Necessary(
                 rtc
             ).execute(
             );
@@ -163,7 +163,7 @@ public class Fall_Erfassen {
                 100
             );
 
-        new Elexis_SlowDown_Necessary(
+        new SlowDown_Necessary(
                 rtc
             ).execute(
             );
@@ -175,7 +175,7 @@ public class Fall_Erfassen {
             ).execute(
             );
 
-        new Elexis_SlowDown_Necessary(
+        new SlowDown_Necessary(
                 rtc
             ).execute(
             );

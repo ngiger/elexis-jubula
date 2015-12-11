@@ -7,7 +7,7 @@ import org.eclipse.jubula.qa.api.converter.target.rcp.RuntimeContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ch.ngiger.jubula.elexiscore.testcases.autmodules.helpers.Elexis_SlowDown_Necessary;
+import ch.ngiger.jubula.elexiscore.testcases.autmodules.helpers.SlowDown_Necessary;
 import ch.ngiger.jubula.elexiscore.testcases.unboundmodules.SynchronizedClick;
 import ch.ngiger.jubula.elexiscore.testcases.unboundmodules.SynchronizedReplaceText;
 import ch.ngiger.jubula.elexiscore.testcases.unboundmodules.Ub_grc_drop;
@@ -48,7 +48,7 @@ public class MedikamentHinzufuegen {
         // Select tab "Artikelstamm"
         new Ub_tbc_selectTab_byValue(
                 rtc,
-                rtc.getIdentifier("Elexis300qualifier0070_CTabFolder_1_tpn")
+                rtc.getIdentifier("CTabFolder_1_tpn")
             ).execute(
                 "Artikelstamm"
                 ,
@@ -66,12 +66,12 @@ public class MedikamentHinzufuegen {
         // Refresh Artikel
         new Ub_grc_clickLeft_single(
                 rtc,
-                rtc.getIdentifier("Elexis300qualifier0074_Artikelstamm_Alle_ToolItem_2_tbi")
+                rtc.getIdentifier("Artikelstamm_Alle_ToolItem_2_tbi")
             ).execute(
             );
 
         // Wait Some time
-        new Elexis_SlowDown_Necessary(
+        new SlowDown_Necessary(
                 rtc
             ).execute(
             );
@@ -137,7 +137,7 @@ public class MedikamentHinzufuegen {
             ).execute(
             );
 
-        new Elexis_SlowDown_Necessary(
+        new SlowDown_Necessary(
                 rtc
             ).execute(
             );

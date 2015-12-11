@@ -25,6 +25,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import ch.ngiger.jubula.Messages;
+import ch.ngiger.jubula.elexiscore.OM;
 
 /** @author BREDEX GmbH */
 public class PreferencePages {
@@ -35,7 +36,7 @@ public class PreferencePages {
 
 	private boolean gotoPreferencPage(AUT_run runner, String position) {
 		String window_title = Messages.getString("VisitAllPreferencePages.4"); //$NON-NLS-1$
-		Common.waitForWindowClose(window_title, Constants.ONE_SECOND);
+		Common.waitForWindowClose(window_title);
 		Common.waitForElexisMainWindow(Constants.ONE_SECOND);
 		Common.openMenu(Messages.getString("VisitAllPreferencePages.7")); //$NON-NLS-1$
 		try {
@@ -57,13 +58,13 @@ public class PreferencePages {
 	@Test
 	public void visit_all_preferencePages(AUT_run runner) throws Exception{
 		String new_pos = "first_time", new_pos2 = ""; //$NON-NLS-1$ //$NON-NLS-2$
-		ComponentIdentifier<Tree> tree = AUT_run.om.get("Preferences_ItemChoice_tre"); //$NON-NLS-1$
+		ComponentIdentifier<Tree> tree = OM.Preferences_ItemChoice_tre; //$NON-NLS-1$
 		treeComp =
 			org.eclipse.jubula.toolkit.concrete.ConcreteComponents.createTreeComponent(tree);
-		ComponentIdentifier<Button> ok_btn = AUT_run.om.get("Preferences_OkButton_grc"); //$NON-NLS-1$
-		ComponentIdentifier<Button> apply_btn = AUT_run.om.get("Preferences_ApplyButton_grc"); //$NON-NLS-1$
-		ComponentIdentifier<Button> cancel_btn = AUT_run.om.get("Preferences_Cancel_btn"); //$NON-NLS-1$
-		ComponentIdentifier<Button> reset_btn = AUT_run.om.get("ResetPerspektive_OkButton_grc"); //$NON-NLS-1$
+		ComponentIdentifier<Button> ok_btn = OM.Preferences_OkButton_grc; //$NON-NLS-1$
+		ComponentIdentifier<Button> apply_btn = OM.Preferences_ApplyButton_grc; //$NON-NLS-1$
+		ComponentIdentifier<Button> cancel_btn = OM.Preferences_Cancel_btn; //$NON-NLS-1$
+		ComponentIdentifier<Button> reset_btn = OM.ResetPerspektive_OkButton_grc; //$NON-NLS-1$
 		Assert.assertNotNull("Preferences_OkButton_grc may not be null", ok_btn);
 		Assert.assertNotNull("Preferences_ApplyButton_grc may not be null", apply_btn);
 		Assert.assertNotNull("Preferences_Cancel_btn may not be null", cancel_btn);

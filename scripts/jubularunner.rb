@@ -107,7 +107,7 @@ class JubulaRunner
       /usr/bin/metacity-message disable-keybindings
       /usr/bin/xclock &
     "
-      start_xvfb = 'Xvfb :1 -screen 5 8192x4096x24 -nolisten tcp'
+      start_xvfb = 'Xvfb :1 -screen 5 1280x1024x24 -nolisten tcp'
       store_cmd('start_xvfb.sh', start_xvfb)
       @docker.start_docker('./start_xvfb.sh', 'DISPLAY=:1.5')
       sleep(0.5)

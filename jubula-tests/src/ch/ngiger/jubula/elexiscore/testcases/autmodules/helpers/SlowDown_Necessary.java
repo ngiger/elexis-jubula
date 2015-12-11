@@ -20,14 +20,14 @@ import ch.ngiger.jubula.unbound_modules_concrete.testcases.actionsbasic.wait.app
 
 @SrcNode(UUID = "2cc82a65d808499fb219408a83968851",
          type = NodeType.TEST_CASE)
-public class Elexis_SlowDown_Necessary {
+public class SlowDown_Necessary {
 
     /** the logger */
-    private static Logger log = LoggerFactory.getLogger(Elexis_SlowDown_Necessary.class);
+    private static Logger log = LoggerFactory.getLogger(SlowDown_Necessary.class);
     
     private RuntimeContext rtc;
     
-    public Elexis_SlowDown_Necessary (RuntimeContext _rtc
+    public SlowDown_Necessary (RuntimeContext _rtc
     ) {
         rtc = _rtc;
     }

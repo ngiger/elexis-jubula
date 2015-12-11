@@ -9,7 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ch.ngiger.jubula.elexiscore.testcases.autmodules.helpers.ClickInMiddleOfComponent;
-import ch.ngiger.jubula.elexiscore.testcases.autmodules.helpers.Elexis_SlowDown_Necessary;
+import ch.ngiger.jubula.elexiscore.testcases.autmodules.helpers.SlowDown_Necessary;
 import ch.ngiger.jubula.elexiscore.testcases.autmodules.helpers.Screenshot;
 import ch.ngiger.jubula.elexiscore.testcases.autmodules.helpers.WaitForElexisMainWindow;
 import ch.ngiger.jubula.elexiscore.testcases.unboundmodules.SynchronizedClick;
@@ -26,22 +26,22 @@ public class Konsultation_Erfassen {
     private static Logger log = LoggerFactory.getLogger(Konsultation_Erfassen.class);
 
     private RuntimeContext rtc;
-    private ComponentIdentifier Elexis300qualifier00737_CTabFolder_2_tpn;
+    private ComponentIdentifier CTabFolder_2_tpn;
 
-    private ComponentIdentifier Elexis300qualifier0070_Konsultation_ToolItem_1_tbi;
+    private ComponentIdentifier Konsultation_ToolItem_1_tbi;
 
 
     public Konsultation_Erfassen (RuntimeContext _rtc,
 
-        ComponentIdentifier _Elexis300qualifier00737_CTabFolder_2_tpn,
+        ComponentIdentifier _CTabFolder_2_tpn,
 
-        ComponentIdentifier _Elexis300qualifier0070_Konsultation_ToolItem_1_tbi
+        ComponentIdentifier _Konsultation_ToolItem_1_tbi
     ) {
         rtc = _rtc;
 
-        Elexis300qualifier00737_CTabFolder_2_tpn = _Elexis300qualifier00737_CTabFolder_2_tpn;
+        CTabFolder_2_tpn = _CTabFolder_2_tpn;
 
-        Elexis300qualifier0070_Konsultation_ToolItem_1_tbi = _Elexis300qualifier0070_Konsultation_ToolItem_1_tbi;
+        Konsultation_ToolItem_1_tbi = _Konsultation_ToolItem_1_tbi;
     }
 
     public void execute(
@@ -58,7 +58,7 @@ public class Konsultation_Erfassen {
                 "screenshots/Kons_erfassen_start.png"
             );
 
-        new Elexis_SlowDown_Necessary(
+        new SlowDown_Necessary(
                 rtc
             ).execute(
             );
@@ -66,14 +66,14 @@ public class Konsultation_Erfassen {
         // Konsfenster auswählen
         new Ub_tbc_selectTab_byValue(
                 rtc,
-                rtc.getIdentifier("Elexis300qualifier00725_CTabFolder_2_tpn")
+                rtc.getIdentifier("CTabFolder_2_tpn")
             ).execute(
                 ".*Konsultation.*"
                 ,
                 "matches"
             );
 
-        new Elexis_SlowDown_Necessary(
+        new SlowDown_Necessary(
                 rtc
             ).execute(
             );
@@ -100,7 +100,7 @@ public class Konsultation_Erfassen {
                 "screenshots/Kons_create_tbi_pressed.png"
             );
 
-        new Elexis_SlowDown_Necessary(
+        new SlowDown_Necessary(
                 rtc
             ).execute(
             );
@@ -116,7 +116,7 @@ public class Konsultation_Erfassen {
         // Neue Kons via Context Menu
         new Ub_grc_selectContextMenuEntry_byTextpath(
                 rtc,
-                rtc.getIdentifier("Elexis300qualifier0070_Konsultation_ToolItem_1_tbi")
+                rtc.getIdentifier("Konsultation_ToolItem_1_tbi")
             ).execute(
                 "Neue Konsultation"
                 ,
@@ -143,7 +143,7 @@ public class Konsultation_Erfassen {
         //// Tab Konsultationen öffnen
         //new Ub_tbc_selectTab_byValue(
                 //rtc,
-                //rtc.getIdentifier("Elexis300qualifier00737_CTabFolder_2_tpn")
+                //rtc.getIdentifier("CTabFolder_2_tpn")
             //).execute(
                 //".*Konsult.*"
                 //,
@@ -254,7 +254,7 @@ public class Konsultation_Erfassen {
 
         // Hint: this line is commented out because its correspondent node in the ITE was inactive
         //aut.execute(
-            //org.eclipse.jubula.toolkit.concrete.ConcreteComponents.createTabComponent(Elexis300qualifier00737_CTabFolder_2_tpn)
+            //org.eclipse.jubula.toolkit.concrete.ConcreteComponents.createTabComponent(CTabFolder_2_tpn)
                 //.selectTabByValue(
                     //"*Konsultation"
                     //,
@@ -264,7 +264,7 @@ public class Konsultation_Erfassen {
 
         // Hint: this line is commented out because its correspondent node in the ITE was inactive
         //aut.execute(
-            //org.eclipse.jubula.toolkit.swt.SwtComponents.createToolItem(Elexis300qualifier0070_Konsultation_ToolItem_1_tbi)
+            //org.eclipse.jubula.toolkit.swt.SwtComponents.createToolItem(Konsultation_ToolItem_1_tbi)
                 //.selectContextMenuEntryByTextpath(
                     //"Neue Konsultation"
                     //,

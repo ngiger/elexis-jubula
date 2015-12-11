@@ -19,7 +19,7 @@ import ch.ngiger.jubula.elexiscore.CTDS;
 import ch.ngiger.jubula.unbound_modules_concrete.testcases.actionsbasic.wait.application.waitforwindow.Ub_app_waitForWindow;
 import ch.ngiger.jubula.elexiscore.testcases.unboundmodules.SynchronizedReplaceText;
 import ch.ngiger.jubula.elexiscore.testcases.autmodules.helpers.SelectTopLeftCell;
-import ch.ngiger.jubula.elexiscore.testcases.autmodules.helpers.Elexis_SlowDown_Necessary;
+import ch.ngiger.jubula.elexiscore.testcases.autmodules.helpers.SlowDown_Necessary;
 import ch.ngiger.jubula.elexiscore.testcases.unboundmodules.SynchronizedClick;
 import ch.ngiger.jubula.unbound_modules_concrete.testcases.actionsbasic.wait.application.waitforwindowtoclose.Ub_app_waitForWindowToClose;
 
@@ -73,7 +73,7 @@ public class Kontakt_Auswahl_by_Familyname {
             ).execute(
             );
         
-        new Elexis_SlowDown_Necessary(
+        new SlowDown_Necessary(
                 rtc
             ).execute(
             );

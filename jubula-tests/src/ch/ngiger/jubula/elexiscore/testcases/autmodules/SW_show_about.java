@@ -110,7 +110,7 @@ public class SW_show_about {
         // Click Plug-Ins tab
         new Ub_tbc_selectTab_byValue(
                 rtc,
-                rtc.getIdentifier("Elexis300a201405151339_AboutElexisOpenSource_ElexisOpenSourceInstallatio0_TabFolder_1_tpn")
+                rtc.getIdentifier("AboutElexisOpenSource_ElexisOpenSourceInstallatio0_TabFolder_1_tpn")
             ).execute(
                 "Installierte Software"
                 ,
@@ -127,7 +127,7 @@ public class SW_show_about {
         // Click Plug-Ins tab
         new Ub_tbc_selectTab_byValue(
                 rtc,
-                rtc.getIdentifier("Elexis300a201405151339_AboutElexisOpenSource_ElexisOpenSourceInstallatio0_TabFolder_1_tpn")
+                rtc.getIdentifier("AboutElexisOpenSource_ElexisOpenSourceInstallatio0_TabFolder_1_tpn")
             ).execute(
                 "Update Chronik"
                 ,
@@ -144,7 +144,7 @@ public class SW_show_about {
         // Click Plug-Ins tab
         new Ub_tbc_selectTab_byValue(
                 rtc,
-                rtc.getIdentifier("Elexis300a201405151339_AboutElexisOpenSource_ElexisOpenSourceInstallatio0_TabFolder_1_tpn")
+                rtc.getIdentifier("AboutElexisOpenSource_ElexisOpenSourceInstallatio0_TabFolder_1_tpn")
             ).execute(
                 "Plug-ins"
                 ,
@@ -161,7 +161,7 @@ public class SW_show_about {
         // Click Configuration tab
         new Ub_tbc_selectTab_byValue(
                 rtc,
-                rtc.getIdentifier("Elexis300a201405151339_AboutElexisOpenSource_ElexisOpenSourceInstallatio0_TabFolder_1_tpn")
+                rtc.getIdentifier("AboutElexisOpenSource_ElexisOpenSourceInstallatio0_TabFolder_1_tpn")
             ).execute(
                 "Configuration"
                 ,

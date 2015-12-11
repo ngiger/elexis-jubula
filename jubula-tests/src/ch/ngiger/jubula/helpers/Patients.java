@@ -16,20 +16,31 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.List;
 
+import org.eclipse.jubula.client.exceptions.ActionException;
+import org.eclipse.jubula.toolkit.base.components.GraphicsComponent;
 import org.eclipse.jubula.toolkit.concrete.ConcreteComponents;
 import org.eclipse.jubula.toolkit.concrete.components.ComboComponent;
+import org.eclipse.jubula.toolkit.concrete.components.TabComponent;
+import org.eclipse.jubula.toolkit.concrete.components.TableComponent;
+import org.eclipse.jubula.toolkit.enums.ValueSets.BinaryChoice;
 import org.eclipse.jubula.toolkit.enums.ValueSets.InteractionMode;
 import org.eclipse.jubula.toolkit.enums.ValueSets.Operator;
 import org.eclipse.jubula.toolkit.enums.ValueSets.SearchType;
+import org.eclipse.jubula.toolkit.enums.ValueSets.Unit;
 import org.eclipse.jubula.toolkit.swt.SwtComponents;
 import org.eclipse.jubula.toolkit.swt.components.ToolItem;
 import org.junit.Test;
 
 import com.google.gson.Gson;
 
+import ch.ngiger.jubula.elexiscore.OM;
+
 /** @author BREDEX GmbH */
 public class Patients {
 	/** the logger */
+
+	private String family_name;
+
 	// When using a logger the output is not shown in the maven output
 	// Don't know where it disappears
 	// private static Logger log = LoggerFactory.getLogger(VisitAllViews.class);
@@ -191,40 +202,196 @@ public class Patients {
 	 */
 	public void createPatient(String familyName, String firstName, String birthday)
 		throws Exception{
+		Perspectives.openPatientenPerspective();
 		//testLoadFromStream();
-
+		family_name = familyName;
 		Views.openViewByName("Daten/Patienten");
 
 		// Click in View Patient.Namen auswählen
-		//		TextInputComponent txt = SwtComponents.createTextInputComponent(AUT_run.om.get("Patienten_SelectName_grc"));
+		//		TextInputComponent txt = SwtComponents.createTextInputComponent(OM.Patienten_SelectName_grc);
 		//		AUT_run.m_aut.execute(txt.click(new Integer(1),InteractionMode.primary), null);
-		Common.synchronizedTextReplace("Patienten_SelectName_grc", familyName);//$NON-NLS-1$
+		Common.synchronizedTextReplace(OM.Patienten_SelectName_grc, familyName);//$NON-NLS-1$
 
 		// Click create Patient
-		ToolItem tbi = SwtComponents.createToolItem(AUT_run.om.get("Patient_create_tbi"));
-		AUT_run.m_aut.execute(tbi.click(new Integer(1), InteractionMode.primary), null);
+		ToolItem tbi = SwtComponents.createToolItem(OM.Patient_create_tbi);
 		AUT_run.m_aut.execute(tbi.checkEnablement(true), null);
+		AUT_run.m_aut.execute(tbi.click(new Integer(1), InteractionMode.primary), null);
 
 		// Wait for create patient window
-		Common.waitForWindow("Patient erfassen.*", Constants.ONE_SECOND);
+		Common.waitForWindow("Patient erfassen.*");
+		AUT_run.takeScreenshotActiveWindow("create_patient_a.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
 		// Select sex by value
 		ComboComponent choose =
-			ConcreteComponents.createComboComponent(AUT_run.om.get("CreatePatient_ChooseSexe_cbx"));
+			ConcreteComponents.createComboComponent(OM.CreatePatient_ChooseSexe_cbx);
 		choose.selectEntryByValue("m", Operator.equals, SearchType.absolute);
 
-		//// Enter family name
-		Common.synchronizedTextReplace("CreatePatient_FamilyName_cti", familyName);//$NON-NLS-1$
+		// Enter family name
+		Common.synchronizedTextReplace(OM.CreatePatient_FamilyName_cti, familyName);//$NON-NLS-1$
 
-		//// Enter given name
-		Common.synchronizedTextReplace("CreatePatient_ChristianName_cti", firstName);//$NON-NLS-1$
+		// Enter given name
+		Common.synchronizedTextReplace(OM.CreatePatient_ChristianName_cti, firstName);//$NON-NLS-1$
 
 		// Enter birthday
-		Common.synchronizedTextReplace("CreatePatient_Birthday_cti", birthday);//$NON-NLS-1$
+		Common.synchronizedTextReplace(OM.CreatePatient_Birthday_cti, birthday);//$NON-NLS-1$
 
 		// Click Okay
-		Common.clickButton("CreatePatient_OkButton_grc"); //$NON-NLS-1$
+		Common.clickComponent(OM.CreatePatient_OkButton_grc); //$NON-NLS-1$
 
-		Common.waitForWindowClose("Patient erfassen.*", Constants.ONE_SECOND);
+		AUT_run.takeScreenshotActiveWindow("create_patient_done.png"); //$NON-NLS-1$ //$NON-NLS-2$
+		Common.waitForWindowClose("Patient erfassen.*");
+	}
+
+	public void selectPatient(String familyName, String first_name){
+		// Enter family name
+		Perspectives.openPatientenPerspective();
+		Common.synchronizedTextReplace(OM.Patienten_SelectName_grc, familyName);//$NON-NLS-1$
+		Common.clickInMiddleOfComponent(OM.Pat_List_tbl);
+		@SuppressWarnings("unchecked")
+		TableComponent tbl = ConcreteComponents.createTableComponent(OM.Pat_List_tbl);
+		tbl.selectCell("1", Operator.equals, "1", Operator.equals, new Integer(1), new Integer(50),
+			Unit.percent, new Integer(50), Unit.percent, BinaryChoice.no, InteractionMode.primary);
+
+		// Enter given name
+		// TODO: Common.synchronizedTextReplace(OM.CreatePatient_ChristianName_cti, firstName);//$NON-NLS-1$
+		tbl.selectCell("1", Operator.equals, "1", Operator.equals, new Integer(1), new Integer(50),
+			Unit.percent, new Integer(50), Unit.percent, BinaryChoice.no, InteractionMode.primary);
+	}
+
+	public void selectContact(String familyName){
+		// Wait for "Kontakt auswählen" window
+		String window_title = "Kontakt ausw.*";
+		Common.waitForWindow(window_title);
+
+		// Enter Familie name in contact chooser
+		Common.synchronizedTextReplace(OM.Kontaktauswählen_Bezeichung_1_name_txf, familyName);//$NON-NLS-1$
+
+		Common.selectTopLeftCell(OM.Kontaktauswählen_Table_2_tbl);
+
+		Common.sleep1second();
+		Common.clickComponent(OM.SW_Available_Sites_Okay_btn); //$NON-NLS-1$
+
+		Common.waitForWindowClose(window_title);
+	}
+
+	public void createCase(String invoice_method, String reason, String invoice_to_name,
+		String invoice_number, String date){
+		String window_title = ".*Neuer Fall.*";
+		Perspectives.openPatientenPerspective();
+
+		// Click in table cases
+		Common.clickInMiddleOfComponent(OM.Cases_Table_1_tbl);
+
+		// Click on Neuer Fall
+		@SuppressWarnings("unchecked")
+		ToolItem tbi = SwtComponents.createToolItem(OM.Cases_New_Case_tbi);
+		AUT_run.m_aut.execute(tbi.checkEnablement(true), null);
+		AUT_run.m_aut.execute(tbi.click(new Integer(1), InteractionMode.primary), null);
+
+		// Wait for window "Neuer Fall"
+		Common.waitForWindow(window_title);
+
+		// TODO: Create real insurance number
+		Common.synchronizedTextReplace(OM.NeuerFall_Versicherungs_Nummer_txf, invoice_number);//$NON-NLS-1$
+		Common.synchronizedTextReplace(OM.NeuerFall_Text_1_txf, date);//$NON-NLS-1$ //$NON-NLS-2$
+		Common.sleep1second();
+
+		// Abrechnungsmethode auswählen
+		@SuppressWarnings("unchecked")
+		ComboComponent method_cbc =
+			SwtComponents.createComboComponent(OM.Neuer_Fall_Abrechnungsmethode_cbc);
+		AUT_run.m_aut.execute(
+			method_cbc.selectEntryByValue(invoice_method, Operator.equals, SearchType.absolute),
+			null);
+
+		// Versicherungsgrund auswählen
+		if (Common.componentIsEnabled(OM.Neuer_Fall_Versichicherungsgrund_cbc)) {
+			@SuppressWarnings("unchecked")
+			ComboComponent reason_cbc =
+				SwtComponents.createComboComponent(OM.Neuer_Fall_Versichicherungsgrund_cbc);
+			try {
+				AUT_run.m_aut.execute(reason_cbc.selectEntryByValue(invoice_method, Operator.equals,
+					SearchType.absolute), null);
+			} catch (ActionException e) {
+				AUT_run.dbg_msg(
+					"Unable to set invoice_method" + invoice_method + " e " + e.getMessage());
+			}
+		}
+
+		// Press Leistungsträger
+		Common.clickComponent(OM.NeuerFall_Kostentrager_btn); //$NON-NLS-1$
+
+		selectContact(invoice_to_name);
+		AUT_run.takeScreenshotActiveWindow("create_case_done.png"); //$NON-NLS-1$
+
+		Common.clickComponent(OM.NeuerFall_OK_btn); //$NON-NLS-1$
+		Common.waitForWindowClose(window_title);
+		Common.sleep1second();
+
+	}
+
+	/*
+	 * Creates a consultation. We assume that a patient is selected and that
+	 * we already selecting the corresponding case
+	 * @param: date of the consultation
+	 * @param: text of consultation
+	 * @param: free_text in the kons_free text
+	 */
+	public void createConsultation(String info, String free_text){
+		String second_window = "Zweite Konsultation für heute?";
+		@SuppressWarnings("unchecked")
+		TabComponent tab = SwtComponents.createCTabFolder(OM.CTabFolder_2_tpn);
+		AUT_run.m_aut.execute(tab.selectTabByValue(".*Konsultation.*", Operator.matches), null);
+		Common.sleep1second(); // Opening a consultation may take some time
+		Common.clickComponent(OM.Kons_create_tbi);
+		AUT_run.takeScreenshotActiveWindow("cons/create_tbi_pressed.png"); //$NON-NLS-1$
+
+		// Create second consultation on same day
+		@SuppressWarnings("unchecked")
+		GraphicsComponent comp =
+				org.eclipse.jubula.toolkit.base.AbstractComponents.createGraphicsComponent(OM.Konsultation_ToolItem_1_tbi);
+		comp.selectContextMenuEntryByTextpath("Neue Konsultation", Operator.matches,InteractionMode.tertiary);
+
+		Common.waitForWindow(second_window);
+		Common.clickComponent(OM.ResetPerspektive_OkButton_grc);
+		Common.waitForWindowClose(second_window);
+		AUT_run.takeScreenshotActiveWindow("cons/should_have_created_kons.png"); //$NON-NLS-1$
+		Common.clickComponent(OM.Kons_Texteingabe_txf);
+
+
+		// Enter kons free text
+		Common.synchronizedTextReplace(OM.Kons_Texteingabe_txf, info);
+		Common.waitForComponent(OM.Kons_Freitext_txt);
+		Common.clickComponent(OM.Kons_Freitext_txt);
+		Common.synchronizedTextReplace(OM.Kons_Freitext_txt, free_text);
+		Common.clickComponent(OM.CreatePatient_OkButton_grc);
+		Common.waitForElexisMainWindow();
+		AUT_run.takeScreenshotActiveWindow("cons/kons_done.png"); //$NON-NLS-1$
+
+		Common.clickComponent(OM.Konsfenster_Save_tbi);
+
+	}
+
+	/*
+	 * We assume an open consultation
+	 */
+	public void eigenleistungVerrechnen(String item){
+		Common.clickComponent(OM.Kons_Verrechnung_grc);
+		// Common.clickComponent(OM.Patientenübersicht_tbi);
+		Common.mbr.selectMenuEntryByTextpath("Fenster/Ansicht/Leistungen", Operator.matches);
+		Eigenleistung.selectEigenleistung(item);
+		Common.selectTopLeftCell(OM.Eigenleistung_Alle_Table_1_tbl);
+		Common.dragTopLeftCell(OM.Eigenleistung_Alle_Table_1_tbl);
+		Common.dropIntoMiddleOfComponent(OM.Kons_Verrechnung_table);
+		Common.clickComponent(OM.Kons_Texteingabe_txf);
+		AUT_run.takeScreenshotActiveWindow("cons/kons_eigenleistung.png"); //$NON-NLS-1$
+	}
+
+	public void invoiceActiveConsultation(){
+
+		@SuppressWarnings("unchecked")
+		GraphicsComponent comp =
+				org.eclipse.jubula.toolkit.base.AbstractComponents.createGraphicsComponent(OM.Cases_Table_1_tbl);
+		comp.selectContextMenuEntryByTextpath("Rechnung erstellen.*", Operator.matches,InteractionMode.tertiary);
 	}
 }

@@ -35,7 +35,7 @@ public class SMOKETEST {
         // Patientenperspektive anklicken
         new Ub_grc_clickLeft_single(
                 rtc,
-                rtc.getIdentifier("Elexis300a201408211304_PatientPerspective_tbi")
+                rtc.getIdentifier("PatientPerspective_tbi")
             ).execute(
             );
 		log.info("smoketest. execute");
