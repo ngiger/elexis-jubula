@@ -139,7 +139,7 @@ public class Perspectives {
 				@SuppressWarnings({
 					"unchecked", "static-access"
 				})
-				ComponentIdentifier<Table> tbl = runner.om.get("OpenPerspective_ViewTree_grc"); //$NON-NLS-1$
+				ComponentIdentifier<Table> tbl = OM.OpenPerspective_ViewTree_grc;
 				TableComponent tableComp = org.eclipse.jubula.toolkit.concrete.ConcreteComponents
 					.createTableComponent(tbl);
 				AUT_run.m_aut.execute(tableComp.selectCell(Integer.toString(j), Operator.equals,

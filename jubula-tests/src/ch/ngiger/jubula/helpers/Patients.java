@@ -348,16 +348,16 @@ public class Patients {
 
 		// Create second consultation on same day
 		@SuppressWarnings("unchecked")
-		GraphicsComponent comp =
-				org.eclipse.jubula.toolkit.base.AbstractComponents.createGraphicsComponent(OM.Konsultation_ToolItem_1_tbi);
-		comp.selectContextMenuEntryByTextpath("Neue Konsultation", Operator.matches,InteractionMode.tertiary);
+		GraphicsComponent comp = org.eclipse.jubula.toolkit.base.AbstractComponents
+			.createGraphicsComponent(OM.Konsultation_ToolItem_1_tbi);
+		AUT_run.m_aut.execute(comp.selectContextMenuEntryByTextpath("Neue Konsultation",
+			Operator.matches, InteractionMode.tertiary), null);
 
 		Common.waitForWindow(second_window);
 		Common.clickComponent(OM.ResetPerspektive_OkButton_grc);
 		Common.waitForWindowClose(second_window);
 		AUT_run.takeScreenshotActiveWindow("cons/should_have_created_kons.png"); //$NON-NLS-1$
 		Common.clickComponent(OM.Kons_Texteingabe_txf);
-
 
 		// Enter kons free text
 		Common.synchronizedTextReplace(OM.Kons_Texteingabe_txf, info);
@@ -390,8 +390,9 @@ public class Patients {
 	public void invoiceActiveConsultation(){
 
 		@SuppressWarnings("unchecked")
-		GraphicsComponent comp =
-				org.eclipse.jubula.toolkit.base.AbstractComponents.createGraphicsComponent(OM.Cases_Table_1_tbl);
-		comp.selectContextMenuEntryByTextpath("Rechnung erstellen.*", Operator.matches,InteractionMode.tertiary);
+		GraphicsComponent comp = org.eclipse.jubula.toolkit.base.AbstractComponents
+			.createGraphicsComponent(OM.Cases_Table_1_tbl);
+		comp.selectContextMenuEntryByTextpath("Rechnung erstellen.*", Operator.matches,
+			InteractionMode.tertiary);
 	}
 }

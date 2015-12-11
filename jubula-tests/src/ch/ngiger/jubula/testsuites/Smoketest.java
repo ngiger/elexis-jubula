@@ -76,14 +76,14 @@ public class Smoketest {
 
 	@Test()
 	public void smoketest() throws Exception{
+		Perspectives.openLeistungenPerspective();
+		Eigenleistung.createEigenleistung("mfk", "Fahrtüchtigkeitsprüfung", 0, 1000, 10);
 		Patients pat = new Patients();
 		pat.createPatient("Testperson", "ArmesWesen", "31.01.1990");
-		Perspectives.openLeistungenPerspective();
 		Perspectives.openPatientenPerspective();
 		// We need swiss base feature to be able to invoice!
 		pat.createCase("KVG", "Husten", "Testperson", "Nr. 34.56", "24.12.14");
         pat.createConsultation("Scheint ein Simulant zu sein", "Kann gut fabulieren");
-		Eigenleistung.createEigenleistung("mfk", "Fahrtüchtigkeitsprüfung", 0, 1000, 10);
 		Perspectives.openLeistungenPerspective();
         pat.eigenleistungVerrechnen("Motor");
         pat.invoiceActiveConsultation();

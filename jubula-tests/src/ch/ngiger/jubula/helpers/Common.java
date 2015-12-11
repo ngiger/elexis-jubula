@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 
+import org.eclipse.jubula.client.exceptions.ActionException;
 import org.eclipse.jubula.client.exceptions.CheckFailedException;
 import org.eclipse.jubula.client.exceptions.ComponentNotFoundException;
 import org.eclipse.jubula.toolkit.base.components.GraphicsComponent;
@@ -68,11 +69,18 @@ public class Common {
 	}
 
 	public static void waitForWindow(String window_title, int timeoutInMs){
+		try {
 		AUT_run.m_aut.execute(
 			AUT_run.app.waitForWindowActivation(window_title, Operator.matches, timeoutInMs, 0),
 			null);
 		AUT_run.m_aut.execute(
 			AUT_run.app.checkExistenceOfWindow(window_title, Operator.matches, true), null);
+		} catch (ActionException e) {
+			String msg = "waitForWindow " + window_title + " after " + timeoutInMs +" ms failed";
+			AUT_run.dbg_msg(msg);
+			AUT_run.takeScreenshotActiveWindow("window/wait_failed_" + window_title + ".png");
+			Assert.fail(msg);
+		}
 	}
 
 	public static void waitForWindowClose(String window_title){
@@ -84,10 +92,17 @@ public class Common {
 	}
 
 	public static void waitForWindowClose(String window_title, int timeoutInMs){
+		try {
 		AUT_run.m_aut.execute(
 			AUT_run.app.waitForWindowToClose(window_title, Operator.matches, timeoutInMs, 0), null);
 		AUT_run.m_aut.execute(
 			AUT_run.app.checkExistenceOfWindow(window_title, Operator.matches, false), null);
+		} catch (ActionException e) {
+			String msg = "waitForWindowClose " + window_title + " after " + timeoutInMs +" ms failed";
+			AUT_run.dbg_msg(msg);
+			AUT_run.takeScreenshotActiveWindow("window/close_failed_" + window_title + ".png");
+			Assert.fail(msg);
+		}
 	}
 
 	public static void clickInMiddleOfComponent(

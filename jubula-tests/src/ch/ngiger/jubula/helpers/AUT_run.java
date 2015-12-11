@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Paths;
@@ -25,16 +24,13 @@ import org.apache.commons.lang.StringUtils;
 import org.eclipse.jubula.client.AUT;
 import org.eclipse.jubula.client.AUTAgent;
 import org.eclipse.jubula.client.MakeR;
-import org.eclipse.jubula.client.ObjectMapping;
 import org.eclipse.jubula.client.exceptions.ActionException;
 import org.eclipse.jubula.client.launch.AUTConfiguration;
-import org.eclipse.jubula.qa.api.converter.target.rcp.RuntimeContext;
 import org.eclipse.jubula.toolkit.concrete.components.Application;
 import org.eclipse.jubula.toolkit.enums.ValueSets.AUTActivationMethod;
 import org.eclipse.jubula.toolkit.rcp.config.RCPAUTConfiguration;
 import org.eclipse.jubula.toolkit.swt.SwtComponents;
 import org.eclipse.jubula.tools.AUTIdentifier;
-import org.eclipse.jubula.tools.ComponentIdentifier;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -43,7 +39,6 @@ public class AUT_run {
 	public static AUTAgent m_agent;
 	/** the AUT */
 	public static AUT m_aut;
-	public static ObjectMapping om = null;
 	public static String SAVE_RESULTS_DIR = null;
 
 	/** the logger */
@@ -221,23 +216,6 @@ public class AUT_run {
 		} catch (IOException e) {
 			dbg_msg("Did not delete " + ElexisLog.toAbsolutePath());
 		}
-
-		URL input = AUT_run.class.getClassLoader().getResource(RuntimeContext.OM_Resource_Name); //$NON-NLS-1$
-		if (input == null) {
-			Assert.fail("could not open resource: " + RuntimeContext.OM_Resource_Name);
-			return;
-		}
-		om = MakeR.createObjectMapping(input.openStream());
-		// String[] ids_to_test = new String[] {"Install_SW_Details"};
-		@SuppressWarnings("rawtypes")
-		ComponentIdentifier id1 = om.get("Install_SW_Details");
-		dbg_msg("id rbi" + id1);
-		Assert.assertNotNull(id1);
-
-		@SuppressWarnings("rawtypes")
-		ComponentIdentifier id2 = om.get("Cases_Neuer_Fall_tbi");
-		dbg_msg("id2 " + id2);
-		Assert.assertNotNull(id2);
 
 		/* Connecting to external Jubula AUT Agent which
 		   must be started manually BEFORE test execution! */
