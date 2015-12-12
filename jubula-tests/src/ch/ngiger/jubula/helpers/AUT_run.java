@@ -132,6 +132,7 @@ public class AUT_run {
 	}
 
 	private static void setupConfig(){
+	  dbg_msg("Niklaus setupConfig 2");
 		config.put(Constants.AGENT_HOST, "localhost");
 		config.put(Constants.AGENT_PORT, "6333");
 		config.put(Constants.WORK_DIR, USER_DIR);
@@ -154,9 +155,11 @@ public class AUT_run {
 			String from_env = System.getenv(entry.getKey());
 			if (from_env != null) {
 				config.put(entry.getKey(), from_env);
+				dbg_msg("Config : from env " + from_env + " for " + entry.getKey() + " is: " + entry.getValue());
 			}
 			String value = System.getProperty(entry.getKey());
 			if (value != null) {
+				dbg_msg("Config : from property " + value + " for " + entry.getKey() + " is: " + entry.getValue());
 				config.put(entry.getKey(), value);
 			}
 			dbg_msg("Config : " + entry.getKey() + " is: " + entry.getValue());

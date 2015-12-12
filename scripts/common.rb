@@ -13,6 +13,30 @@ else
 end
 MAY_FAIL = true
 
+def get_java_triplet
+  cfg = Hash.new
+  cfg['cpu'] = RbConfig::CONFIG['target_cpu']
+  case RbConfig::CONFIG['host_os']
+    when WINDOWS_REGEXP
+      cfg['os'] = 'windows'
+      cfg['win'] = 'win32'
+    when /linux/i
+      cfg['os'] = 'linux'
+      cfg['win'] = 'gtk'
+      cfg['cpu'] if /i.86/.match(cfg['cpu']) # needed for i486 on Windows/linux-x86
+    when /sunos|solaris/i
+        # Solaris
+    when MACOSX_REGEXP
+      cfg['os'] = 'macosx'
+      cfg['win'] = 'cocoa'
+      cfg['cpu'] = 'x86_64'
+    else
+    puts "unknown RbConfig::CONFIG['host_os'] #{RbConfig::CONFIG['host_os']}"
+    exit 3
+  end
+  cfg
+end
+
 override = File.expand_path(File.join(File.dirname(File.dirname(__FILE__)), 'scripts', 'override', 'defaults.yaml'))
 default = File.expand_path(File.join(File.dirname(File.dirname(__FILE__)), 'scripts', 'defaults.yaml'))
 Config = {}.merge(YAML.load_file(default))
@@ -22,7 +46,15 @@ WorkDir = File.expand_path(File.join(Dir.pwd, Config[:workdir]))
 FileUtils.makedirs(WorkDir) unless File.exist?(WorkDir)
 
 WINDOWS_REGEXP = /mingw|bccwin|wince|cygwin|mswin32/i
-MACOSX_REGEXP  = /macos|darwin/i
+MACOSX_REGEXP  = /macos|universal|darwin/i
+
+def is_macos
+  MACOSX_REGEXP.match(RbConfig::CONFIG['host_os']) != nil
+end
+
+def is_windows
+  WINDOWS_REGEXP.match(RbConfig::CONFIG['host_os']) != nil
+end
 
 def unzip(zip_file, should_create)
   return if Dir.glob(should_create).size > 0
@@ -53,7 +85,9 @@ def download_and_unzip(zip_url, should_create)
   zip_file = File.basename(zip_url)
   unless File.exist?(zip_file)
     puts "Downloading #{zip_url}"
-    system("wget --quiet  --no-check-certificat #{zip_url}")
+    cmd = "wget  --quiet  --no-check-certificat #{zip_url}"
+    cmd = "curl  --silent --insecure --output #{File.basename(zip_url)} #{zip_url}" if is_macos
+    system(cmd)
   end
   puts should_create
   puts File.expand_path should_create
@@ -77,16 +111,16 @@ def patch_acl_for_elexis_and_current_user(force=false)
   end
 end
 
-def install_rcp_support_for_jubula
+def install_rcp_support_for_jubula(inst_dir)
   return if DRY_RUN
   rcp_support = File.expand_path(File.join(File.dirname(__FILE__), '..', 'assets', 'rcp-support.zip'))
-  Dir.chdir(File.join(WorkDir, 'plugins'))
+  Dir.chdir(File.join(inst_dir, 'plugins'))
   unzip(rcp_support, 'org.eclipse.jubula.rc.rcp_*.jar')
 end
 
-def patch_ini_file_for_jubula_rc
+def patch_ini_file_for_jubula_rc(inst_dir)
   return if DRY_RUN
-  ini_name = Dir.glob(File.join(WorkDir, '**/configuration/config.ini')).first
+  ini_name = Dir.glob(File.join(inst_dir, 'configuration/config.ini')).first
   return if File.exist?(ini_name + '.bak')
   fail 'Must first install Elexis before patching the configuration/config.ini' unless ini_name
   jar_path = File.join(WorkDir, '**/plugins/*jubula.rc.rcp_*.jar')
