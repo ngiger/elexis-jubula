@@ -3,27 +3,25 @@
 
 <product name="Start AUT Agent" uid="org.eclipse.jubula.product.autagent.start" id="org.eclipse.jubula.app.autagent.product" application="org.eclipse.jubula.app.autagent" version="4.0.0.qualifier" useFeatures="false" includeLaunchers="true">
 
-
    <configIni use="default">
    </configIni>
 
    <launcherArgs>
       <programArgs>-consolelog
---launcher.suppressErrors
-      </programArgs>
-      <programArgsMac>--launcher.secondThread
-      </programArgsMac>
+--launcher.suppressErrors</programArgs>
+      <programArgsLin>-vm
+../jre/bin/java</programArgsLin>
+      <programArgsMac>--launcher.secondThread</programArgsMac>
+      <programArgsWin>-vm
+../jre/bin/javaw.exe</programArgsWin>
       <vmArgs>-client
 -Xms128m
--Xmx1024m
-      </vmArgs>
+-Xmx1024m</vmArgs>
       <vmArgsMac>-XstartOnFirstThread
--Dorg.eclipse.swt.internal.carbon.smallFonts
-      </vmArgsMac>
+-Dorg.eclipse.swt.internal.carbon.smallFonts</vmArgsMac>
    </launcherArgs>
 
    <windowImages/>
-
 
    <launcher name="autagent">
       <linux icon="icons/start_aut_agent.xpm"/>
@@ -31,41 +29,32 @@
       <solaris/>
       <win useIco="true">
          <ico path="icons/start_aut_agent.ico"/>
-         <bmp/>
       </win>
    </launcher>
-
 
    <vm>
    </vm>
 
-
    <plugins>
+      <plugin id="org.eclipse.core.runtime" />
+      <plugin id="org.apache.commons.lang" />
+      <plugin id="org.slf4j.api" />
+      <plugin id="ch.qos.logback.classic" />
+      <plugin id="ch.qos.logback.core" />
+      <plugin id="org.eclipse.jubula.version" />
+      <plugin id="org.eclipse.jubula.tools" />
+      <plugin id="org.eclipse.jubula.communication" />
+      <plugin id="org.eclipse.jubula.app.autagent" />
    </plugins>
 
    <configurations>
-      <plugin id="ch.elexis.core.logging" autoStart="true" startLevel="2" />
       <plugin id="ch.qos.logback.classic" autoStart="true" startLevel="2" />
       <plugin id="ch.qos.logback.core" autoStart="true" startLevel="2" />
       <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="0" />
       <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="2" />
-      <plugin id="org.eclipse.equinox.ds" autoStart="true" startLevel="2" />
-      <plugin id="org.eclipse.equinox.event" autoStart="true" startLevel="2" />
-      <plugin id="org.eclipse.equinox.p2.reconciler.dropins" autoStart="true" startLevel="4" />
-      <plugin id="org.eclipse.equinox.simpleconfigurator" autoStart="true" startLevel="1" />
       <plugin id="org.eclipse.osgi.services" autoStart="true" startLevel="2" />
-      <plugin id="org.eclipse.update.configurator" autoStart="true" startLevel="3" />
       <plugin id="org.slf4j.api" autoStart="false" startLevel="1" />
-      <plugin id="org.slf4j.jcl" autoStart="true" startLevel="1" />
-      <plugin id="org.slf4j.jul" autoStart="true" startLevel="1" />
-      <plugin id="org.slf4j.log4j" autoStart="true" startLevel="1" />
    </configurations>
 
-   <preferencesInfo>
-      <targetfile overwrite="false"/>
-   </preferencesInfo>
-
-   <cssInfo>
-   </cssInfo>
 
 </product>

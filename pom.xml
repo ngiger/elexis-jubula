@@ -16,33 +16,10 @@
     <jubula.installation.dir>/opt/jubula_8.2.0.021</jubula.installation.dir>
   </properties>
   <modules>
-    <module>org.eclipse.jubula.product.autagent.product</module>
-    <!-- we must first call mvn p2:site in the subdirectory snakeyaml to create the P2 repository
-    <module>snakeyaml</module>
-    -->
-    <!-- TOOD: adding a de_CH keyboard mapping did not made a clear difference
-        <module>org.eclipse.jubula.client.api.keyboard</module>
-    -->
     <module>jubula-target</module>
+    <module>org.eclipse.jubula.product.autagent.start</module>
     <module>jubula-tests</module>
   </modules>
-  <!--repositories>
-    <repository>
-      <id>Jubula nightly + patch fo 482517</id>
-      <url>http://download.elexis.info/jubula/bug_482517/</url>
-      <layout>p2</layout>
-    </repository>
-    <repository>
-      <id>Jubula-Mars</id>
-      <url>http://download.eclipse.org/jubula/release/mars</url>
-      <layout>p2</layout>
-    </repository>
-    <repository>
-      <id>Eclipse-Release</id>
-      <url>http://download.eclipse.org/releases/mars</url>
-      <layout>p2</layout>
-    </repository>
-  </repositories-->
   <build>
     <plugins>
       <plugin>
