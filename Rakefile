@@ -22,7 +22,7 @@ desc 'Run an interactive bash shell inside docker'
 task :docker_run do
   cmd = 'docker run --rm=true --interactive=true --tty=true '
   cmd += " -v #{our_directory}:/home/elexis/"
-  cmd += " --publish=6333:6333 ngiger/jubula_runner:#{ElexisJubula::VERSION}"
+  cmd += " --publish=6333:6333 #{ElexisJubula::NAME}:#{ElexisJubula::VERSION}"
   fail "docker_run failed! #{cmd}" unless system(cmd)
 end
 
@@ -36,7 +36,7 @@ task :jubula_test, [:test_to_run] => :elexis_install_os do  |target, args|
   test_to_run =  args[:test_to_run]
   test_to_run ||= 'Screenshot'
   # TODO: publish signed image and ensure that it can be
-  system('scripts/jubularunner.rb docker_build') unless system('docker images ngiger/jubula_runner', MAY_FAIL)
+  system('scripts/jubularunner.rb docker_build') unless system('docker images #{ElexisJubula::NAME}', MAY_FAIL)
   fail 'Running failed' unless system("scripts/jubularunner.rb #{test_to_run}")
 end
 
@@ -75,17 +75,15 @@ task :jubula_mvn, [:test_to_run] => :elexis_install_os do  |target, args|
 end
 
 desc 'Build, commit, tag, push && docker push the current state'
-task :docker_publish do
-  puts "Publishing #{ElexisJubula::Version} to docker"
-#  system("git commit -m 'Publishing #{ElexisJubula::Version}'")
+task :docker_publish => :docker_build do
   puts "Log-In to to docker"
   raise "login to docker failed" unless system("docker login")
-#  raise "git tagging failed" unless system("git tag #{ElexisJubula::Version}")
-#  raise "git push failed" unless system("git push --tags")
-  raise "Tagging failed" unless system( "docker tag ngiger/jubula_runner ngiger/jubula_runner:#{ElexisJubula::Version}")
-  cmd = "docker push ngiger/jubula_runner:#{ElexisJubula::Version}"
-  puts cmd
-  raise "Pushing to docker failed" unless system(cmd)
+  puts "Publishing #{ElexisJubula::VERSION} to docker"
+  [ ElexisJubula::VERSION, 'latest'].each do |version|
+    cmd = "docker push #{ElexisJubula::NAME}:#{version}"
+    puts cmd
+    raise "Pushing to docker failed for #{cmd}" unless Kernel.system(cmd)
+  end
 end
 require 'rake/clean'
 CLEAN.include FileList['work/**']

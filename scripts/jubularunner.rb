@@ -32,7 +32,7 @@ class DockerRunner
     cmd += " -v #{@m2_repo}:/home/elexis/.m2"
     cmd += " --publish=#{local_ip}:8000:8000" # debug port for java
     cmd += " --publish=#{local_ip}:6333:6333" if false
-    cmd += " --name=#{@docker_name} ngiger/jubula_runner:#{ElexisJubula::VERSION}"
+    cmd += " --name=#{@docker_name} #{ElexisJubula::NAME}"
     cmd += ' ' + cmd_in_docker
     puts cmd
     system(cmd)

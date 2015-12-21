@@ -144,8 +144,10 @@ end
 def docker_build(docker_dir = File.join(RootDir, 'wheezy'))
   puts "docker_build from #{docker_dir}"
   FileUtils.cp(File.join(RootDir, 'Gemfile'), docker_dir, verbose: true)
-  docker_name = Config[:docker_name] || 'ngiger/jubula_runner'
-  system("docker build -t #{docker_name}:#{ElexisJubula::VERSION} #{docker_dir}")
+  docker_name = Config[:docker_name] || ElexisJubula::NAME
+  cmd = "docker build -t #{docker_name}:#{ElexisJubula::VERSION} #{docker_dir}"
+  system(cmd)
+  puts "Built using #{cmd}"
 end
 
 def patch_ruby(cmd)
