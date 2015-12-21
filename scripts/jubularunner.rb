@@ -186,7 +186,7 @@ exit $status
     FileUtils.rm_rf(@result_dir)
     FileUtils.makedirs(@result_dir)
     Dir.chdir(WorkDir)
-    @mvn_cmd = "mvn integration-test -D#{@test_params[:test_to_run]}"
+    @mvn_cmd = "mvn integration-test -Dtest_to_run=#{@test_params[:test_to_run]}"
     @docker ? run_test_in_docker : run_test_exec
   ensure
     diff_time = (Time.now - @start_time).to_i

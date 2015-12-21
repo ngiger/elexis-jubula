@@ -12,12 +12,10 @@ package ch.ngiger.jubula.helpers;
 
 import org.eclipse.jubula.client.exceptions.ActionException;
 import org.eclipse.jubula.toolkit.concrete.components.ButtonComponent;
-import org.eclipse.jubula.toolkit.concrete.components.MenuBarComponent;
 import org.eclipse.jubula.toolkit.concrete.components.TreeComponent;
 import org.eclipse.jubula.toolkit.enums.ValueSets;
 import org.eclipse.jubula.toolkit.enums.ValueSets.InteractionMode;
 import org.eclipse.jubula.toolkit.enums.ValueSets.SearchType;
-import org.eclipse.jubula.toolkit.swt.SwtComponents;
 import org.eclipse.jubula.toolkit.swt.components.Button;
 import org.eclipse.jubula.toolkit.swt.components.Tree;
 import org.eclipse.jubula.tools.ComponentIdentifier;
@@ -51,7 +49,6 @@ public class PreferencePages {
 	}
 	TreeComponent treeComp = null;
 	ButtonComponent ok_btn_comp = null;
-	MenuBarComponent mbr = SwtComponents.createMenu();
 
 	/** test visiting all preferencePages */
 	@SuppressWarnings("unchecked")

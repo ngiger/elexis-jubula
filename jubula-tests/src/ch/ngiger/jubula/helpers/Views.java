@@ -14,13 +14,11 @@ import org.eclipse.jubula.client.exceptions.ActionException;
 import org.eclipse.jubula.client.exceptions.CheckFailedException;
 import org.eclipse.jubula.client.exceptions.ComponentNotFoundException;
 import org.eclipse.jubula.toolkit.concrete.ConcreteComponents;
-import org.eclipse.jubula.toolkit.concrete.components.MenuBarComponent;
 import org.eclipse.jubula.toolkit.concrete.components.TableComponent;
 import org.eclipse.jubula.toolkit.concrete.components.TreeComponent;
 import org.eclipse.jubula.toolkit.enums.ValueSets;
 import org.eclipse.jubula.toolkit.enums.ValueSets.BinaryChoice;
 import org.eclipse.jubula.toolkit.enums.ValueSets.InteractionMode;
-import org.eclipse.jubula.toolkit.enums.ValueSets.Modifier;
 import org.eclipse.jubula.toolkit.enums.ValueSets.Operator;
 import org.eclipse.jubula.toolkit.enums.ValueSets.SearchType;
 import org.eclipse.jubula.toolkit.swt.SwtComponents;
@@ -40,11 +38,7 @@ public class Views {
 	// private static Logger log = LoggerFactory.getLogger(VisitAllViews.class);
 
 	static void openViewByName(String name){
-		MenuBarComponent mbr = SwtComponents.createMenu();
-		mbr.waitForComponent(Constants.ONE_SECOND, 10);
-
-		AUT_run.m_aut.execute(
-			mbr.selectMenuEntryByTextpath("Fenster.*/Ansicht.*/Other.*", Operator.matches), null);
+		Common.openMenu("Fenster.*/Ansicht.*/Other.*");
 		Common.waitForWindow("Show View", Constants.ONE_SECOND);
 
 		org.eclipse.jubula.toolkit.concrete.components.TextInputComponent viewTxt = ConcreteComponents.createTextInputComponent(OM.ShowView_SelView_cti);
@@ -78,22 +72,20 @@ public class Views {
 	public void visit_all_views(AUT_run runner) throws Exception{
 		int mayor = 0, minor = 0, nr_views = 0;
 		String new_pos = "first_time", new_pos2 = ""; //$NON-NLS-1$ //$NON-NLS-2$
-		MenuBarComponent mbr = SwtComponents.createMenu();
 		ComponentIdentifier<Tree> tree = OM.ShowView_ViewTree_grc; //$NON-NLS-1$
 		Assert.assertNotNull("ShowView_ViewTree_grc may not be null", tree);
 		TreeComponent treeComp =
 			org.eclipse.jubula.toolkit.concrete.ConcreteComponents.createTreeComponent(tree);
-		Common.clickComponent(OM.ShowView_OkButton_grc); //$NON-NLS-1$
 		try {
 			String window_title = Messages.getString("VisitAllViews.4"); //$NON-NLS-1$
 			while (true) {
 				mayor++;
-				AUT_run.dbg_msg("Visiting view " + nr_views + " in row " + mayor); //$NON-NLS-1$ //$NON-NLS-2$
+				AUT_run.dbg_msg("Visiting view " + nr_views + " in row " + mayor + " open" + Messages.getString("VisitAllViews.7")); //$NON-NLS-1$ //$NON-NLS-2$
 				minor = 0;
 				while (true) {
 					Common.openMenu(Messages.getString("VisitAllViews.7")); //$NON-NLS-1$
 					Common.waitForWindow(window_title);
-					AUT_run.dbg_msg("user 1"); //$NON-NLS-1$
+					AUT_run.dbg_msg("window_title "+window_title); //$NON-NLS-1$
 					minor++;
 					new_pos = Integer.toString(mayor) + "/" + Integer.toString(minor); //$NON-NLS-1$
 					new_pos2 = Integer.toString(mayor) + "_" + Integer.toString(minor); //$NON-NLS-1$
@@ -108,12 +100,10 @@ public class Views {
 							new Integer(0), new_pos, new Integer(1), InteractionMode.primary,
 							ValueSets.BinaryChoice.no), null);
 						Common.clickComponent(OM.ShowView_OkButton_grc); //$NON-NLS-1$
-						Common.waitForWindow(window_title);
-						Thread.sleep(Constants.ONE_SECOND); // give view time to stabilize, eg. load a web page/patient
-						// Maximize window by pressing Ctrl-M
-						AUT_run.m_aut.execute(AUT_run.app.externalKeyCombination(new Modifier[] {
-							Modifier.control
-						}, "m"), null); //$NON-NLS-1$
+						Common.waitForElexisMainWindow();
+						Common.sleep1second(); // give view time to stabilize, eg. load a web page/patient
+						Common.maximixeView();
+						Common.sleep1second();
 						AUT_run.takeScreenshotActiveWindow("view_" + new_pos2 + ".png"); //$NON-NLS-1$ //$NON-NLS-2$
 						nr_views++;
 					} catch (ComponentNotFoundException e) {

@@ -151,9 +151,12 @@ public class Common {
 	 * Allows to send special character like "Enter"
 	 */
 	public static void pressEnter(){
+		AUT_run.dbg_msg("maximize does not work in elexis");
+		/*
 		AUT_run.m_aut.execute(AUT_run.app.externalKeyCombination(new Modifier[] {
-			Modifier.none
+			Modifier.control, // Ctrl-m does not work in Elexis
 		}, "Enter"), null);
+		*/
 	}
 
 	public static void maximixeView(){

@@ -34,3 +34,5 @@ user/
 .java
 .jubula
 Gemfile.lock
+container_home
+container_home_m2

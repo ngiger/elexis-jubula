@@ -1,4 +1,4 @@
 ---
 :exe_name:    Elexis3
-:test_to_run: test=ch.ngiger.jubula.testsuites.SuiteVisitAllPreferencePages
+:test_to_run: SuiteVisitAllPreferencePages
 :agent_port:  6333

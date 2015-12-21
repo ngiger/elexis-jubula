@@ -76,6 +76,10 @@ end
 
 desc 'Build, commit, tag, push && docker push the current state'
 task :docker_publish => :docker_build do
+  # commit pending changes and tag our repository with the same tag
+  Kernel.system("git commit . ") # will prompt for a message
+  Kernel.system("git tag #{ElexisJubula::VERSION}")
+
   puts "Log-In to to docker"
   raise "login to docker failed" unless system("docker login")
   puts "Publishing #{ElexisJubula::VERSION} to docker"

@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.lang.management.ManagementFactory;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Paths;
@@ -38,6 +39,7 @@ import org.junit.BeforeClass;
 
 public class AUT_run {
 	/** the AUT-Agent */
+	private static AgentThread agent_thread = null;
 	public static AUTAgent m_agent;
 	/** the AUT */
 	public static AUT m_aut;
@@ -64,7 +66,8 @@ public class AUT_run {
 		if (writer == null) {
 			String log_name = null;
 			if (SAVE_RESULTS_DIR != null) {
-				log_name = SAVE_RESULTS_DIR + "/AUT_run.log";
+				log_name = SAVE_RESULTS_DIR + "/AUT_run_"
+					+ ManagementFactory.getRuntimeMXBean().getName() + ".log";
 			} else {
 				log_name = USER_DIR + "/AUT_run.log";
 			}
@@ -174,72 +177,63 @@ public class AUT_run {
 		@Override
 		public void run(){
 			dbg_msg("In AgentThread run");
-			if (SystemUtils.IS_OS_LINUX && System.getProperty("os.arch").equals("amd64")) {
-			java.nio.file.Path rPath = Paths
-				.get(
-					"../org.eclipse.jubula.product.autagent.start/target/products/org.eclipse.jubula.product.autagent.start/linux/gtk/x86_64/autagent")
-				.toAbsolutePath().normalize();
-			String msg = "autagent " + rPath.toFile().canExecute() + " " + rPath.toAbsolutePath();
-			dbg_msg(msg);
-			Assert.assertTrue(rPath.toFile().canExecute());
-			run_system_cmd(new String[] {
-				rPath.toString(), "-vm", "/usr/bin/java", "-l", "-p",
-				config.get(Constants.AGENT_PORT)
-			});
-			dbg_msg("Autagent finished");
-		}
-			String name = System.getProperty("os.name");
-			String version = System.getProperty("os.version");
-			String arch = System.getProperty("os.arch");
-			String msg = "Unsupported os" + name + " version" + version + " " + arch;
-			dbg_msg(msg);
-			System.exit(1);
+			if ( !(SystemUtils.IS_OS_LINUX && System.getProperty("os.arch").equals("amd64")))
+			{
+				String name = System.getProperty("os.name");
+				String version = System.getProperty("os.version");
+				String arch = System.getProperty("os.arch");
+				String msg = "Unsupported os" + name + " version" + version + " " + arch;
+				dbg_msg(msg);
+				System.exit(1);
+			} else
+			{
+				java.nio.file.Path rPath = Paths
+					.get(
+						"../org.eclipse.jubula.product.autagent.start/target/products/org.eclipse.jubula.product.autagent.start/linux/gtk/x86_64/autagent")
+					.toAbsolutePath().normalize();
+				String msg =
+					"autagent " + rPath.toFile().canExecute() + " " + rPath.toAbsolutePath();
+				dbg_msg(msg);
+				Assert.assertTrue(rPath.toFile().canExecute());
+				run_system_cmd(new String[] {
+					rPath.toString(), "-vm", "/usr/bin/java", "-l", "-p",
+					config.get(Constants.AGENT_PORT)
+				});
+				dbg_msg("Autagent finished");
+			}
 		}
 	}
 
 	private static void startAutagent(){
 		dbg_msg("Calling startAutagent ");
-		(new AgentThread()).start();
+		agent_thread = new AgentThread();
+		agent_thread.start();
 	}
 
 	private static void startAUT(){
-		try {
-			dbg_msg("Calling startAUT ");
-			aut_id = m_agent.startAUT(aut_config);
-			if (aut_id != null) {
-				dbg_msg("started AUT as " + aut_id.getID() + " will sleep 2 seconds");
-				Thread.sleep(2000);
-				m_aut = m_agent.getAUT(aut_id, SwtComponents.getToolkitInformation());
-				dbg_msg("AUT will connect");
-				Thread.sleep(1000);
-				m_aut.connect();
-				dbg_msg("AUT connected");
-			} else {
-				Assert.fail("AUT did not start as expected? Why"); //$NON-NLS-1$
-			}
-			Thread.sleep(1000);
-			dbg_msg("AUT createApplication");
-			app = SwtComponents.createApplication();
-			dbg_msg("AUT created");
-			Thread.sleep(1000);
-			run_system_cmd(new String[] {
-				"/bin/ps", "-f", "-C", "Xvfb"
-			});
-			run_system_cmd(new String[] {
-				"/bin/ps", "-f", "-C", "autagent"
-			});
-			run_system_cmd(new String[] {
-				"/bin/ps", "-f", "-C", "Elexis3"
-			});
-			dbg_msg("AUT activate via titlebar");
-			m_aut.execute(app.activate(AUTActivationMethod.titlebar), null);
-			Thread.sleep(1000);
-			run_system_cmd(new String[] {
-				"/bin/ps", "-f", "-C", "Elexis3"
-			});
-		} catch (InterruptedException e) {
-			e.printStackTrace();
+		dbg_msg("Calling startAUT ");
+		aut_id = m_agent.startAUT(aut_config);
+		if (aut_id != null) {
+			dbg_msg("started AUT as " + aut_id.getID() + " will sleep 2 seconds");
+			Common.sleep1second();
+			Common.sleep1second();
+			m_aut = m_agent.getAUT(aut_id, SwtComponents.getToolkitInformation());
+			dbg_msg("AUT will connect");
+			Common.sleep1second();
+			m_aut.connect();
+			dbg_msg("AUT connected");
+		} else {
+			Assert.fail("AUT did not start as expected? Why"); //$NON-NLS-1$
 		}
+		Common.sleep1second();
+		dbg_msg("AUT createApplication");
+		app = SwtComponents.createApplication();
+		dbg_msg("AUT activate via titlebar");
+		m_aut.execute(app.activate(AUTActivationMethod.titlebar), null);
+		Common.sleep1second();
+		run_system_cmd(new String[] {
+			"/bin/ps", "-f", "-C", "Elexis3"
+		});
 		dbg_msg("AUT created and activated");
 
 	}
@@ -263,8 +257,9 @@ public class AUT_run {
 			+ System.getProperty(Constants.AGENT_PORT);
 		dbg_msg(msg);
 		startAutagent();
-		Common.sleepMs(Constants.ONE_SECOND*10); // Give it some time to start up
-		dbg_msg("after sleep: connect to " + config.get(Constants.AGENT_HOST) + " port " + config.get(Constants.AGENT_PORT));
+		Common.sleepMs(Constants.ONE_SECOND * 5); // Give it some time to start up
+		dbg_msg("after sleep: connect to " + config.get(Constants.AGENT_HOST) + " port "
+			+ config.get(Constants.AGENT_PORT));
 		m_agent = MakeR.createAUTAgent(config.get(Constants.AGENT_HOST),
 			new Integer(config.get(Constants.AGENT_PORT)));
 		m_agent.connect();
@@ -316,6 +311,7 @@ public class AUT_run {
 	}
 
 	/** cleanup */
+	@SuppressWarnings("deprecation")
 	@AfterClass
 	public void tearDown() throws Exception{
 		dbg_msg("AUT_run.tearDown ");
@@ -326,6 +322,12 @@ public class AUT_run {
 		}
 		if (m_agent != null && m_agent.isConnected()) {
 			m_agent.disconnect();
+		}
+		if (agent_thread != null) {
+			dbg_msg("Stopping agent_thread");
+			agent_thread.interrupt();
+			// agent_thread.stop();
+			dbg_msg("Stopped agent_thread");
 		}
 		saveLogs();
 	}

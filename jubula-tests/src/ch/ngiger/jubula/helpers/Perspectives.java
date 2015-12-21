@@ -13,13 +13,11 @@ package ch.ngiger.jubula.helpers;
 import org.eclipse.jubula.client.exceptions.ActionException;
 import org.eclipse.jubula.client.exceptions.CheckFailedException;
 import org.eclipse.jubula.toolkit.concrete.ConcreteComponents;
-import org.eclipse.jubula.toolkit.concrete.components.MenuBarComponent;
 import org.eclipse.jubula.toolkit.concrete.components.TableComponent;
 import org.eclipse.jubula.toolkit.enums.ValueSets;
 import org.eclipse.jubula.toolkit.enums.ValueSets.InteractionMode;
 import org.eclipse.jubula.toolkit.enums.ValueSets.Operator;
 import org.eclipse.jubula.toolkit.enums.ValueSets.Unit;
-import org.eclipse.jubula.toolkit.swt.SwtComponents;
 import org.eclipse.jubula.toolkit.swt.components.Table;
 import org.eclipse.jubula.tools.ComponentIdentifier;
 import org.junit.Assert;
@@ -101,13 +99,8 @@ public class Perspectives {
 	}
 
 	public static void openPerspectiveByName(String name){
-		MenuBarComponent mbr = SwtComponents.createMenu();
-		mbr.waitForComponent(Constants.ONE_SECOND, 10);
-
-		AUT_run.m_aut.execute(
-			mbr.selectMenuEntryByTextpath("Fenster/Perspektive/Other...", Operator.equals), null);
+		Common.openMenu(Messages.getString("Fenster/Perspektive/Other.*"));
 		Common.waitForWindow("Open Perspective", Constants.ONE_SECOND);
-
 		@SuppressWarnings("unchecked")
 		TableComponent tbl =
 			ConcreteComponents.createTableComponent(OM.OpenPerspective_ViewTree_grc);
@@ -128,12 +121,7 @@ public class Perspectives {
 			while (true) {
 				j++;
 				AUT_run.dbg_msg("Visiting perspective number " + j); //$NON-NLS-1$
-				MenuBarComponent mbr = SwtComponents.createMenu();
-				mbr.waitForComponent(1000, 1000);
-				AUT_run.m_aut.execute(
-					mbr.selectMenuEntryByTextpath(Messages.getString("VisitAllPerspectives.2"), //$NON-NLS-1$
-						Operator.equals),
-					null);
+				Common.openMenu(Messages.getString("VisitAllPerspectives.2"));
 				AUT_run.m_aut.execute(AUT_run.app.waitForWindow(window_title, Operator.matches,
 					1000, Constants.NR_MS_WAIT_AFTER_ACTION), null);
 				@SuppressWarnings({

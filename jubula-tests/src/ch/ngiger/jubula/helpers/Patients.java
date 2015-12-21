@@ -378,7 +378,7 @@ public class Patients {
 	public void eigenleistungVerrechnen(String item){
 		Common.clickComponent(OM.Kons_Verrechnung_grc);
 		// Common.clickComponent(OM.Patientenübersicht_tbi);
-		Common.mbr.selectMenuEntryByTextpath("Fenster/Ansicht/Leistungen", Operator.matches);
+		Common.openMenu("Fenster/Ansicht/Leistungen");
 		Eigenleistung.selectEigenleistung(item);
 		Common.selectTopLeftCell(OM.Eigenleistung_Alle_Table_1_tbl);
 		Common.dragTopLeftCell(OM.Eigenleistung_Alle_Table_1_tbl);
