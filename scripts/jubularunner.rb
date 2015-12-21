@@ -196,6 +196,7 @@ exit $status
     @start_time = Time.now
     @test_params = YAML.load_file(File.join(RootDir, 'definitions', "#{@test_name}.yaml"))
     show_configuration if $VERBOSE || DRY_RUN
+    require 'install_open_source_elexis.rb' unless File.directory?(File.join(WorkDir, 'plugins'))
     @jubula_test_db_params = get_h2_db_params(File.join(WorkDir, 'database/embedded'))
     @jubula_test_data_dir  = File.join(WorkDir, 'database/data')
     install_rcp_support_for_jubula(WorkDir)
