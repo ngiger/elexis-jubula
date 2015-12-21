@@ -24,6 +24,9 @@ class DockerRunner
       FileUtils.makedirs(dir, :verbose => true) unless File.exist?(dir)
       FileUtils.chmod(0777, dir)
     end
+    # Remove old docker images if present
+    cmd = "docker inspect #{@docker_name} 2>/dev/null && docker rm #{@docker_name}"
+    system(cmd, MAY_FAIL)
     cmd = 'docker run --detach'
     cmd += " --env=#{env}" if env
     cmd += " --workdir=#{workdir}" if workdir
