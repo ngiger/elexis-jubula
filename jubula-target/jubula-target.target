@@ -1,27 +1,40 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<?pde version="3.8"?><target name="api-OSGi" sequenceNumber="19">
+<?pde version="3.8"?><target name="jubula+nightly" sequenceNumber="2">
 <locations>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="slicer" includeSource="true" type="InstallableUnit">
-<unit id="org.eclipse.jubula.feature.api.converter.feature.group" version="0.0.0"/>
 <unit id="org.eclipse.jubula.feature.api.core.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.jubula.client.api.converter.annotations" version="0.0.0"/>
 <unit id="org.eclipse.jubula.feature.api.core.source.feature.group" version="0.0.0"/>
-<unit id="org.eclipse.jubula.feature.api.feature.group" version="0.0.0"/>
-<unit id="org.eclipse.jubula.feature.api.source.feature.group" version="0.0.0"/>
-<unit id="org.eclipse.jubula.feature.feature.group" version="0.0.0"/>
-<unit id="org.eclipse.jubula.feature.launch.java.feature.group" version="0.0.0"/>
-<unit id="org.eclipse.jubula.feature.launch.rcp.feature.group" version="0.0.0"/>
-<unit id="org.eclipse.jubula.feature.rc.feature.group" version="0.0.0"/>
 <repository location="http://download.eclipse.org/jubula/nightly/repo"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="slicer" includeSource="true" type="InstallableUnit">
-<unit id="org.eclipse.platform.feature.group" version="0.0.0"/>
-<unit id="org.eclipse.equinox.executable.feature.group" version="0.0.0"/>
-<unit id="org.eclipse.rcp.feature.group" version="0.0.0"/>
-<repository location="http://download.eclipse.org/releases/indigo"/>
+<unit id="org.apache.commons.cli" version="1.2.0.v201404270220"/>
+<unit id="org.apache.commons.logging" version="1.1.1.v201101211721"/>
+<unit id="org.apache.commons.io" version="2.0.1.v201105210651"/>
+<unit id="org.apache.commons.beanutils" version="1.8.0.v201205091237"/>
+<unit id="org.apache.commons.codec" version="1.6.0.v201305230611"/>
+<unit id="org.apache.commons.collections" version="3.2.0.v2013030210310"/>
+<unit id="org.apache.commons.lang" version="2.6.0.v201404270220"/>
+<unit id="org.apache.oro" version="2.0.8.v201005080400"/>
+<unit id="org.h2" version="1.3.168.v201212121212"/>
+<unit id="ch.qos.logback.classic" version="1.0.7.v20121108-1250"/>
+<unit id="ch.qos.logback.core" version="1.0.7.v20121108-1250"/>
+<unit id="ch.qos.logback.slf4j" version="1.0.7.v201505121915"/>
+<unit id="org.slf4j.api" version="1.7.2.v20121108-1250"/>
+<unit id="org.slf4j.jcl" version="1.7.2.v20130115-1340"/>
+<unit id="org.slf4j.jul" version="1.7.2.v20121108-1250"/>
+<unit id="org.dom4j" version="1.6.1.v201312101416"/>
+<unit id="org.apache.poi" version="3.9.0.v201405241750"/>
+<unit id="org.apache.poi.ooxml.schemas" version="3.9.0.v201405241750"/>
+<unit id="org.apache.poi.ooxml" version="3.9.0.v201405241905"/>
+<unit id="org.apache.xmlbeans" version="2.3.0.v201405241900"/>
+<unit id="javax.xml.stream" version="1.0.1.v201004272200"/>
+<unit id="org.xmlpull" version="1.1.3.4_v201201052148"/>
+<unit id="com.thoughtworks.xstream" version="1.3.1.v201111240924"/>
+<unit id="org.jsoup" version="1.7.2.v201411291515"/>
+<repository location="http://download.eclipse.org/tools/orbit/downloads/drops/R20150821153341/repository"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="slicer" includeSource="true" type="InstallableUnit">
-<unit id="org.junit" version="0.0.0"/>
-<unit id="org.hamcrest.core" version="0.0.0"/>
 <unit id="org.eclipse.core.runtime.compatibility" version="0.0.0"/>
 <unit id="org.eclipse.platform.ide" version="0.0.0"/>
 <unit id="org.eclipse.equinox.executable.feature.group" version="0.0.0"/>
@@ -41,8 +54,21 @@
 <unit id="org.eclipse.mylyn.bugzilla_feature.feature.group" version="0.0.0"/>
 <unit id="org.eclipse.mylyn.trac_feature.feature.group" version="0.0.0"/>
 <unit id="org.eclipse.mylyn.wikitext_feature.feature.group" version="0.0.0"/>
-<unit id="org.eclipse.jdt.annotation" version="0.0.0"/>
 <repository location="http://download.eclipse.org/releases/luna"/>
+</location>
+<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="slicer" includeSource="true" type="InstallableUnit">
+<unit id="org.eclipse.jdt.annotation" version="0.0.0"/>
+<repository location="http://download.eclipse.org/releases/mars"/>
+</location>
+<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="slicer" includeSource="true" type="InstallableUnit">
+<unit id="org.eclipse.jubula.feature.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.jubula.feature.api.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.jubula.feature.api.source.feature.group" version="0.0.0"/>
+<repository location="http://download.eclipse.org/jubula/nightly/repo"/>
+</location>
+<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="slicer" includeSource="true" type="InstallableUnit">
+<unit id="org.eclipse.license.feature.group" version="0.0.0"/>
+<repository location="http://download.eclipse.org/cbi/updates/license"/>
 </location>
 </locations>
 </target>

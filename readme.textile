@@ -104,6 +104,18 @@ h3. keyboard bindings
 
 On December 5 2015 I tried to add a keyboard binding file for de_CH, but I am not sure whether it worth the time. Because when I configured my KDE workspace to use a swiss german keyboard, most of the the tests passed when using the US keyboard in the AUTConfiguration. What did not work where the german Umlauts. Maybe we will be better off to just not use these characters in our test and warn about it in methods like Common.synchronizedTextReplace
 
+h3. target definition
+
+I just copied org.eclipse.jubula.project.configuration/target/definitions/jubula+nightly.target to jubula-target/jubula-target.target and added the following location
+
+bc. <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="slicer" includeSource="true" type="InstallableUnit">
+<unit id="org.eclipse.jubula.feature.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.jubula.feature.api.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.jubula.feature.api.source.feature.group" version="0.0.0"/>
+<repository location="http://download.eclipse.org/jubula/nightly/repo"/>
+</location>
+
+
 h1. pitfalls
 
 If you use a logger inside a test, running via maven may block. E.g. testsuites/Screenshot.java

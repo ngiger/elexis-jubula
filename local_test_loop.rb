@@ -21,16 +21,18 @@ else
 end
 
 while true
-  system('killall Elexis3', MAY_FAIL) unless is_macos
-  system("#{aut_agent} -stop -p 6333", MAY_FAIL)
-  system("#{aut_agent} -l -p 6333 &", MAY_FAIL)
+  Kernel.system('pgrep -f Elexis3  | xargs kill') unless is_macos
+  Kernel.system('pgrep -f autagent | xargs kill') unless is_macos
+  # system("#{aut_agent} -stop -p 6333", MAY_FAIL)
+  # system("#{aut_agent} -l -p 6333 &", MAY_FAIL)
   report
   break if (@nr_okay + @nr_failed) > 100
   begin
     timeout(MAX_WAIT) do
-    result = system('mvn clean integration-test -Dtest=ch.ngiger.jubula.testsuites.Screenshot --offline')
-    result ? @nr_okay+=1 : @nr_failed += 1
-  end
+      result = Kernel.system('mvn clean integration-test -Dtest=ch.ngiger.jubula.testsuites.Screenshot --offline')
+      result ? @nr_okay+=1 : @nr_failed += 1
+      Kernel.system("ls -l results/subdir/take_screenshot_active_window.png")
+    end
   rescue Timeout::Error
     report "Got timeout after #{MAX_WAIT} seconds"
     @nr_failed += 1

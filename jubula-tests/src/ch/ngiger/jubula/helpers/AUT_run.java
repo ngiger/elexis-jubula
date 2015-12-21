@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.SystemUtils;
 import org.eclipse.jubula.client.AUT;
 import org.eclipse.jubula.client.AUTAgent;
 import org.eclipse.jubula.client.MakeR;
@@ -34,6 +35,7 @@ import org.eclipse.jubula.tools.AUTIdentifier;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+
 public class AUT_run {
 	/** the AUT-Agent */
 	public static AUTAgent m_agent;
@@ -52,7 +54,8 @@ public class AUT_run {
 	private static PrintWriter writer = null;
 	private static AUTIdentifier aut_id = null;
 	private static AUTConfiguration aut_config = null;
-	private static java.nio.file.Path ElexisLog = Paths.get(System.getProperty("user.home") + "/elexis/logs/elexis-3.log");
+	private static java.nio.file.Path ElexisLog =
+		Paths.get(System.getProperty("user.home") + "/elexis/logs/elexis-3.log");
 
 	public static void dbg_msg(String msg){
 		String timeStamp =
@@ -68,7 +71,6 @@ public class AUT_run {
 			try {
 				writer = new PrintWriter(log_name, "UTF-8");
 			} catch (FileNotFoundException | UnsupportedEncodingException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			System.out.println("log_name writer is: " + log_name);
@@ -123,7 +125,6 @@ public class AUT_run {
 				Files.createDirectories(rPath, attr);
 				SAVE_RESULTS_DIR = rPath.toString();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 				Assert.fail("Could not create " + rPath.toString());
 			}
@@ -132,7 +133,7 @@ public class AUT_run {
 	}
 
 	private static void setupConfig(){
-	  dbg_msg("Niklaus setupConfig 2");
+		dbg_msg("Niklaus setupConfig 2");
 		config.put(Constants.AGENT_HOST, "localhost");
 		config.put(Constants.AGENT_PORT, "6333");
 		config.put(Constants.WORK_DIR, USER_DIR);
@@ -155,15 +156,50 @@ public class AUT_run {
 			String from_env = System.getenv(entry.getKey());
 			if (from_env != null) {
 				config.put(entry.getKey(), from_env);
-				dbg_msg("Config : from env " + from_env + " for " + entry.getKey() + " is: " + entry.getValue());
+				dbg_msg("Config : from env " + from_env + " for " + entry.getKey() + " is: "
+					+ entry.getValue());
 			}
 			String value = System.getProperty(entry.getKey());
 			if (value != null) {
-				dbg_msg("Config : from property " + value + " for " + entry.getKey() + " is: " + entry.getValue());
+				dbg_msg("Config : from property " + value + " for " + entry.getKey() + " is: "
+					+ entry.getValue());
 				config.put(entry.getKey(), value);
 			}
 			dbg_msg("Config : " + entry.getKey() + " is: " + entry.getValue());
 		}
+	}
+
+	public static class AgentThread extends Thread {
+
+		@Override
+		public void run(){
+			dbg_msg("In AgentThread run");
+			if (SystemUtils.IS_OS_LINUX && System.getProperty("os.arch").equals("amd64")) {
+			java.nio.file.Path rPath = Paths
+				.get(
+					"../org.eclipse.jubula.product.autagent.start/target/products/org.eclipse.jubula.product.autagent.start/linux/gtk/x86_64/autagent")
+				.toAbsolutePath().normalize();
+			String msg = "autagent " + rPath.toFile().canExecute() + " " + rPath.toAbsolutePath();
+			dbg_msg(msg);
+			Assert.assertTrue(rPath.toFile().canExecute());
+			run_system_cmd(new String[] {
+				rPath.toString(), "-vm", "/usr/bin/java", "-l", "-p",
+				config.get(Constants.AGENT_PORT)
+			});
+			dbg_msg("Autagent finished");
+		}
+			String name = System.getProperty("os.name");
+			String version = System.getProperty("os.version");
+			String arch = System.getProperty("os.arch");
+			String msg = "Unsupported os" + name + " version" + version + " " + arch;
+			dbg_msg(msg);
+			System.exit(1);
+		}
+	}
+
+	private static void startAutagent(){
+		dbg_msg("Calling startAutagent ");
+		(new AgentThread()).start();
 	}
 
 	private static void startAUT(){
@@ -202,7 +238,6 @@ public class AUT_run {
 				"/bin/ps", "-f", "-C", "Elexis3"
 			});
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		dbg_msg("AUT created and activated");
@@ -213,7 +248,7 @@ public class AUT_run {
 	public static void setUp() throws Exception{
 		setupResultDir();
 		setupConfig();
-		 try {
+		try {
 			java.nio.file.Files.delete(ElexisLog);
 			dbg_msg("Deleted old " + ElexisLog.toAbsolutePath());
 		} catch (IOException e) {
@@ -227,6 +262,9 @@ public class AUT_run {
 			+ System.getenv().get(Constants.AGENT_PORT) + " property: "
 			+ System.getProperty(Constants.AGENT_PORT);
 		dbg_msg(msg);
+		startAutagent();
+		Common.sleepMs(Constants.ONE_SECOND*10); // Give it some time to start up
+		dbg_msg("after sleep: connect to " + config.get(Constants.AGENT_HOST) + " port " + config.get(Constants.AGENT_PORT));
 		m_agent = MakeR.createAUTAgent(config.get(Constants.AGENT_HOST),
 			new Integer(config.get(Constants.AGENT_PORT)));
 		m_agent.connect();
@@ -293,12 +331,12 @@ public class AUT_run {
 	}
 
 	private void saveLogs(){
-	 java.nio.file.Path	 newdir = Paths.get(SAVE_RESULTS_DIR, "elexis-3.log");
-	 try {
-		java.nio.file.Files.copy(ElexisLog, newdir);
-	} catch (IOException e) {
-		// Just ignore this error, probably we had no elexis log
-	}
+		java.nio.file.Path newdir = Paths.get(SAVE_RESULTS_DIR, "elexis-3.log");
+		try {
+			java.nio.file.Files.copy(ElexisLog, newdir);
+		} catch (IOException e) {
+			// Just ignore this error, probably we had no elexis log
+		}
 	}
 
 	public static void restartApp(){
