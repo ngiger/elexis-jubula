@@ -30,7 +30,7 @@ class DockerRunner
     cmd += " -v #{@container_home}:/home/elexis"
     cmd += " -v #{@result_dir}:/home/elexis/results"
     cmd += " -v #{@m2_repo}:/home/elexis/.m2"
-    cmd += " --publish=#{local_ip}:8000:8000" # debug port for java
+    cmd += " --publish=#{local_ip}:8000:8000" if false # debug port for java
     cmd += " --publish=#{local_ip}:6333:6333" if false
     cmd += " --name=#{@docker_name} #{ElexisJubula::NAME}"
     cmd += ' ' + cmd_in_docker
