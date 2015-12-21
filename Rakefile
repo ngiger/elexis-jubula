@@ -22,7 +22,7 @@ desc 'Run an interactive bash shell inside docker'
 task :docker_run do
   cmd = 'docker run --rm=true --interactive=true --tty=true '
   cmd += " -v #{our_directory}:/home/elexis/"
-  cmd += " --publish=6333:6333 ngiger/jubula_runner:#{Elexis_Jubula::VERSION}"
+  cmd += " --publish=6333:6333 ngiger/jubula_runner:#{ElexisJubula::VERSION}"
   fail "docker_run failed! #{cmd}" unless system(cmd)
 end
 
@@ -36,7 +36,7 @@ task :jubula_test, [:test_to_run] => :elexis_install_os do  |target, args|
   test_to_run =  args[:test_to_run]
   test_to_run ||= 'Screenshot'
   # TODO: publish signed image and ensure that it can be
-  # system('scripts/jubularunner.rb docker_build') unless system('docker images ngiger/jubula_runner', MAY_FAIL)
+  system('scripts/jubularunner.rb docker_build') unless system('docker images ngiger/jubula_runner', MAY_FAIL)
   fail 'Running failed' unless system("scripts/jubularunner.rb #{test_to_run}")
 end
 
@@ -51,11 +51,6 @@ desc 'Run Jubula-GUI test (default Screenshot) via Maven'
 task :jubula_mvn, [:test_to_run] => :elexis_install_os do  |target, args|
   port = 6333 # Don't change it or via xvfb you will have problems!
   savedDir = Dir.pwd
-  autagent = get_full_file_path_or_fail(File.join(Config[:jubula_root], 'server/autagent'))
-  at_exit do
-    $stderr.puts "Stopping autagent"
-    system("#{autagent} -stop localhost -p #{port}")
-  end
   begin
     args.with_default(:test_to_run  => 'Screenshot')
   test_to_run =  args[:test_to_run]
@@ -71,9 +66,6 @@ task :jubula_mvn, [:test_to_run] => :elexis_install_os do  |target, args|
     if File.exist?(src) && !File.exist?(dst)
       FileUtils.ln_s(src, dst)
     end
-    Thread.new do
-      fail "Could not start autagent" unless system("#{autagent} start -p #{port}")
-    end
     puts "Before calling mvn #{Dir.pwd} savedDir #{savedDir} test_to_run #{test_to_run}"
     Dir.chdir savedDir
     cmd = "pwd && mvn clean integration-test  -Dtest=ch.ngiger.jubula.testsuites.#{test_to_run}"
@@ -84,14 +76,14 @@ end
 
 desc 'Build, commit, tag, push && docker push the current state'
 task :docker_publish do
-  puts "Publishing #{Elexis_Jubula::Version} to docker"
-#  system("git commit -m 'Publishing #{Elexis_Jubula::Version}'")
+  puts "Publishing #{ElexisJubula::Version} to docker"
+#  system("git commit -m 'Publishing #{ElexisJubula::Version}'")
   puts "Log-In to to docker"
   raise "login to docker failed" unless system("docker login")
-#  raise "git tagging failed" unless system("git tag #{Elexis_Jubula::Version}")
+#  raise "git tagging failed" unless system("git tag #{ElexisJubula::Version}")
 #  raise "git push failed" unless system("git push --tags")
-  raise "Tagging failed" unless system( "docker tag ngiger/jubula_runner ngiger/jubula_runner:#{Elexis_Jubula::Version}")
-  cmd = "docker push ngiger/jubula_runner:#{Elexis_Jubula::Version}"
+  raise "Tagging failed" unless system( "docker tag ngiger/jubula_runner ngiger/jubula_runner:#{ElexisJubula::Version}")
+  cmd = "docker push ngiger/jubula_runner:#{ElexisJubula::Version}"
   puts cmd
   raise "Pushing to docker failed" unless system(cmd)
 end

@@ -32,7 +32,7 @@ class DockerRunner
     cmd += " -v #{@m2_repo}:/home/elexis/.m2"
     cmd += " --publish=#{local_ip}:8000:8000" # debug port for java
     cmd += " --publish=#{local_ip}:6333:6333" if false
-    cmd += " --name=#{@docker_name} ngiger/jubula_runner"
+    cmd += " --name=#{@docker_name} ngiger/jubula_runner:#{ElexisJubula::VERSION}"
     cmd += ' ' + cmd_in_docker
     puts cmd
     system(cmd)
@@ -79,11 +79,6 @@ class JubulaRunner
     "-dburl 'jdbc:h2:#{full_path};MVCC=TRUE;AUTO_SERVER=TRUE;DB_CLOSE_ON_EXIT=FALSE' -dbuser 'sa' -dbpw ''"
   end
 
-  def ensure_presence_of_jubula
-    @autagent = get_full_file_path_or_fail(File.join(Config[:jubula_root], 'server/autagent'))
-    puts "Found all tools to be able to run #{@test_xml}"
-  end
-
   def store_cmd(name, doc)
     path = File.join(@docker ? @docker.container_home : RootDir, File.basename(name))
     FileUtils.makedirs(File.dirname(path))
@@ -94,34 +89,26 @@ class JubulaRunner
     FileUtils.chmod(0755, path)
   end
 
-  def start_autagent
+  def start_xvfb
     # http://support.xored.com/support/solutions/articles/3000028645
     # https://www.eclipse.org/forums/index.php?t=msg&th=440461&goto=987043&#msg_987043
     # Had window activation problem with Xvfb with or without awesome
     # with startx this did not gow
-    puts "Starting autagent with port #{Config[:agent_port]}"
-    autagent_cmd = "#{@autagent} -l -p #{Config[:agent_port]}"
     if @docker
+      puts "Starting start_xvfb in docker"
       start_meta = "/usr/bin/metacity display=$DISPLAY --replace --sm-disable &
       sleep 1
       /usr/bin/metacity-message disable-keybindings
       /usr/bin/xclock &
     "
-      start_xvfb = 'Xvfb :1 -screen 5 1280x1024x24 -nolisten tcp'
-      store_cmd('start_xvfb.sh', start_xvfb)
-      @docker.start_docker('./start_xvfb.sh', 'DISPLAY=:1.5')
+      start_xvfb_cmd = 'Xvfb :1 -screen 5 1280x1024x24 -nolisten tcp'
+      store_cmd('start_xvfb_cmd.sh', start_xvfb_cmd)
+      @docker.start_docker('./start_xvfb_cmd.sh', 'DISPLAY=:1.5')
       sleep(0.5)
       store_cmd('start_meta.sh', start_meta)
       @docker.exec_in_docker('./start_meta.sh', {:detach => true})
-
-      # @docker.exec_in_docker("fluxbox", {:detach => true})
-      sleep(0.5)
-      store_cmd('./autagent_cmd.sh', autagent_cmd)
-      @docker.exec_in_docker(autagent_cmd, {:detach => true})
       sleep(0.5)
       system('docker ps')
-    else
-      system(autagent_cmd + ' &')
     end
   end
 
@@ -130,7 +117,7 @@ class JubulaRunner
     at_exit { @docker.stop_docker }
     FileUtils.rm_rf(@docker.container_home, :verbose => true)
     raise "Must be possible to remove container_home #{@docker.container_home}" if File.exist?(@docker.container_home)
-    ['.git', 'pom.xml', 'jubula-target', 'jubula-tests', 'org.eclipse.jubula.product.autagent.product'].each do |item|
+    ['.git', 'pom.xml', 'jubula-target', 'jubula-tests', 'org.eclipse.jubula.product.autagent.start'].each do |item|
       FileUtils.cp_r(File.join(RootDir, item), @docker.container_home, :verbose => true, :preserve => true)
     end
     FileUtils.makedirs(@docker.container_home)
@@ -141,11 +128,9 @@ class JubulaRunner
     prepare_docker
     Dir.chdir(WorkDir)
     FileUtils.rm_f('jubula-tests/AUT_run.log', :verbose => true) if File.exist?('jubula-tests/AUT_run.log')
-    start_autagent
+    start_xvfb
     sleep 0.5
     cmd = "status=99
-ps -ef | grep autagent
-ps -ef
 mkdir -p /home/elexis/results
 cp $0 /home/elexis/results
 #{@mvn_cmd}
@@ -153,7 +138,6 @@ status=$?
 echo run_test_in_docker done
 sleep 1
 #{@docker.cleanup_in_container}
-#{@autagent} -stop -p #{Config[:agent_port]}
 rm -rf ~/.jubula
 ls -lR /home/elexis/results
 sleep 1
@@ -183,10 +167,6 @@ exit $status
     system("killall --quiet #{@test_params[:exe_name]}", MAY_FAIL)
   end
 
-  def stop_agent
-    system("#{@autagent} -stop -p #{Config[:agent_port]} &")
-  end
-
   def show_configuration
     puts "Configuration is:\n#{Config}"
     puts "Testparams for #{@test_name} are:\n#{@test_params}"
@@ -203,7 +183,6 @@ exit $status
     FileUtils.rm_rf(@result_dir)
     FileUtils.makedirs(@result_dir)
     Dir.chdir(WorkDir)
-    ensure_presence_of_jubula
     @mvn_cmd = "mvn integration-test -D#{@test_params[:test_to_run]}"
     @docker ? run_test_in_docker : run_test_exec
   ensure
@@ -219,8 +198,8 @@ exit $status
     show_configuration if $VERBOSE || DRY_RUN
     @jubula_test_db_params = get_h2_db_params(File.join(WorkDir, 'database/embedded'))
     @jubula_test_data_dir  = File.join(WorkDir, 'database/data')
-    install_rcp_support_for_jubula
-    patch_ini_file_for_jubula_rc
+    install_rcp_support_for_jubula(WorkDir)
+    patch_ini_file_for_jubula_rc(WorkDir)
   end
 end
 

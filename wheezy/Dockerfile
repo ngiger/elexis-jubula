@@ -27,10 +27,6 @@ RUN apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf /tmp/*
 
-# Somehow we could not run autagent inside docker
-ADD jubula.zip /root/jubula.zip
-RUN cd / && /usr/bin/unzip /root/jubula.zip
-
 # install some debugging tools
 RUN apt-get update && \
     apt-get install -y maven htop lsof strace sudo vim

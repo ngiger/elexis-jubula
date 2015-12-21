@@ -5,6 +5,9 @@ require 'fileutils'
 require 'pry' if Gem::Specification.find_all_by_name('pry').any?
 require 'byebug' if Gem::Specification.find_all_by_name('byebug').any?
 
+$LOAD_PATH.unshift File.dirname(__FILE__)
+require 'version'
+
 if ARGV.index('-n')
   DRY_RUN = true
   ARGV.delete('-n')
@@ -140,10 +143,9 @@ end
 
 def docker_build(docker_dir = File.join(RootDir, 'wheezy'))
   puts "docker_build from #{docker_dir}"
-  download_if_not_exist(docker_dir, 'http://download.elexis.info/jubula/8.2/autagent_8_2_linux_x86_64.zip')
   FileUtils.cp(File.join(RootDir, 'Gemfile'), docker_dir, verbose: true)
   docker_name = Config[:docker_name] || 'ngiger/jubula_runner'
-  system("docker build -t #{docker_name} #{docker_dir}")
+  system("docker build -t #{docker_name}:#{ElexisJubula::VERSION} #{docker_dir}")
 end
 
 def patch_ruby(cmd)
