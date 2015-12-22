@@ -139,12 +139,12 @@ public class Views {
 
 		} catch (CheckFailedException | AssertionError e) {
 			AUT_run.dbg_msg("visit_all_views: error was " + e.getMessage());
-			e.printStackTrace();
+			e.printStackTrace(AUT_run.writer);
 			AUT_run.takeScreenshotActiveWindow("CheckFailedException.png"); //$NON-NLS-1$
 			e.printStackTrace();
 		} finally {
 			AUT_run.dbg_msg("visit_all_views: done. Found views: " + nr_views);
-			Assert.assertTrue("We should have more than 10 views to visit!", nr_views >= 10 ); //$NON-NLS-1$
+			Assert.assertTrue("We should have more than 10 views to visit!", nr_views >= 10); //$NON-NLS-1$
 		}
 	}
 }

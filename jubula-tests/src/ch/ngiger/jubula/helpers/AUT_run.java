@@ -53,7 +53,7 @@ public class AUT_run {
 	public static final String USER_DIR = System.getProperty("user.dir");
 	public static String RESULT_DIR = null;
 	public static final Locale Keyboard_Locale = Locale.GERMANY;// Locale.US;
-	private static PrintWriter writer = null;
+	public static PrintWriter writer = null;
 	private static AUTIdentifier aut_id = null;
 	private static AUTConfiguration aut_config = null;
 	private static java.nio.file.Path ElexisLog =
