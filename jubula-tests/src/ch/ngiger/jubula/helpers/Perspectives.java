@@ -99,7 +99,9 @@ public class Perspectives {
 	}
 
 	public static void openPerspectiveByName(String name){
-		Common.openMenu(Messages.getString("Fenster/Perspektive/Other.*"));
+		String localized_name = Messages.getString("VisitAllPerspectives.2");
+		AUT_run.dbg_msg(String.format("openPerspectiveByName %s via %s", name, localized_name));
+		Common.openMenu(localized_name);
 		Common.waitForWindow("Open Perspective", Constants.ONE_SECOND);
 		@SuppressWarnings("unchecked")
 		TableComponent tbl =

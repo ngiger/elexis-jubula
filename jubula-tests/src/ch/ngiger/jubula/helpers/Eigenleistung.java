@@ -49,6 +49,8 @@ public class Eigenleistung {
 		Common.clickComponent(OM.Blöcke_EigeneLeistungenhinzufügen_btn);
 
 		Common.waitForWindow(window_title);
+		AUT_run.dbg_msg(String.format("createEigenleistung: a: %s d: %s cost %d/%d/%d", abbrev,
+			description, cost, selling, time_needed));
 		Common.synchronizedTextReplace(OM.Eigenleistung_Text_1_txf, description);
 		Common.synchronizedTextReplace(OM.Eigenleistung_Text_2_txf, abbrev);
 		Common.synchronizedTextReplace(OM.Eigenleistung_Text_3_txf, Integer.toString(cost));
@@ -65,11 +67,11 @@ public class Eigenleistung {
 		AUT_run.takeScreenshotActiveWindow("eigenleistung/show.png"); //$NON-NLS-1$
 	}
 
-	public static void selectEigenleistung(String description) {
+	public static void selectEigenleistung(String description){
 		@SuppressWarnings("unchecked")
 		TabComponent tab = SwtComponents.createCTabFolder(OM.CTabFolder_1_tpn);
 		AUT_run.m_aut.execute(tab.selectTabByValue("Eigenleistung", Operator.matches), null);
-		Common.synchronizedTextReplace(OM.Eigenleistung_Code_txf, description.substring(0,3));
+		Common.synchronizedTextReplace(OM.Eigenleistung_Code_txf, description.substring(0, 3));
 	}
 
 }

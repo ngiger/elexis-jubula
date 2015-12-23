@@ -136,7 +136,6 @@ public class AUT_run {
 	}
 
 	private static void setupConfig(){
-		dbg_msg("Niklaus setupConfig 2");
 		config.put(Constants.AGENT_HOST, "localhost");
 		config.put(Constants.AGENT_PORT, "6333");
 		config.put(Constants.WORK_DIR, USER_DIR);

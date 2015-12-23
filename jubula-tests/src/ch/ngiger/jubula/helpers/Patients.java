@@ -338,7 +338,7 @@ public class Patients {
 	 * @param: free_text in the kons_free text
 	 */
 	public void createConsultation(String info, String free_text){
-		String second_window = "Zweite Konsultation für heute?";
+		String second_window = "Zweite Konsultation.*";
 		@SuppressWarnings("unchecked")
 		TabComponent tab = SwtComponents.createCTabFolder(OM.CTabFolder_2_tpn);
 		AUT_run.m_aut.execute(tab.selectTabByValue(".*Konsultation.*", Operator.matches), null);
@@ -358,13 +358,18 @@ public class Patients {
 		Common.waitForWindowClose(second_window);
 		AUT_run.takeScreenshotActiveWindow("cons/should_have_created_kons.png"); //$NON-NLS-1$
 		Common.clickComponent(OM.Kons_Texteingabe_txf);
-
-		// Enter kons free text
 		Common.synchronizedTextReplace(OM.Kons_Texteingabe_txf, info);
-		Common.waitForComponent(OM.Kons_Freitext_txt);
+		AUT_run.takeScreenshotActiveWindow("cons/kons_10.png"); //$NON-NLS-1$
+
+		Common.clickComponent(OM.Kons_Diagnose_Freitext_öffnen);
+		// Here I have problems at the moment
+		// Enter kons free text
 		Common.clickComponent(OM.Kons_Freitext_txt);
 		Common.synchronizedTextReplace(OM.Kons_Freitext_txt, free_text);
+		Common.pressEnter();
 		Common.clickComponent(OM.CreatePatient_OkButton_grc);
+//		Common.clickComponent(OM.Kons_Diagnose_Freitext_öffnen);
+
 		Common.waitForElexisMainWindow();
 		AUT_run.takeScreenshotActiveWindow("cons/kons_done.png"); //$NON-NLS-1$
 
@@ -376,15 +381,40 @@ public class Patients {
 	 * We assume an open consultation
 	 */
 	public void eigenleistungVerrechnen(String item){
+		AUT_run.dbg_msg("eigenleistungVerrechnen: " + item); //$NON-NLS-1$
+		AUT_run.takeScreenshotActiveWindow("cons/eigenleistung/start.png"); //$NON-NLS-1$
+		Perspectives.openPatientenPerspective();
+		Perspectives.resetPerspective();
+		AUT_run.takeScreenshotActiveWindow("cons/eigenleistung/resetted.png"); //$NON-NLS-1$
+		@SuppressWarnings("unchecked")
+		TabComponent tab = SwtComponents.createCTabFolder(OM.CTabFolder_2_tpn);
+		AUT_run.m_aut.execute(tab.selectTabByValue(".*Konsultation.*", Operator.matches), null);
+		AUT_run.takeScreenshotActiveWindow("cons/eigenleistung/kons.png"); //$NON-NLS-1$
+		Common.sleep1second();
+
+		// Clicking on Kons_Verrechnung_grc opens the perspective full
 		Common.clickComponent(OM.Kons_Verrechnung_grc);
+		Common.sleep1second();
 		// Common.clickComponent(OM.Patientenübersicht_tbi);
-		Common.openMenu("Fenster/Ansicht/Leistungen");
+		// Common.openMenu("Fenster/Ansicht/Leistungen");
 		Eigenleistung.selectEigenleistung(item);
+		Common.sleep1second();
+		AUT_run.takeScreenshotActiveWindow("cons/eigenleistung/item.png"); //$NON-NLS-1$
 		Common.selectTopLeftCell(OM.Eigenleistung_Alle_Table_1_tbl);
+		AUT_run.takeScreenshotActiveWindow("cons/eigenleistung/item_selected.png"); //$NON-NLS-1$
+		Common.sleep1second();
 		Common.dragTopLeftCell(OM.Eigenleistung_Alle_Table_1_tbl);
+		Common.sleep1second();
 		Common.dropIntoMiddleOfComponent(OM.Kons_Verrechnung_table);
+		Common.sleep1second();
+		AUT_run.takeScreenshotActiveWindow("cons/eigenleistung/dropped.png"); //$NON-NLS-1$
+		Common.clickComponent(OM.Kons_Verrechnung_table);
+		Common.sleep1second();
+		AUT_run.takeScreenshotActiveWindow("cons/eigenleistung/table.png"); //$NON-NLS-1$
 		Common.clickComponent(OM.Kons_Texteingabe_txf);
-		AUT_run.takeScreenshotActiveWindow("cons/kons_eigenleistung.png"); //$NON-NLS-1$
+		Common.sleep1second();
+		Common.sleepMs(Constants.ONE_SECOND * 120);
+		AUT_run.takeScreenshotActiveWindow("cons/eigenleistung/done.png"); //$NON-NLS-1$
 	}
 
 	public void invoiceActiveConsultation(){

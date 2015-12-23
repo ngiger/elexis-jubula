@@ -49,15 +49,23 @@ public class Common {
 		try {
 			Thread.sleep(timoutInMs);
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 
 	public static void openMenu(String menu){
-		AUT_run.m_aut.execute(
-			mbr.waitForComponent(Constants.ONE_SECOND, Constants.NR_MS_WAIT_AFTER_ACTION), null);
-		AUT_run.m_aut.execute(mbr.selectMenuEntryByTextpath(menu, Operator.matches), null); //$NON-NLS-1$
+		try {
+			AUT_run.m_aut.execute(
+				mbr.waitForComponent(Constants.ONE_SECOND * 5, Constants.NR_MS_WAIT_AFTER_ACTION),
+				null);
+			AUT_run.m_aut.execute(mbr.selectMenuEntryByTextpath(menu, Operator.matches), null);
+		} catch (ActionException e) {
+			String msg = String.format("openMenu %s after 5 second failed", menu); //$NON-NLS-1$
+			AUT_run.dbg_msg(msg);
+			e.printStackTrace(AUT_run.writer);
+			AUT_run.takeScreenshotActiveWindow("open_menu_failed.png"); //$NON-NLS-1$
+			Assert.fail(msg);
+		}
 	}
 
 	public static void waitForElexisMainWindow(){
@@ -70,13 +78,11 @@ public class Common {
 
 	public static void waitForWindow(String window_title, int timeoutInMs){
 		try {
-		AUT_run.m_aut.execute(
-			AUT_run.app.waitForWindowActivation(window_title, Operator.matches, timeoutInMs, 0),
-			null);
-		AUT_run.m_aut.execute(
-			AUT_run.app.checkExistenceOfWindow(window_title, Operator.matches, true), null);
+			AUT_run.m_aut.execute(
+				AUT_run.app.waitForWindowActivation(window_title, Operator.matches, timeoutInMs, 0),
+				null);
 		} catch (ActionException e) {
-			String msg = "waitForWindow " + window_title + " after " + timeoutInMs +" ms failed";
+			String msg = "waitForWindow " + window_title + " after " + timeoutInMs + " ms failed";
 			AUT_run.dbg_msg(msg);
 			AUT_run.takeScreenshotActiveWindow("window/wait_failed_" + window_title + ".png");
 			Assert.fail(msg);
@@ -93,12 +99,14 @@ public class Common {
 
 	public static void waitForWindowClose(String window_title, int timeoutInMs){
 		try {
-		AUT_run.m_aut.execute(
-			AUT_run.app.waitForWindowToClose(window_title, Operator.matches, timeoutInMs, 0), null);
-		AUT_run.m_aut.execute(
-			AUT_run.app.checkExistenceOfWindow(window_title, Operator.matches, false), null);
+			AUT_run.m_aut.execute(
+				AUT_run.app.waitForWindowToClose(window_title, Operator.matches, timeoutInMs, 0),
+				null);
+			AUT_run.m_aut.execute(
+				AUT_run.app.checkExistenceOfWindow(window_title, Operator.matches, false), null);
 		} catch (ActionException e) {
-			String msg = "waitForWindowClose " + window_title + " after " + timeoutInMs +" ms failed";
+			String msg =
+				"waitForWindowClose " + window_title + " after " + timeoutInMs + " ms failed";
 			AUT_run.dbg_msg(msg);
 			AUT_run.takeScreenshotActiveWindow("window/close_failed_" + window_title + ".png");
 			Assert.fail(msg);
@@ -107,11 +115,9 @@ public class Common {
 
 	public static void clickInMiddleOfComponent(
 		@SuppressWarnings("rawtypes") ComponentIdentifier cid){
-		// Click Okay
 		@SuppressWarnings("unchecked")
 		GraphicsComponent comp =
 			org.eclipse.jubula.toolkit.base.AbstractComponents.createGraphicsComponent(cid);
-		// AUT_run.m_aut.execute(comp.click(1, InteractionMode.primary), null);
 		AUT_run.m_aut.execute(comp.clickInComponent(new Integer(1), InteractionMode.primary,
 			new Integer(1), Unit.percent, new Integer(50), Unit.percent), null);
 	}
@@ -131,12 +137,22 @@ public class Common {
 		}
 	}
 
-	public static void waitForComponent(@SuppressWarnings("rawtypes") ComponentIdentifier cid){
-		@SuppressWarnings("unchecked")
-		GraphicsComponent comp =
-			org.eclipse.jubula.toolkit.base.AbstractComponents.createGraphicsComponent(cid);
-		AUT_run.m_aut.execute(comp.waitForComponent(Constants.ONE_SECOND, 0), null);
+	public static boolean waitForComponent(@SuppressWarnings("rawtypes") ComponentIdentifier cid){
+		try {
+			@SuppressWarnings("unchecked")
+			GraphicsComponent comp =
+				org.eclipse.jubula.toolkit.base.AbstractComponents.createGraphicsComponent(cid);
+			AUT_run.m_aut.execute(comp.waitForComponent(Constants.ONE_SECOND, 0), null);
+			return true;
+		} catch (ActionException | CheckFailedException | ComponentNotFoundException e) {
+			String msg = String.format("waitForComponent failed. Error %s", e.getMessage());
+			e.printStackTrace(AUT_run.writer);
+			AUT_run.dbg_msg(msg);
+			AUT_run.takeScreenshotActiveWindow("waitForComponent_failed.png");
+		}
+		return false;
 	}
+
 	public static void clickComponent(@SuppressWarnings("rawtypes") ComponentIdentifier cid){
 		// Click Okay
 		Assert.assertNotNull(cid + " may not be null", cid); //$NON-NLS-1$
@@ -147,22 +163,21 @@ public class Common {
 		AUT_run.m_aut.execute(comp.click(1, InteractionMode.primary), null);
 	}
 
-	/*
-	 * Allows to send special character like "Enter"
-	 */
 	public static void pressEnter(){
-		AUT_run.dbg_msg("maximize does not work in elexis");
+		AUT_run.dbg_msg("pressEnter");
 		/*
-		AUT_run.m_aut.execute(AUT_run.app.externalKeyCombination(new Modifier[] {
-			Modifier.control, // Ctrl-m does not work in Elexis
-		}, "Enter"), null);
-		*/
+		 * Allows to send special character like "Enter"
+		 */
+		AUT_run.m_aut.execute(AUT_run.app.externalKeyCombination(new Modifier[] {}, "Enter"), null);
 	}
 
 	public static void maximixeView(){
+		AUT_run.dbg_msg("maximize does not work in elexis");
+		/* Works only when running natively with keyboard set to de_CH, but not under xvfb
 		AUT_run.m_aut.execute(AUT_run.app.externalKeyCombination(new Modifier[] {
 			Modifier.none
 		}, "m"), null);
+		*/
 	}
 
 	public static void synchronizedTextReplace(
@@ -172,14 +187,20 @@ public class Common {
 		TextInputComponent tic = SwtComponents.createTextInputComponent(cid);
 		AUT_run.m_aut.execute(tic.waitForComponent(Constants.ONE_SECOND, 0), null);
 		try {
+			String changedValue = newValue.replaceAll("[^\\w\\s\\.-_]", "_"); // Stuff like üis not possible
 			Thread.sleep(1000);
-			AUT_run.dbg_msg("synchronizedTextReplace: " + cid.toString() + " -> " + newValue);
-			AUT_run.m_aut.execute(tic.replaceText(newValue), null);
-			Thread.sleep(1000);
-			AUT_run.m_aut.execute(tic.checkText(newValue, Operator.equals), null);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			AUT_run.dbg_msg(String.format("synchronizedTextReplace: %s -> %s changed %s",
+				cid.toString(), newValue, changedValue));
+			AUT_run.m_aut.execute(tic.replaceText(changedValue), null);
+			Thread.sleep(100);
+			AUT_run.m_aut.execute(tic.checkText(changedValue, Operator.equals), null);
+		} catch (InterruptedException | ActionException e) {
+			String msg = String.format("synchronizedTextReplace: new: %s error %s", newValue,
+				e.getMessage());
+			AUT_run.dbg_msg(msg);
+			e.printStackTrace(AUT_run.writer);
+			Assert.fail(msg);
+
 		}
 	}
 
@@ -244,15 +265,20 @@ public class Common {
 	public static void dragTopLeftCell(@SuppressWarnings("rawtypes") ComponentIdentifier cid){
 		@SuppressWarnings("unchecked")
 		TableComponent tbl = ConcreteComponents.createTableComponent(cid);
-		Modifier[] modifierKeys = new Modifier[]  {};
-		AUT_run.m_aut.execute(tbl.dragCell(InteractionMode.primary, modifierKeys, "1", Operator.equals, "1", Operator.equals, new Integer(50), Unit.percent, new Integer(50), Unit.percent), null);
+		Modifier[] modifierKeys = new Modifier[] {};
+		AUT_run.m_aut.execute(
+			tbl.dragCell(InteractionMode.primary, modifierKeys, "1", Operator.equals, "1",
+				Operator.equals, new Integer(50), Unit.percent, new Integer(50), Unit.percent),
+			null);
 	}
 
-	public static void dropIntoMiddleOfComponent(@SuppressWarnings("rawtypes") ComponentIdentifier cid){
+	public static void dropIntoMiddleOfComponent(
+		@SuppressWarnings("rawtypes") ComponentIdentifier cid){
 		@SuppressWarnings("unchecked")
 		GraphicsComponent comp =
 			org.eclipse.jubula.toolkit.base.AbstractComponents.createGraphicsComponent(cid);
-		comp.drop( new Integer(50), Unit.percent, new Integer(50), Unit.percent, Constants.ONE_SECOND);
+		comp.drop(new Integer(50), Unit.percent, new Integer(50), Unit.percent,
+			Constants.ONE_SECOND);
 	}
 
 }

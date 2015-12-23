@@ -152,6 +152,10 @@ exit $status
       res = @docker.exec_in_docker('./testexec.sh')
       puts "res of testexec.sh is #{res}"
       sleep(0.5)
+      if res == 0 && /smoketest/i.match(@test_params[:test_to_run])
+        # Copy newly installed plugins for further tests back
+        FileUtils.cp_r(File.join(@docker.container_home, 'work'), WorkDir, :verbose => true)
+      end
     ensure
       # this is needed that copying  the results and log files will not fail
       @docker.exec_in_docker(@docker.cleanup_in_container)

@@ -31,7 +31,7 @@ task :elexis_install_os do
   fail 'elexis_install_os failed!' unless system('scripts/install_open_source_elexis.rb')
 end
 
-desc 'Run Jubula-GUI test (default Screenshot) for Elexis OpenSource locally'
+desc 'Run Jubula-GUI test (default Screenshot) for Elexis OpenSource via jubularunner'
 task :jubula_test, [:test_to_run] => :elexis_install_os do  |target, args|
   test_to_run =  args[:test_to_run]
   test_to_run ||= 'Screenshot'
@@ -53,7 +53,7 @@ task :jubula_mvn, [:test_to_run] => :elexis_install_os do  |target, args|
   savedDir = Dir.pwd
   begin
     args.with_default(:test_to_run  => 'Screenshot')
-  test_to_run =  args[:test_to_run]
+    test_to_run =  args[:test_to_run]
     test_to_run ||= 'Screenshot'
     # The next 5 lines are just for making https://srv.elexis.info/jenkins/job/Elexis-3.0-Jubula-Matrix-Linux
     # work with minimal fuss
@@ -68,7 +68,7 @@ task :jubula_mvn, [:test_to_run] => :elexis_install_os do  |target, args|
     end
     puts "Before calling mvn #{Dir.pwd} savedDir #{savedDir} test_to_run #{test_to_run}"
     Dir.chdir savedDir
-    cmd = "pwd && mvn clean integration-test  -Dtest=ch.ngiger.jubula.testsuites.#{test_to_run}"
+    cmd = "pwd && mvn clean integration-test  -Dtest_to_run=#{test_to_run}"
     puts "Will call #{cmd}"
     fail 'Running mvn failed' unless system(cmd)
   end
