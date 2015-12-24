@@ -214,25 +214,17 @@ public class AUT_run {
 		aut_id = m_agent.startAUT(aut_config);
 		if (aut_id != null) {
 			dbg_msg("started AUT as " + aut_id.getID() + " will sleep 2 seconds");
-			Common.sleep1second();
-			Common.sleep1second();
 			m_aut = m_agent.getAUT(aut_id, SwtComponents.getToolkitInformation());
 			dbg_msg("AUT will connect");
-			Common.sleep1second();
 			m_aut.connect();
 			dbg_msg("AUT connected");
 		} else {
 			Assert.fail("AUT did not start as expected? Why"); //$NON-NLS-1$
 		}
-		Common.sleep1second();
 		dbg_msg("AUT createApplication");
 		app = SwtComponents.createApplication();
 		dbg_msg("AUT activate via titlebar");
 		m_aut.execute(app.activate(AUTActivationMethod.titlebar), null);
-		Common.sleep1second();
-		run_system_cmd(new String[] {
-			"/bin/ps", "-f", "-C", "Elexis3"
-		});
 		dbg_msg("AUT created and activated");
 
 	}
@@ -310,9 +302,8 @@ public class AUT_run {
 	}
 
 	/** cleanup */
-	@SuppressWarnings("deprecation")
 	@AfterClass
-	public void tearDown() throws Exception{
+	public static void tearDown() throws Exception{
 		dbg_msg("AUT_run.tearDown ");
 		writer.close();
 		if (m_aut != null && m_aut.isConnected()) {
@@ -331,7 +322,7 @@ public class AUT_run {
 		saveLogs();
 	}
 
-	private void saveLogs(){
+	private static void saveLogs(){
 		java.nio.file.Path newdir = Paths.get(SAVE_RESULTS_DIR, "elexis-3.log");
 		try {
 			java.nio.file.Files.copy(ElexisLog, newdir);

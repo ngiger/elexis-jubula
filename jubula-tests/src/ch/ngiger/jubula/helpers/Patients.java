@@ -17,10 +17,8 @@ import java.io.FileReader;
 import java.util.List;
 
 import org.eclipse.jubula.client.exceptions.ActionException;
-import org.eclipse.jubula.toolkit.base.components.GraphicsComponent;
 import org.eclipse.jubula.toolkit.concrete.ConcreteComponents;
 import org.eclipse.jubula.toolkit.concrete.components.ComboComponent;
-import org.eclipse.jubula.toolkit.concrete.components.TabComponent;
 import org.eclipse.jubula.toolkit.concrete.components.TableComponent;
 import org.eclipse.jubula.toolkit.enums.ValueSets.BinaryChoice;
 import org.eclipse.jubula.toolkit.enums.ValueSets.InteractionMode;
@@ -274,13 +272,17 @@ public class Patients {
 		Common.waitForWindowClose(window_title);
 	}
 
+	public void selectCasesWindow() {
+		Perspectives.openPatientenPerspective();
+		// Click in table cases
+		Common.clickInMiddleOfComponent(OM.Cases_Table_1_tbl);
+
+	}
+
 	public void createCase(String invoice_method, String reason, String invoice_to_name,
 		String invoice_number, String date){
 		String window_title = ".*Neuer Fall.*";
-		Perspectives.openPatientenPerspective();
-
-		// Click in table cases
-		Common.clickInMiddleOfComponent(OM.Cases_Table_1_tbl);
+		selectCasesWindow();
 
 		// Click on Neuer Fall
 		@SuppressWarnings("unchecked")
@@ -330,6 +332,11 @@ public class Patients {
 
 	}
 
+	public void selectAndClickInKonsView() {
+		Common.selectTabByValue(OM.CTabFolder_2_tpn, ".*Konsultation.*");
+		Common.sleep1second(); // Opening a consultation may take some time
+	}
+
 	/*
 	 * Creates a consultation. We assume that a patient is selected and that
 	 * we already selecting the corresponding case
@@ -339,20 +346,12 @@ public class Patients {
 	 */
 	public void createConsultation(String info, String free_text){
 		String second_window = "Zweite Konsultation.*";
-		@SuppressWarnings("unchecked")
-		TabComponent tab = SwtComponents.createCTabFolder(OM.CTabFolder_2_tpn);
-		AUT_run.m_aut.execute(tab.selectTabByValue(".*Konsultation.*", Operator.matches), null);
-		Common.sleep1second(); // Opening a consultation may take some time
+		selectAndClickInKonsView();
 		Common.clickComponent(OM.Kons_create_tbi);
 		AUT_run.takeScreenshotActiveWindow("cons/create_tbi_pressed.png"); //$NON-NLS-1$
 
 		// Create second consultation on same day
-		@SuppressWarnings("unchecked")
-		GraphicsComponent comp = org.eclipse.jubula.toolkit.base.AbstractComponents
-			.createGraphicsComponent(OM.Konsultation_ToolItem_1_tbi);
-		AUT_run.m_aut.execute(comp.selectContextMenuEntryByTextpath("Neue Konsultation",
-			Operator.matches, InteractionMode.tertiary), null);
-
+		Common.contextMenuByText(OM.Konsultation_ToolItem_1_tbi, "Neue Konsultation", false);
 		Common.waitForWindow(second_window);
 		Common.clickComponent(OM.ResetPerspektive_OkButton_grc);
 		Common.waitForWindowClose(second_window);
@@ -386,11 +385,8 @@ public class Patients {
 		Perspectives.openPatientenPerspective();
 		Perspectives.resetPerspective();
 		AUT_run.takeScreenshotActiveWindow("cons/eigenleistung/resetted.png"); //$NON-NLS-1$
-		@SuppressWarnings("unchecked")
-		TabComponent tab = SwtComponents.createCTabFolder(OM.CTabFolder_2_tpn);
-		AUT_run.m_aut.execute(tab.selectTabByValue(".*Konsultation.*", Operator.matches), null);
-		AUT_run.takeScreenshotActiveWindow("cons/eigenleistung/kons.png"); //$NON-NLS-1$
-		Common.sleep1second();
+		selectAndClickInKonsView();
+		AUT_run.takeScreenshotActiveWindow("cons/eigenleistung/in_cons_view.png"); //$NON-NLS-1$
 
 		// Clicking on Kons_Verrechnung_grc opens the perspective full
 		Common.clickComponent(OM.Kons_Verrechnung_grc);
@@ -404,25 +400,24 @@ public class Patients {
 		AUT_run.takeScreenshotActiveWindow("cons/eigenleistung/item_selected.png"); //$NON-NLS-1$
 		Common.sleep1second();
 		Common.dragTopLeftCell(OM.Eigenleistung_Alle_Table_1_tbl);
-		Common.sleep1second();
+//		Common.sleep1second();
 		Common.dropIntoMiddleOfComponent(OM.Kons_Verrechnung_table);
-		Common.sleep1second();
+//		Common.sleep1second();
 		AUT_run.takeScreenshotActiveWindow("cons/eigenleistung/dropped.png"); //$NON-NLS-1$
-		Common.clickComponent(OM.Kons_Verrechnung_table);
+//		Common.clickComponent(OM.Kons_Verrechnung_table);
+		AUT_run.dbg_msg("Waiting 10 seconds for manual drop");
 		Common.sleep1second();
-		AUT_run.takeScreenshotActiveWindow("cons/eigenleistung/table.png"); //$NON-NLS-1$
+		Common.sleepMs(Constants.ONE_SECOND * 10);
+//		AUT_run.takeScreenshotActiveWindow("cons/eigenleistung/table.png"); //$NON-NLS-1$
 		Common.clickComponent(OM.Kons_Texteingabe_txf);
 		Common.sleep1second();
-		Common.sleepMs(Constants.ONE_SECOND * 120);
 		AUT_run.takeScreenshotActiveWindow("cons/eigenleistung/done.png"); //$NON-NLS-1$
 	}
 
 	public void invoiceActiveConsultation(){
-
-		@SuppressWarnings("unchecked")
-		GraphicsComponent comp = org.eclipse.jubula.toolkit.base.AbstractComponents
-			.createGraphicsComponent(OM.Cases_Table_1_tbl);
-		comp.selectContextMenuEntryByTextpath("Rechnung erstellen.*", Operator.matches,
-			InteractionMode.tertiary);
+		selectCasesWindow();
+		Common.selectTopLeftCell(OM.Cases_Table_1_tbl);
+		Common.contextMenuByText(OM.Cases_Table_1_tbl, "Rechnung erstellen.*", true);
+		AUT_run.takeScreenshotActiveWindow("cons/invocie/active_done.png"); //$NON-NLS-1$
 	}
 }

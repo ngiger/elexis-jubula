@@ -98,12 +98,18 @@ public class Views {
 							Common.sleep1second();
 							AUT_run.takeScreenshotActiveWindow("view_" + new_pos2 + ".png"); //$NON-NLS-1$ //$NON-NLS-2$
 							nr_views++;
+							if (nr_views % 45 == 0) {
+								AUT_run.dbg_msg("Restarting app as nr_views is: " + nr_views);
+								AUT_run.takeScreenshotActiveWindow(
+									"before_restart_after_" + nr_views + ".png"); //$NON-NLS-1$ //$NON-NLS-2$
+								AUT_run.restartApp();
+							}
 						} catch (ComponentNotFoundException e) {
 							if (nr_views > 20) {
 								AUT_run.takeScreenshotActiveWindow(
 									"list_too_long_after_" + nr_views + ".png"); //$NON-NLS-1$ //$NON-NLS-2$
-								Assert.fail("We cannot handle very long lists of vies"); //$NON-NLS-1$
-								// breaks when nr_views == 52
+								Assert.fail("We cannot handle very long lists of nr_views " + nr_views); //$NON-NLS-1$
+								// breaks when nr_views == 52 and no restart in between
 							}
 							break;
 						} catch (ActionException e) {
@@ -115,7 +121,6 @@ public class Views {
 								return; // No more entries found for mayor
 							}
 							minor = 0;
-							AUT_run.takeScreenshotActiveWindow(new_pos + "_minor 0.png"); //$NON-NLS-1$
 							Common.clickComponent(OM.ShowView_OkButton_grc); //$NON-NLS-1$
 							Common.waitForWindowClose(window_title);
 							break;
@@ -137,7 +142,7 @@ public class Views {
 				e.printStackTrace();
 			e.printStackTrace();
 
-		} catch (CheckFailedException | AssertionError e) {
+		} catch (CheckFailedException e) {
 			AUT_run.dbg_msg("visit_all_views: error was " + e.getMessage());
 			e.printStackTrace(AUT_run.writer);
 			AUT_run.takeScreenshotActiveWindow("CheckFailedException.png"); //$NON-NLS-1$

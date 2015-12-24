@@ -14,13 +14,10 @@ import java.io.File;
 
 import org.eclipse.jubula.qa.api.converter.target.rcp.RuntimeContext;
 import org.eclipse.jubula.toolkit.concrete.ConcreteComponents;
-import org.eclipse.jubula.toolkit.concrete.components.TabComponent;
 import org.eclipse.jubula.toolkit.concrete.components.TableComponent;
 import org.eclipse.jubula.toolkit.enums.ValueSets.InteractionMode;
 import org.eclipse.jubula.toolkit.enums.ValueSets.Operator;
 import org.eclipse.jubula.toolkit.enums.ValueSets.Unit;
-import org.eclipse.jubula.toolkit.swt.SwtComponents;
-import org.eclipse.jubula.toolkit.swt.components.ToolItem;
 import org.junit.Assert;
 
 import ch.ngiger.jubula.elexiscore.OM;
@@ -53,15 +50,12 @@ public class Artikelstamm {
 
 		AUT_run.dbg_msg("Importing " + stamm.getAbsolutePath()); //$NON-NLS-1$
 		AUT_run.takeScreenshotActiveWindow("import_artikelstamm/p_artikel.png"); //$NON-NLS-1$
-		TabComponent ctab = SwtComponents.createTabComponent(OM.CTab_Artikel); //$NON-NLS-1$
-		AUT_run.m_aut.execute(ctab.selectTabByValue("Artikelstamm", Operator.equals), null);
-
-		ToolItem toolbarMenu = SwtComponents.createToolItem(OM.Artikelstamm_ToolbarMenu);
+		Common.selectTabByValue(OM.CTab_Artikel, "Artikelstamm");
 
 		AUT_run.takeScreenshotActiveWindow("import_artikelstamm/tab_artikel.png"); //$NON-NLS-1$
 		Common.sleep1second();
-		AUT_run.m_aut.execute(toolbarMenu.selectContextMenuEntryByTextpath("Import.*", Operator.matches,
-			InteractionMode.primary), null);
+		Common.contextMenuByText(OM.Artikelstamm_ToolbarMenu, "Import.*", false);
+
 		String import_name = "Datenimport";
 		Common.waitForWindow(import_name, Constants.ONE_SECOND);
 

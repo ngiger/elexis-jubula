@@ -20,12 +20,14 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 
+import org.eclipse.jubula.client.Result;
 import org.eclipse.jubula.client.exceptions.ActionException;
 import org.eclipse.jubula.client.exceptions.CheckFailedException;
 import org.eclipse.jubula.client.exceptions.ComponentNotFoundException;
 import org.eclipse.jubula.toolkit.base.components.GraphicsComponent;
 import org.eclipse.jubula.toolkit.concrete.ConcreteComponents;
 import org.eclipse.jubula.toolkit.concrete.components.MenuBarComponent;
+import org.eclipse.jubula.toolkit.concrete.components.TabComponent;
 import org.eclipse.jubula.toolkit.concrete.components.TableComponent;
 import org.eclipse.jubula.toolkit.concrete.components.TextInputComponent;
 import org.eclipse.jubula.toolkit.enums.ValueSets.BinaryChoice;
@@ -146,13 +148,30 @@ public class Common {
 			return true;
 		} catch (ActionException | CheckFailedException | ComponentNotFoundException e) {
 			String msg = String.format("waitForComponent failed. Error %s", e.getMessage());
-			e.printStackTrace(AUT_run.writer);
 			AUT_run.dbg_msg(msg);
+			e.printStackTrace(AUT_run.writer);
 			AUT_run.takeScreenshotActiveWindow("waitForComponent_failed.png");
 		}
 		return false;
 	}
 
+	public static boolean isEnabled(@SuppressWarnings("rawtypes") ComponentIdentifier cid){
+		Assert.assertNotNull(cid + " may not be null", cid); //$NON-NLS-1$
+		waitForComponent(cid);
+		Result<Object> result = null;
+		@SuppressWarnings("unchecked")
+		GraphicsComponent comp =
+				org.eclipse.jubula.toolkit.base.AbstractComponents.createGraphicsComponent(cid);
+		try {
+			result = AUT_run.m_aut.execute(comp.click(1, InteractionMode.primary), null);
+		} catch (ActionException e) {
+			AUT_run.dbg_msg("isEnabled false as error "+ e.getMessage());
+			return false;
+		}
+		boolean okay = result != null && result.isOK();
+		AUT_run.dbg_msg("isEnabled will return "+okay);
+		return okay;
+	}
 	public static void clickComponent(@SuppressWarnings("rawtypes") ComponentIdentifier cid){
 		// Click Okay
 		Assert.assertNotNull(cid + " may not be null", cid); //$NON-NLS-1$
@@ -181,13 +200,13 @@ public class Common {
 	}
 
 	public static void synchronizedTextReplace(
-		@SuppressWarnings("rawtypes") ComponentIdentifier cid, String newValue){
+		@SuppressWarnings("rawtypes") ComponentIdentifier cid, String newValue, boolean filter) {
 		Assert.assertNotNull(cid + " may not be null", cid); //$NON-NLS-1$
 		@SuppressWarnings("unchecked")
 		TextInputComponent tic = SwtComponents.createTextInputComponent(cid);
 		AUT_run.m_aut.execute(tic.waitForComponent(Constants.ONE_SECOND, 0), null);
 		try {
-			String changedValue = newValue.replaceAll("[^\\w\\s\\.-_]", "_"); // Stuff like üis not possible
+			String changedValue = filter ? newValue.replaceAll("[^\\w\\s\\.-_]", "_") : newValue; // Stuff like üis not possible
 			Thread.sleep(1000);
 			AUT_run.dbg_msg(String.format("synchronizedTextReplace: %s -> %s changed %s",
 				cid.toString(), newValue, changedValue));
@@ -200,8 +219,12 @@ public class Common {
 			AUT_run.dbg_msg(msg);
 			e.printStackTrace(AUT_run.writer);
 			Assert.fail(msg);
-
 		}
+
+	}
+	public static void synchronizedTextReplace(
+		@SuppressWarnings("rawtypes") ComponentIdentifier cid, String newValue){
+		synchronizedTextReplace(cid, newValue, true);
 	}
 
 	/*
@@ -281,4 +304,31 @@ public class Common {
 			Constants.ONE_SECOND);
 	}
 
+	public static void contextMenuByText(@SuppressWarnings("rawtypes") ComponentIdentifier cid, String menuEntry, boolean rightClick) {
+		@SuppressWarnings("unchecked")
+		GraphicsComponent comp = org.eclipse.jubula.toolkit.base.AbstractComponents
+				.createGraphicsComponent(cid);
+		try {
+			 AUT_run.m_aut.execute(comp.selectContextMenuEntryByTextpath(menuEntry, Operator.matches,
+				 rightClick ? InteractionMode.tertiary : InteractionMode.primary), null);
+		} catch (ActionException | CheckFailedException | ComponentNotFoundException e) {
+			String msg = String.format("contextMenuByText %s failed. Error %s", menuEntry, e.getMessage());
+			AUT_run.dbg_msg(msg);
+			e.printStackTrace(AUT_run.writer);
+			AUT_run.takeScreenshotActiveWindow("contextMenuByText_failed.png");
+		}
+	}
+
+	public static void selectTabByValue(@SuppressWarnings("rawtypes") ComponentIdentifier cid, String tabName) {
+		@SuppressWarnings("unchecked")
+		TabComponent tab = SwtComponents.createCTabFolder(cid);
+		try {
+			 AUT_run.m_aut.execute(tab.selectTabByValue(tabName, Operator.matches), null);
+		} catch (ActionException | CheckFailedException | ComponentNotFoundException e) {
+			String msg = String.format("selectTabByValue %s failed. Error %s", tabName, e.getMessage());
+			AUT_run.dbg_msg(msg);
+			e.printStackTrace(AUT_run.writer);
+			AUT_run.takeScreenshotActiveWindow("selectTabByValue_failed.png");
+		}
+	}
 }

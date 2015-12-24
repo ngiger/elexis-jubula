@@ -1,4 +1,4 @@
 ---
 :exe_name:    Elexis3
 :test_to_run: SuiteVisitAllPreferencePages
-:agent_port:  6333
+:agent_port:  6303

@@ -10,10 +10,7 @@
  *******************************************************************************/
 package ch.ngiger.jubula.helpers;
 
-import org.eclipse.jubula.toolkit.concrete.ConcreteComponents;
-import org.eclipse.jubula.toolkit.concrete.components.TabComponent;
-import org.eclipse.jubula.toolkit.enums.ValueSets.Operator;
-import org.eclipse.jubula.toolkit.swt.SwtComponents;
+import org.junit.Assert;
 import org.junit.Test;
 
 import ch.ngiger.jubula.elexiscore.OM;
@@ -42,10 +39,15 @@ public class Eigenleistung {
 		// TODO Auto-generated method stub
 		//testLoadFromStream();
 		Perspectives.openLeistungenPerspective();
-		TabComponent tab = SwtComponents.createCTabFolder(OM.CTabFolder_1_tpn);
-		AUT_run.m_aut.execute(tab.checkEnablement(true), null);
+		Perspectives.resetPerspective();
+		Common.waitForComponent(OM.CTabFolder_1_tpn);
+		boolean tab_enabled = Common.isEnabled(OM.CTabFolder_1_tpn);
+		if (!tab_enabled) {
+			AUT_run.takeScreenshotActiveWindow("eigenleistung/ctab_not_enabled.png"); //$NON-NLS-1$
+			Assert.assertTrue("Eigentleistung CTB must be enabled", tab_enabled);
+		}
 		// Blöcke has an umlaut
-		AUT_run.m_aut.execute(tab.selectTabByValue("Bl.cke", Operator.matches), null);
+		Common.selectTabByValue(OM.CTabFolder_1_tpn, "Bl.cke");
 		Common.clickComponent(OM.Blöcke_EigeneLeistungenhinzufügen_btn);
 
 		Common.waitForWindow(window_title);
@@ -62,15 +64,12 @@ public class Eigenleistung {
 
 		selectEigenleistung(description);
 		AUT_run.takeScreenshotActiveWindow("eigenleistung/3_chars.png"); //$NON-NLS-1$
-		TabComponent eigen = ConcreteComponents.createTabComponent(OM.Eigenleistung_Table_1_tbl);
-		eigen.selectTabByValue(description, Operator.equals);
+		Common.selectTabByValue(OM.Eigenleistung_Table_1_tbl,description);
 		AUT_run.takeScreenshotActiveWindow("eigenleistung/show.png"); //$NON-NLS-1$
 	}
 
 	public static void selectEigenleistung(String description){
-		@SuppressWarnings("unchecked")
-		TabComponent tab = SwtComponents.createCTabFolder(OM.CTabFolder_1_tpn);
-		AUT_run.m_aut.execute(tab.selectTabByValue("Eigenleistung", Operator.matches), null);
+		Common.selectTabByValue(OM.CTabFolder_1_tpn, "Eigenleistung");
 		Common.synchronizedTextReplace(OM.Eigenleistung_Code_txf, description.substring(0, 3));
 	}
 

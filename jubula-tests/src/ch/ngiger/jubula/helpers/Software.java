@@ -13,7 +13,6 @@ package ch.ngiger.jubula.helpers;
 import java.util.HashMap;
 
 import org.eclipse.jubula.toolkit.concrete.components.ComboComponent;
-import org.eclipse.jubula.toolkit.concrete.components.TabComponent;
 import org.eclipse.jubula.toolkit.enums.ValueSets.Operator;
 import org.eclipse.jubula.toolkit.enums.ValueSets.SearchType;
 import org.eclipse.jubula.toolkit.swt.SwtComponents;
@@ -26,15 +25,12 @@ public class Software {
 	private static String root = "sw_inst";
 
 	private static void handleAboutDetail(String abbrev, String name) {
+		@SuppressWarnings("rawtypes")
 		ComponentIdentifier tab_id = OM.AboutElexisOpenSource_ElexisOpenSourceInstallatio0_TabFolder_1_tpn;
-		@SuppressWarnings("unchecked")
-		TabComponent tab =
-			SwtComponents.createTabFolder(tab_id);
-
 		// Select tab, take screenshot and save
 		AUT_run.dbg_msg("handleAboutDetail: " + abbrev + " => " + name);
 		AUT_run.m_aut.execute(AUT_run.app.copyTextToClipboard("empty"), null);
-		AUT_run.m_aut.execute(tab.selectTabByValue(name, Operator.matches), null);
+		Common.selectTabByValue(tab_id, name);
 		Common.sleep1second(); // It takes some time to construct the view
 		AUT_run.takeScreenshotActiveWindow(root + "about_" + abbrev + ".png");
 		String info = Common.getTextFromCompent(tab_id);

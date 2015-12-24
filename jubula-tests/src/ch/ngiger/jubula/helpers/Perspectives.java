@@ -70,7 +70,8 @@ public class Perspectives {
 	 */
 	public static void openLeistungenPerspective(){
 		String name = "Leistungen";
-		AUT_run.dbg_msg("fastOpenPerspectives: " + name + " first_leistungen is " + first_leistungen);
+		AUT_run
+			.dbg_msg("fastOpenPerspectives: " + name + " first_leistungen is " + first_leistungen);
 		if (first_leistungen) {
 			AUT_run.dbg_msg("fastOpenPerspectives: " + name + " via menu");
 			Perspectives.openPerspectiveByName(name + ".*"); // Match (default) for Patientenübersicht
@@ -127,7 +128,7 @@ public class Perspectives {
 				AUT_run.m_aut.execute(AUT_run.app.waitForWindow(window_title, Operator.matches,
 					1000, Constants.NR_MS_WAIT_AFTER_ACTION), null);
 				@SuppressWarnings({
-					"unchecked", "static-access"
+					"unchecked"
 				})
 				ComponentIdentifier<Table> tbl = OM.OpenPerspective_ViewTree_grc;
 				TableComponent tableComp = org.eclipse.jubula.toolkit.concrete.ConcreteComponents
@@ -148,7 +149,7 @@ public class Perspectives {
 				Assert.fail("We should have more than 3 perspectives to visit!"); //$NON-NLS-1$
 			}
 
-		} catch (CheckFailedException | AssertionError e) {
+		} catch (CheckFailedException e) {
 			e.printStackTrace();
 		} finally {
 			Assert.assertTrue(true);
