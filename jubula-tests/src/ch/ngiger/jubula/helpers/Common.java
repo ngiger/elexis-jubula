@@ -207,13 +207,13 @@ public class Common {
 		AUT_run.m_aut.execute(tic.waitForComponent(Constants.ONE_SECOND, 0), null);
 		try {
 			String changedValue = filter ? newValue.replaceAll("[^\\w\\s\\.-_]", "_") : newValue; // Stuff like üis not possible
-			Thread.sleep(1000);
-			AUT_run.dbg_msg(String.format("synchronizedTextReplace: %s -> %s changed %s",
-				cid.toString(), newValue, changedValue));
+			Thread.sleep(100);
+			AUT_run.dbg_msg(String.format("synchronizedTextReplace: %s -> %s %s",
+				cid.toString(), newValue, filter ? "changed " + changedValue : " unfiltered"));
 			AUT_run.m_aut.execute(tic.replaceText(changedValue), null);
 			Thread.sleep(100);
 			AUT_run.m_aut.execute(tic.checkText(changedValue, Operator.equals), null);
-		} catch (InterruptedException | ActionException e) {
+		} catch (InterruptedException | ActionException | CheckFailedException e) {
 			String msg = String.format("synchronizedTextReplace: new: %s error %s", newValue,
 				e.getMessage());
 			AUT_run.dbg_msg(msg);
