@@ -60,7 +60,7 @@ public class Views {
 	/** test visiting all views */
 	@Test
 	@SuppressWarnings("unchecked")
-	public void visit_all_views(AUT_run runner) throws Exception{
+	public void visit_all_views() throws Exception{
 		int major = 0, minor = 0, nr_views = 0;
 		String new_pos = "first_time", new_pos2 = ""; //$NON-NLS-1$ //$NON-NLS-2$
 		ComponentIdentifier<Tree> tree = OM.ShowView_ViewTree_grc; //$NON-NLS-1$

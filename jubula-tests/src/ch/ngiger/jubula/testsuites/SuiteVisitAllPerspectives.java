@@ -13,10 +13,8 @@ public class SuiteVisitAllPerspectives {
 
 	/** test generating a snapshot of all perspectives */
 
-	static private AUT_run runner = null;
 	@BeforeClass
 	public static void setup() throws Exception {
-		runner = new AUT_run();
 		AUT_run.setUp();
 	}
 
@@ -27,11 +25,11 @@ public class SuiteVisitAllPerspectives {
 				SwtComponents.createApplication();
 			Thread.sleep(1000); // Don't know why this is needed!
 			AUT_run.m_aut.execute(application.activate(AUTActivationMethod.titlebar), null);
-		all.visit_all_perspectives(runner);
+		all.visit_all_perspectives();
 	}
 
 	@AfterClass
 	public static void teardown() throws Exception {
-		runner.tearDown();
+		AUT_run.tearDown();
 	}
 }

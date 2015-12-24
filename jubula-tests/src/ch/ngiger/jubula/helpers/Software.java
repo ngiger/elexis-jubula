@@ -13,20 +13,24 @@ package ch.ngiger.jubula.helpers;
 import java.util.HashMap;
 
 import org.eclipse.jubula.toolkit.concrete.components.ComboComponent;
+import org.eclipse.jubula.toolkit.enums.ValueSets.BinaryChoice;
+import org.eclipse.jubula.toolkit.enums.ValueSets.InteractionMode;
 import org.eclipse.jubula.toolkit.enums.ValueSets.Operator;
 import org.eclipse.jubula.toolkit.enums.ValueSets.SearchType;
 import org.eclipse.jubula.toolkit.swt.SwtComponents;
+import org.eclipse.jubula.toolkit.swt.components.TreeTable;
 import org.eclipse.jubula.tools.ComponentIdentifier;
 
 import ch.ngiger.jubula.elexiscore.OM;
 
 /** @author BREDEX GmbH */
 public class Software {
-	private static String root = "sw_inst";
+	private static String root = "sw_inst/";
 
-	private static void handleAboutDetail(String abbrev, String name) {
+	private static void handleAboutDetail(String abbrev, String name){
 		@SuppressWarnings("rawtypes")
-		ComponentIdentifier tab_id = OM.AboutElexisOpenSource_ElexisOpenSourceInstallatio0_TabFolder_1_tpn;
+		ComponentIdentifier tab_id =
+			OM.AboutElexisOpenSource_ElexisOpenSourceInstallatio0_TabFolder_1_tpn;
 		// Select tab, take screenshot and save
 		AUT_run.dbg_msg("handleAboutDetail: " + abbrev + " => " + name);
 		AUT_run.m_aut.execute(AUT_run.app.copyTextToClipboard("empty"), null);
@@ -57,39 +61,43 @@ public class Software {
 		map.put("history", "Update Chronik"); //$NON-NLS-1$
 		map.put("installed", "Installierte Software"); //$NON-NLS-1$
 		map.put("plugins", "Plug.*"); //$NON-NLS-1$
-		map.forEach( (abbrev, name) -> handleAboutDetail(abbrev, name));
+		map.forEach((abbrev, name) -> handleAboutDetail(abbrev, name));
 
 		Common.pressEnter();
-// 		Common.clickButton(OM.AboutElexisOpenSource_ElexisOpenSourceInstallatio0_Close_btn); //$NON-NLS-1$
+		// 		Common.clickButton(OM.AboutElexisOpenSource_ElexisOpenSourceInstallatio0_Close_btn); //$NON-NLS-1$
 		Common.waitForWindowClose(details_title);
 
 		Common.clickComponent(OM.SW_about_ok_btn); //$NON-NLS-1$
 		Common.waitForWindowClose(about_title);
 	}
 
-	@SuppressWarnings("unchecked")
-	public static void installAllFeatures(){
-		String menu_install = "Hilfe/Neue Software installieren";
-		String install_title = "Install";
+	private static void swInitAll(){
 		String select_base = ".*Base.*";
-		String installing_title = "Installing Software";
-		String updates_title = "Software Updates";
-		ComponentIdentifier finish_button = OM.SW_Install_Finish_btn;
-		ComponentIdentifier cancel_button = OM.SW_Install_Cancel_btn;
+		String menu_install = "Hilfe/Neue Software installieren";
 
 		// Open SW Install Window
 		Common.openMenu(menu_install);
 
 		// Select all SW from all sites
-		ComboComponent combo =
-			SwtComponents.createComboComponent(OM.SW_update_select_site_combo);
+		@SuppressWarnings("unchecked")
+		ComboComponent combo = SwtComponents.createComboComponent(OM.SW_update_select_site_combo);
 
 		// Select all SW from all sites
 		AUT_run.m_aut.execute(
 			combo.selectEntryByValue(select_base, Operator.matches, SearchType.absolute), null);
 		// Three seconds were not enough when running from the command line
 		Common.sleepMs(Constants.ONE_SECOND * 10);
-		Common.clickComponent(OM.SW_Install_SelectAll_btn);
+
+	}
+
+	private static void finishInstallSelectedSW(){
+		String install_title = "Install";
+		String installing_title = "Installing Software";
+		String updates_title = "Software Updates";
+		@SuppressWarnings("rawtypes")
+		ComponentIdentifier finish_button = OM.SW_Install_Finish_btn;
+		@SuppressWarnings("rawtypes")
+		ComponentIdentifier cancel_button = OM.SW_Install_Cancel_btn;
 
 		// SW_check_sw_upgrade_nessarry
 		// Take a screenshot at this crucial point!
@@ -103,12 +111,11 @@ public class Software {
 		Common.writeStringToResultsFile(sw_details, "sw_inst-details.log"); //$NON-NLS-1$;
 		Common.sleep1second();
 		AUT_run.takeScreenshotActiveWindow(root + "sw-has-updates-or-not.png"); //$NON-NLS-1$;
-		if (Common.componentIsEnabled(finish_button))
-		{
+		if (Common.componentIsEnabled(finish_button)) {
 			AUT_run.dbg_msg("SW_Install_Finish_btn is enabled"); //$NON-NLS-1$;
 			Common.clickComponent(finish_button);
 		} else {
-			AUT_run.dbg_msg("SW_Install_Finish_btn is enabled. Already updated?");
+			AUT_run.dbg_msg("SW_Install_Finish_btn is NOT enabled. Already updated?");
 			Common.clickComponent(cancel_button);//$NON-NLS-1$
 			Common.waitForWindowClose("Install", 5 * Constants.ONE_SECOND);
 			return;
@@ -125,5 +132,51 @@ public class Software {
 		// Click on "No". If we clicked "now", we could not detect restart of application
 		Common.clickComponent(OM.SW_Update_Dialog_no);
 		Common.waitForWindowClose(updates_title, 15 * Constants.ONE_SECOND);
+
+	}
+
+	public static void installFeature(String feature_name){
+		AUT_run.dbg_msg("installFeature " + feature_name);
+		swInitAll();
+		Common.synchronizedTextReplace(OM.Install_Text_1_txf, feature_name);
+		AUT_run.takeScreenshotActiveWindow("SW/" + feature_name + "_1.png"); //$NON-NLS-1$
+		Common.sleep1second();
+		@SuppressWarnings("unchecked")
+		TreeTable tre = SwtComponents.createTreeTable(OM.Install_Tree_1_tre);
+		Common.waitForComponent(OM.Install_Tree_1_tre);
+		AUT_run.m_aut.execute(tre.selectNodeByIndexpath(SearchType.absolute, 0, "1/1", 1,
+			InteractionMode.primary, BinaryChoice.no), null);
+		AUT_run.takeScreenshotActiveWindow("SW/" + feature_name + "_2.png"); //$NON-NLS-1$
+		Common.sleep1second();
+		AUT_run.m_aut.execute(
+			tre.toggleCheckboxOnNodeByIndexpath(SearchType.absolute, new Integer(0), "1/1"), null);
+		AUT_run.takeScreenshotActiveWindow("SW/" + feature_name + "_3.png"); //$NON-NLS-1$
+		Common.sleep1second();
+		AUT_run.m_aut.execute(
+			tre.toggleCheckboxOnNodeByIndexpath(SearchType.absolute, new Integer(0), "1/1"), null);
+		AUT_run.takeScreenshotActiveWindow("SW/" + feature_name + "_31.png"); //$NON-NLS-1$
+		Common.sleep1second();
+		AUT_run.m_aut.execute(
+			tre.toggleCheckboxOnNodeByIndexpath(SearchType.absolute, new Integer(0), "1"), null);
+		AUT_run.takeScreenshotActiveWindow("SW/" + feature_name + "_32.png"); //$NON-NLS-1$
+		Common.sleep1second();
+		AUT_run.m_aut.execute(
+			tre.toggleCheckboxOnNodeByIndexpath(SearchType.absolute, new Integer(0), "1"), null);
+		AUT_run.takeScreenshotActiveWindow("SW/" + feature_name + "_33.png"); //$NON-NLS-1$
+		Common.sleep1second();
+		AUT_run.m_aut.execute(
+			tre.toggleCheckboxOnNodeByIndexpath(SearchType.absolute, new Integer(0), "1"), null);
+		AUT_run.takeScreenshotActiveWindow("SW/" + feature_name + "_34.png"); //$NON-NLS-1$
+		Common.sleep1second();
+		finishInstallSelectedSW();
+		AUT_run.dbg_msg("installFeature finished " + feature_name);
+	}
+
+	public static void installAllFeatures(){
+		AUT_run.dbg_msg("installAllFeatures finished");
+		swInitAll();
+		Common.clickComponent(OM.SW_Install_SelectAll_btn);
+		finishInstallSelectedSW();
+		AUT_run.dbg_msg("installAllFeatures finished");
 	}
 }

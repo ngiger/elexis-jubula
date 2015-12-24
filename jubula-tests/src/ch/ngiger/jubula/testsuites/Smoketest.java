@@ -18,9 +18,6 @@ import org.slf4j.LoggerFactory;
 import ch.ngiger.jubula.elexiscore.OM;
 import ch.ngiger.jubula.helpers.AUT_run;
 import ch.ngiger.jubula.helpers.Common;
-import ch.ngiger.jubula.helpers.Eigenleistung;
-import ch.ngiger.jubula.helpers.Patients;
-import ch.ngiger.jubula.helpers.Perspectives;
 import ch.ngiger.jubula.helpers.Software;
 
 public class Smoketest {
@@ -75,6 +72,8 @@ public class Smoketest {
 
 	@Test()
 	public void smoketest() throws Exception{
+		Software.installFeature("Elexis Swiss Open");
+		/*
 		Software.showAbout("first");
 		Software.installAllFeatures();
 		AUT_run.restartApp();
@@ -92,6 +91,7 @@ public class Smoketest {
 		pat.createCase("KVG", "Husten", "Testperson", "Nr. 34.56", "24.12.14");
 		pat.createConsultation("Scheint ein Simulant zu sein", "Kann gut fabulieren");
 		Perspectives.openLeistungenPerspective();
+		*/
 		/* TODO:
 		 * Having problem with drag/drop
 		pat.eigenleistungVerrechnen(eigenleistung.substring(0, 4));

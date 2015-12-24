@@ -21,6 +21,7 @@ import ch.ngiger.jubula.helpers.Eigenleistung;
 import ch.ngiger.jubula.helpers.Invoice;
 import ch.ngiger.jubula.helpers.Patients;
 import ch.ngiger.jubula.helpers.Perspectives;
+import ch.ngiger.jubula.helpers.Software;
 
 public class Broken {
 
@@ -35,9 +36,11 @@ public class Broken {
 
 	@Before
 	public void restart() throws Exception{
-		// Skip restart on first test
 		nr_tests++;
-		if (nr_tests > 1) {
+		if (nr_tests == 0) {
+			// Skip restart on first test, but install all SW (for artikelstamm)
+			Software.installFeature("Elexis Swiss Open");
+		} else {
 			AUT_run.dbg_msg("Calling restart: " + nr_tests);
 			AUT_run.restartApp();
 			Common.sleep1second();

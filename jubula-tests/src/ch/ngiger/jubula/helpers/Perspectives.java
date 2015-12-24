@@ -117,7 +117,7 @@ public class Perspectives {
 
 	/** test visiting all perspectives */
 	@Test
-	public void visit_all_perspectives(AUT_run runner) throws Exception{
+	public void visit_all_perspectives() throws Exception{
 		int j = 0;
 		try {
 			String window_title = Messages.getString("VisitAllPerspectives.0"); //$NON-NLS-1$
