@@ -3,7 +3,7 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
   xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
    <properties>
-    <test_to_run>Screenshot</test_to_run>
+    <test_to_run>Suite*</test_to_run>
   </properties>
   <modelVersion>4.0.0</modelVersion>
   <version>0.1.0-SNAPSHOT</version>
@@ -21,6 +21,7 @@
         <artifactId>tycho-surefire-plugin</artifactId>
         <version>${tycho-version}</version>
         <configuration>
+          <redirectTestOutputToFile>true</redirectTestOutputToFile>
           <skipTests>false</skipTests>
           <test>${test_to_run}</test>
           <useUIThread>false</useUIThread>
