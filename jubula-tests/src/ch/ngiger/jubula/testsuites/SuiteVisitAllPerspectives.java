@@ -8,6 +8,7 @@ import org.junit.Test;
 
 import ch.ngiger.jubula.helpers.AUT_run;
 import ch.ngiger.jubula.helpers.Perspectives;
+import ch.ngiger.jubula.helpers.Software;
 
 public class SuiteVisitAllPerspectives {
 
@@ -20,6 +21,9 @@ public class SuiteVisitAllPerspectives {
 
 	@Test()
 	public void suite_visit_all_perspectives() throws Exception{
+		Software.installAllFeatures();
+		// We must open Leistungen first, as this take a lot of time
+		Perspectives.openLeistungenPerspective();
 		Perspectives all = new Perspectives();
 		org.eclipse.jubula.toolkit.concrete.components.Application application =
 				SwtComponents.createApplication();
@@ -29,7 +33,8 @@ public class SuiteVisitAllPerspectives {
 	}
 
 	@AfterClass
-	public static void teardown() throws Exception {
+	public static void teardown() throws Exception{
+		AUT_run.dbg_msg("SuiteVisitAllPerspectives.teardown"); //$NON-NLS-1$
 		AUT_run.tearDown();
 	}
 }

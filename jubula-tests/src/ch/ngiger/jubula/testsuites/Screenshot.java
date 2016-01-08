@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import org.eclipse.jubula.client.exceptions.CheckFailedException;
 import org.eclipse.jubula.toolkit.enums.ValueSets.AUTActivationMethod;
 import org.eclipse.jubula.toolkit.swt.SwtComponents;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -48,5 +49,11 @@ public class Screenshot {
 			Assert.assertTrue(true);
 		}
 		AUT_run.dbg_msg("screenshot_active_window done");
+	}
+
+	@AfterClass
+	public static void teardown() throws Exception{
+		AUT_run.dbg_msg("Screenshot.teardown"); //$NON-NLS-1$
+		AUT_run.tearDown();
 	}
 }

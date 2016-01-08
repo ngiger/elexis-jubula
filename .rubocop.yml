@@ -1,6 +1,7 @@
 AllCops:
   Exclude:
     - 'first_attempt_with_docker/**/*'
+    - 'container_home/**/*'
 Metrics/LineLength:
   Max: 119
 Metrics/ClassLength:

@@ -37,6 +37,7 @@ public class PreferencePages {
 	// When using a logger the output is not shown in the maven output
 	// Don't know where it disappears
 	// private static Logger log = LoggerFactory.getLogger(VisitAllPreferencePages.class);
+	AUT_run runner = new AUT_run();
 
 	private boolean gotoPreferencPage(AUT_run runner, String position){
 		String window_title = Messages.getString("VisitAllPreferencePages.4"); //$NON-NLS-1$
@@ -65,7 +66,7 @@ public class PreferencePages {
 		"unchecked"
 	})
 	@Test
-	public void visit_all_preferencePages(AUT_run runner) throws Exception{
+	public void visit_all_preferencePages() throws Exception{
 		String new_pos = "first_time"; //$NON-NLS-1$ //$NON-NLS-2$
 		int nr_preferencePages = 0;
 		ComponentIdentifier<Tree> tree = OM.Preferences_ItemChoice_tre; //$NON-NLS-1$

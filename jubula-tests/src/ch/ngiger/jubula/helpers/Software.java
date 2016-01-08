@@ -139,34 +139,18 @@ public class Software {
 		AUT_run.dbg_msg("installFeature " + feature_name);
 		swInitAll();
 		Common.synchronizedTextReplace(OM.Install_Text_1_txf, feature_name);
-		AUT_run.takeScreenshotActiveWindow("SW/" + feature_name + "_1.png"); //$NON-NLS-1$
+		AUT_run.takeScreenshotActiveWindow(root + feature_name + "_1.png"); //$NON-NLS-1$
 		Common.sleep1second();
 		@SuppressWarnings("unchecked")
 		TreeTable tre = SwtComponents.createTreeTable(OM.Install_Tree_1_tre);
 		Common.waitForComponent(OM.Install_Tree_1_tre);
 		AUT_run.m_aut.execute(tre.selectNodeByIndexpath(SearchType.absolute, 0, "1/1", 1,
 			InteractionMode.primary, BinaryChoice.no), null);
-		AUT_run.takeScreenshotActiveWindow("SW/" + feature_name + "_2.png"); //$NON-NLS-1$
+		AUT_run.takeScreenshotActiveWindow(root + feature_name + "_2.png"); //$NON-NLS-1$
 		Common.sleep1second();
 		AUT_run.m_aut.execute(
 			tre.toggleCheckboxOnNodeByIndexpath(SearchType.absolute, new Integer(0), "1/1"), null);
-		AUT_run.takeScreenshotActiveWindow("SW/" + feature_name + "_3.png"); //$NON-NLS-1$
-		Common.sleep1second();
-		AUT_run.m_aut.execute(
-			tre.toggleCheckboxOnNodeByIndexpath(SearchType.absolute, new Integer(0), "1/1"), null);
-		AUT_run.takeScreenshotActiveWindow("SW/" + feature_name + "_31.png"); //$NON-NLS-1$
-		Common.sleep1second();
-		AUT_run.m_aut.execute(
-			tre.toggleCheckboxOnNodeByIndexpath(SearchType.absolute, new Integer(0), "1"), null);
-		AUT_run.takeScreenshotActiveWindow("SW/" + feature_name + "_32.png"); //$NON-NLS-1$
-		Common.sleep1second();
-		AUT_run.m_aut.execute(
-			tre.toggleCheckboxOnNodeByIndexpath(SearchType.absolute, new Integer(0), "1"), null);
-		AUT_run.takeScreenshotActiveWindow("SW/" + feature_name + "_33.png"); //$NON-NLS-1$
-		Common.sleep1second();
-		AUT_run.m_aut.execute(
-			tre.toggleCheckboxOnNodeByIndexpath(SearchType.absolute, new Integer(0), "1"), null);
-		AUT_run.takeScreenshotActiveWindow("SW/" + feature_name + "_34.png"); //$NON-NLS-1$
+		AUT_run.takeScreenshotActiveWindow(root + feature_name + "_3.png"); //$NON-NLS-1$
 		Common.sleep1second();
 		finishInstallSelectedSW();
 		AUT_run.dbg_msg("installFeature finished " + feature_name);

@@ -32,8 +32,8 @@ task :elexis_install_os do
 end
 
 desc 'Run Jubula-GUI test (default Screenshot) for Elexis OpenSource via jubularunner'
-task :jubula_test, [:test_to_run] => :elexis_install_os do  |target, args|
-  test_to_run =  args[:test_to_run]
+task :jubula_test, [:test_to_run] => :elexis_install_os do |_target, args|
+  test_to_run = args[:test_to_run]
   test_to_run ||= 'Screenshot'
   # TODO: publish signed image and ensure that it can be
   system('scripts/jubularunner.rb docker_build') unless system('docker images #{ElexisJubula::NAME}', MAY_FAIL)
@@ -41,33 +41,30 @@ task :jubula_test, [:test_to_run] => :elexis_install_os do  |target, args|
 end
 
 desc 'Run Jubula-GUI test (default Screenshot) for Elexis OpenSource via docker'
-task :jubula_docker, [:test_to_run] do  |target, args|
-  test_to_run =  args[:test_to_run]
+task :jubula_docker, [:test_to_run] do |_target, args|
+  test_to_run = args[:test_to_run]
   test_to_run ||= 'Screenshot'
   fail 'Running failed' unless system("scripts/jubularunner.rb #{test_to_run} run_in_docker")
 end
 
 desc 'Run Jubula-GUI test (default Screenshot) via Maven'
-task :jubula_mvn, [:test_to_run] => :elexis_install_os do  |target, args|
-  port = 6333 # Don't change it or via xvfb you will have problems!
-  savedDir = Dir.pwd
+task :jubula_mvn, [:test_to_run] => :elexis_install_os do |_target, args|
+  saved_dir = Dir.pwd
   begin
-    args.with_default(:test_to_run  => 'Screenshot')
-    test_to_run =  args[:test_to_run]
+    args.with_default(test_to_run: 'Screenshot')
+    test_to_run = args[:test_to_run]
     test_to_run ||= 'Screenshot'
     # The next 5 lines are just for making https://srv.elexis.info/jenkins/job/Elexis-3.0-Jubula-Matrix-Linux
     # work with minimal fuss
     src = File.join(Dir.pwd, 'work', 'ch.elexis.core.p2site-3.1.0-SNAPSHOT-linux.gtk.x86_64.zip')
     dst = File.join(Dir.pwd, 'work', 'ch.elexis.core.application.ElexisApp-linux.gtk.x86_64.zip')
-    FileUtils.rm_rf(File.join(ENV['HOME'], 'elexis', 'logs'), :verbose => true)
-    FileUtils.rm_rf(File.join(ENV['HOME'], 'elexis', 'elexislock.*'), :verbose => true)
-    FileUtils.rm_rf(File.join(Dir.pwd, 'workdir'), :verbose => true)
-    FileUtils.rm_rf(File.join(Dir.pwd, 'workspace'), :verbose => true)
-    if File.exist?(src) && !File.exist?(dst)
-      FileUtils.ln_s(src, dst)
-    end
-    puts "Before calling mvn #{Dir.pwd} savedDir #{savedDir} test_to_run #{test_to_run}"
-    Dir.chdir savedDir
+    FileUtils.rm_rf(File.join(ENV['HOME'], 'elexis', 'logs'), verbose: true)
+    FileUtils.rm_rf(File.join(ENV['HOME'], 'elexis', 'elexislock.*'), verbose: true)
+    FileUtils.rm_rf(File.join(Dir.pwd, 'workdir'), verbose: true)
+    FileUtils.rm_rf(File.join(Dir.pwd, 'workspace'), verbose: true)
+    FileUtils.ln_s(src, dst) if File.exist?(src) && !File.exist?(dst)
+    puts "Before calling mvn #{Dir.pwd} saved_dir #{saved_dir} test_to_run #{test_to_run}"
+    Dir.chdir saved_dir
     cmd = "pwd && mvn clean integration-test  -Dtest_to_run=#{test_to_run}"
     puts "Will call #{cmd}"
     fail 'Running mvn failed' unless system(cmd)
@@ -75,18 +72,17 @@ task :jubula_mvn, [:test_to_run] => :elexis_install_os do  |target, args|
 end
 
 desc 'Build, commit, tag, push && docker push the current state'
-task :docker_publish => :docker_build do
+task docker_publish: :docker_build do
   # commit pending changes and tag our repository with the same tag
-  Kernel.system("git commit . ") # will prompt for a message
+  Kernel.system('git commit .') # will prompt for a message
   Kernel.system("git tag #{ElexisJubula::VERSION}")
 
-  puts "Log-In to to docker"
-  raise "login to docker failed" unless system("docker login")
+  fail 'login to docker failed' unless system('docker login')
   puts "Publishing #{ElexisJubula::VERSION} to docker"
-  [ ElexisJubula::VERSION, 'latest'].each do |version|
+  [ElexisJubula::VERSION, 'latest'].each do |version|
     cmd = "docker push #{ElexisJubula::NAME}:#{version}"
     puts cmd
-    raise "Pushing to docker failed for #{cmd}" unless Kernel.system(cmd)
+    fail "Pushing to docker failed for #{cmd}" unless Kernel.system(cmd)
   end
 end
 require 'rake/clean'

@@ -38,8 +38,7 @@ public class Broken {
 	public void restart() throws Exception{
 		nr_tests++;
 		if (nr_tests == 0) {
-			// Skip restart on first test, but install all SW (for artikelstamm)
-			Software.installFeature("Elexis Swiss Open");
+			// Skip restart on first test
 		} else {
 			AUT_run.dbg_msg("Calling restart: " + nr_tests);
 			AUT_run.restartApp();
@@ -95,6 +94,7 @@ public class Broken {
 
 	@Test()
 	public void test_artikelstamm_import() throws Exception{
+		Software.installFeature("Elexis Swiss Open");
 		Perspectives.openLeistungenPerspective();
 		Artikelstamm.importArtikelstamm(null);
 	}

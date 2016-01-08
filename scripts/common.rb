@@ -16,24 +16,23 @@ else
 end
 MAY_FAIL = true
 
-def get_java_triplet
-  cfg = Hash.new
-  cfg['cpu'] = RbConfig::CONFIG['target_cpu']
+def java_triplet
+  cfg = { 'cpu' => RbConfig::CONFIG['target_cpu'] }
   case RbConfig::CONFIG['host_os']
-    when WINDOWS_REGEXP
-      cfg['os'] = 'windows'
-      cfg['win'] = 'win32'
-    when /linux/i
-      cfg['os'] = 'linux'
-      cfg['win'] = 'gtk'
-      cfg['cpu'] if /i.86/.match(cfg['cpu']) # needed for i486 on Windows/linux-x86
-    when /sunos|solaris/i
-        # Solaris
-    when MACOSX_REGEXP
-      cfg['os'] = 'macosx'
-      cfg['win'] = 'cocoa'
-      cfg['cpu'] = 'x86_64'
-    else
+  when WINDOWS_REGEXP
+    cfg['os'] = 'windows'
+    cfg['win'] = 'win32'
+  when /linux/i
+    cfg['os'] = 'linux'
+    cfg['win'] = 'gtk'
+    cfg['cpu'] if /i.86/.match(cfg['cpu']) # needed for i486 on Windows/linux-x86
+  when /sunos|solaris/i
+    # Solaris
+  when MACOSX_REGEXP
+    cfg['os'] = 'macosx'
+    cfg['win'] = 'cocoa'
+    cfg['cpu'] = 'x86_64'
+  else
     puts "unknown RbConfig::CONFIG['host_os'] #{RbConfig::CONFIG['host_os']}"
     exit 3
   end
@@ -51,12 +50,12 @@ FileUtils.makedirs(WorkDir) unless File.exist?(WorkDir)
 WINDOWS_REGEXP = /mingw|bccwin|wince|cygwin|mswin32/i
 MACOSX_REGEXP  = /macos|universal|darwin/i
 
-def is_macos
-  MACOSX_REGEXP.match(RbConfig::CONFIG['host_os']) != nil
+def macos?
+  MACOSX_REGEXP.match(RbConfig::CONFIG['host_os'])
 end
 
-def is_windows
-  WINDOWS_REGEXP.match(RbConfig::CONFIG['host_os']) != nil
+def windows?
+  WINDOWS_REGEXP.match(RbConfig::CONFIG['host_os'])
 end
 
 def unzip(zip_file, should_create)
@@ -89,7 +88,7 @@ def download_and_unzip(zip_url, should_create)
   unless File.exist?(zip_file)
     puts "Downloading #{zip_url}"
     cmd = "wget  --quiet  --no-check-certificat #{zip_url}"
-    cmd = "curl  --silent --insecure --output #{File.basename(zip_url)} #{zip_url}" if is_macos
+    cmd = "curl  --silent --insecure --output #{File.basename(zip_url)} #{zip_url}" if macos?
     system(cmd)
   end
   puts should_create

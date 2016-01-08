@@ -12,27 +12,22 @@ import org.eclipse.jubula.tools.ComponentIdentifier;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import ch.ngiger.jubula.elexiscore.OM;
 import ch.ngiger.jubula.helpers.AUT_run;
 import ch.ngiger.jubula.helpers.Common;
+import ch.ngiger.jubula.helpers.Eigenleistung;
+import ch.ngiger.jubula.helpers.Patients;
+import ch.ngiger.jubula.helpers.Perspectives;
 import ch.ngiger.jubula.helpers.Software;
 
 public class Smoketest {
 	/** test generating a snapshot of the currently active window */
 
-	/** the logger */
-	private static Logger log = LoggerFactory.getLogger(Smoketest.class);
-
-	static private AUT_run runner = null;
-
 	@BeforeClass
 	public static void setup() throws Exception{
-		runner = new AUT_run();
 		AUT_run.setUp();
-		log.info("setup done"); //$NON-NLS-1$
+		AUT_run.dbg_msg("setup done"); //$NON-NLS-1$
 	}
 
 	public void testTextInput(ComponentIdentifier<TextInputComponent> cid, String char2test){
@@ -72,8 +67,6 @@ public class Smoketest {
 
 	@Test()
 	public void smoketest() throws Exception{
-		Software.installFeature("Elexis Swiss Open");
-		/*
 		Software.showAbout("first");
 		Software.installAllFeatures();
 		AUT_run.restartApp();
@@ -91,7 +84,6 @@ public class Smoketest {
 		pat.createCase("KVG", "Husten", "Testperson", "Nr. 34.56", "24.12.14");
 		pat.createConsultation("Scheint ein Simulant zu sein", "Kann gut fabulieren");
 		Perspectives.openLeistungenPerspective();
-		*/
 		/* TODO:
 		 * Having problem with drag/drop
 		pat.eigenleistungVerrechnen(eigenleistung.substring(0, 4));
@@ -103,7 +95,7 @@ public class Smoketest {
 
 	@AfterClass
 	public static void teardown() throws Exception{
-		log.info("teardown"); //$NON-NLS-1$
-		runner.tearDown();
+		AUT_run.dbg_msg("Smoketest.teardown"); //$NON-NLS-1$
+		AUT_run.tearDown();
 	}
 }

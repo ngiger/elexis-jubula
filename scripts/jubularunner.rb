@@ -20,8 +20,8 @@ class DockerRunner
 
   def start_docker(cmd_in_docker, env = nil, workdir = nil)
     # First cleanup possible remnants of old runs
-    [ @m2_repo, @container_home, @result_dir].each do |dir|
-      FileUtils.makedirs(dir, :verbose => true) unless File.exist?(dir)
+    [@m2_repo, @container_home, @result_dir].each do |dir|
+      FileUtils.makedirs(dir, verbose: true) unless File.exist?(dir)
       FileUtils.chmod(0777, dir)
     end
     # Remove old docker images if present
@@ -33,8 +33,6 @@ class DockerRunner
     cmd += " -v #{@container_home}:/home/elexis"
     cmd += " -v #{@result_dir}:/home/elexis/results"
     cmd += " -v #{@m2_repo}:/home/elexis/.m2"
-    cmd += " --publish=#{local_ip}:8000:8000" if false # debug port for java
-    cmd += " --publish=#{local_ip}:6333:6333" if false
     cmd += " --name=#{@docker_name} #{ElexisJubula::NAME}"
     cmd += ' ' + cmd_in_docker
     puts cmd
@@ -53,19 +51,19 @@ class DockerRunner
   end
 
   def stop_docker
-   if Kernel.system("docker ps  | grep #{@docker_name}")
-      exec_in_docker(@cleanup_in_container)
-      Kernel.system("docker kill #{@docker_name}")
-      Kernel.system("docker rm #{@docker_name}")
-    end
+    result = Kernel.system("docker ps  | grep #{@docker_name}")
+    return unless result
+    exec_in_docker(@cleanup_in_container)
+    Kernel.system("docker kill #{@docker_name}")
+    Kernel.system("docker rm #{@docker_name}")
   end
 
   def initialize(test_name, result_dir)
     @test_name = test_name
     @result_dir = result_dir
     @docker_name = "jubula-#{@test_name}"
-    @container_home =  File.join(RootDir, 'container_home')
-    @m2_repo =  File.join(RootDir, 'container_home_m2')
+    @container_home = File.join(RootDir, 'container_home')
+    @m2_repo = File.join(RootDir, 'container_home_m2')
     @cleanup_in_container = 'chmod --silent --recursive o+rwX /home/elexis; rm -rf /home/elexis/.jubula'
   end
 end
@@ -97,40 +95,39 @@ class JubulaRunner
     # https://www.eclipse.org/forums/index.php?t=msg&th=440461&goto=987043&#msg_987043
     # Had window activation problem with Xvfb with or without awesome
     # with startx this did not gow
-    if @docker
-      puts "Starting start_xvfb in docker"
-      start_meta = "/usr/bin/metacity display=$DISPLAY --replace --sm-disable &
-      sleep 1
-      /usr/bin/metacity-message disable-keybindings
-      /usr/bin/xclock &
-    "
-      start_xvfb_cmd = 'Xvfb :1 -screen 5 1280x1024x24 -nolisten tcp'
-      store_cmd('start_xvfb_cmd.sh', start_xvfb_cmd)
-      @docker.start_docker('./start_xvfb_cmd.sh', 'DISPLAY=:1.5')
-      sleep(0.5)
-      store_cmd('start_meta.sh', start_meta)
-      @docker.exec_in_docker('./start_meta.sh', {:detach => true})
-      sleep(0.5)
-      system('docker ps')
-    end
+    return unless @docker
+    puts 'Starting start_xvfb in docker'
+    start_meta = "/usr/bin/metacity display=$DISPLAY --replace --sm-disable &
+    sleep 1
+    /usr/bin/metacity-message disable-keybindings
+    /usr/bin/xclock &
+  "
+    start_xvfb_cmd = 'Xvfb :1 -screen 5 1280x1024x24 -nolisten tcp'
+    store_cmd('start_xvfb_cmd.sh', start_xvfb_cmd)
+    @docker.start_docker('./start_xvfb_cmd.sh', 'DISPLAY=:1.5')
+    sleep(0.5)
+    store_cmd('start_meta.sh', start_meta)
+    @docker.exec_in_docker('./start_meta.sh', detach: true)
+    sleep(0.5)
+    system('docker ps')
   end
 
   def prepare_docker
     @docker.stop_docker
     at_exit { @docker.stop_docker }
-    FileUtils.rm_rf(@docker.container_home, :verbose => true)
-    raise "Must be possible to remove container_home #{@docker.container_home}" if File.exist?(@docker.container_home)
+    FileUtils.rm_rf(@docker.container_home, verbose: true)
+    fail "Must be possible to remove container_home #{@docker.container_home}" if File.exist?(@docker.container_home)
     ['.git', 'pom.xml', 'jubula-target', 'jubula-tests', 'org.eclipse.jubula.product.autagent.start'].each do |item|
-      FileUtils.cp_r(File.join(RootDir, item), @docker.container_home, :verbose => true, :preserve => true)
+      FileUtils.cp_r(File.join(RootDir, item), @docker.container_home, verbose: true, preserve: true)
     end
     FileUtils.makedirs(@docker.container_home)
-    FileUtils.cp_r(WorkDir, File.join(@docker.container_home, 'work'), :verbose => true, :preserve => true)
+    FileUtils.cp_r(WorkDir, File.join(@docker.container_home, 'work'), verbose: true, preserve: true)
   end
 
   def run_test_in_docker
     prepare_docker
     Dir.chdir(WorkDir)
-    FileUtils.rm_f('jubula-tests/AUT_run.log', :verbose => true) if File.exist?('jubula-tests/AUT_run.log')
+    FileUtils.rm_f('jubula-tests/AUT_run.log', verbose: true) if File.exist?('jubula-tests/AUT_run.log')
     start_xvfb
     sleep 0.5
     cmd = "status=99
@@ -154,7 +151,7 @@ exit $status
       sleep(0.5)
       if res == 0 && /smoketest/i.match(@test_params[:test_to_run])
         # Copy newly installed plugins for further tests back
-        FileUtils.cp_r(File.join(@docker.container_home, 'work'), WorkDir, :verbose => true)
+        FileUtils.cp_r(File.join(@docker.container_home, 'work'), WorkDir, verbose: true)
       end
     ensure
       # this is needed that copying  the results and log files will not fail
@@ -166,7 +163,7 @@ exit $status
   end
 
   def run_test_exec
-    results = File.join(RootDir, 'results')
+    File.join(RootDir, 'results')
     Dir.chdir RootDir
     puts "Will run #{@mvn_cmd}"
     system(@mvn_cmd) # + ' --offline')

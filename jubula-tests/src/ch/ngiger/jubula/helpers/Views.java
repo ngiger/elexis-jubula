@@ -62,6 +62,7 @@ public class Views {
 	@SuppressWarnings("unchecked")
 	public void visit_all_views() throws Exception{
 		int major = 0, minor = 0, nr_views = 0;
+		int restart_after = 40;
 		String new_pos = "first_time", new_pos2 = ""; //$NON-NLS-1$ //$NON-NLS-2$
 		ComponentIdentifier<Tree> tree = OM.ShowView_ViewTree_grc; //$NON-NLS-1$
 		Assert.assertNotNull("ShowView_ViewTree_grc may not be null", tree);
@@ -98,7 +99,7 @@ public class Views {
 							Common.sleep1second();
 							AUT_run.takeScreenshotActiveWindow("view_" + new_pos2 + ".png"); //$NON-NLS-1$ //$NON-NLS-2$
 							nr_views++;
-							if (nr_views % 45 == 0) {
+							if (nr_views % restart_after == 0) {
 								AUT_run.dbg_msg("Restarting app as nr_views is: " + nr_views);
 								AUT_run.takeScreenshotActiveWindow(
 									"before_restart_after_" + nr_views + ".png"); //$NON-NLS-1$ //$NON-NLS-2$

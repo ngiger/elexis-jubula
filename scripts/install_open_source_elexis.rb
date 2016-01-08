@@ -5,12 +5,13 @@ require 'common'
 elexis_zip = Config[:elexis_fsf][:full_zip_url]
 director_zip = Config[:director_latest]
 
-if is_macos
+if macos?
   elexis_zip.sub!('linux.gtk.x86_64', 'macosx.cocoa.x86_64')
   director_zip.sub!('linux.gtk.x86_64', 'macosx.cocoa.x86_64')
 end
 
-if true # install from jenkins
+INSTALL_FROM_JENKINS = true
+if INSTALL_FROM_JENKINS # install from jenkins
   download_and_unzip(elexis_zip, File.join(WorkDir, '**/plugins'))
 else # install via director
   download_and_unzip(director_zip, File.join(WorkDir, 'director'))
@@ -20,13 +21,13 @@ else # install via director
     -d #{WorkDir} \
     -repository #{to_install.keys.join(',')} -installIUs #{to_install.values.join(' -i ')}
   "
-  unless (config_ini = Dir.glob('*lexis*.ini')).size > 0
+  unless Dir.glob('*lexis*.ini').size > 0
     puts "Calling director with #{cmd}"
     exit 2 unless system(cmd)
   end
 end
 
-if is_macos
+if macos?
   config_ini = Dir.glob('**/*app/configuration/config.ini')
   name = config_ini[0].sub('/configuration/config.ini', '').sub('.app', '')
   Elexis = File.join(config_ini[0].sub('/configuration/config.ini', ''), 'Contents', 'MacOS', name)
