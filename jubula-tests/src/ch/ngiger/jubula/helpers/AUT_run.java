@@ -27,6 +27,7 @@ import org.eclipse.jubula.client.AUT;
 import org.eclipse.jubula.client.AUTAgent;
 import org.eclipse.jubula.client.MakeR;
 import org.eclipse.jubula.client.exceptions.ActionException;
+import org.eclipse.jubula.client.exceptions.CommunicationException;
 import org.eclipse.jubula.client.launch.AUTConfiguration;
 import org.eclipse.jubula.toolkit.concrete.components.Application;
 import org.eclipse.jubula.toolkit.enums.ValueSets.AUTActivationMethod;
@@ -176,16 +177,14 @@ public class AUT_run {
 		@Override
 		public void run(){
 			dbg_msg("In AgentThread run");
-			if ( !(SystemUtils.IS_OS_LINUX && System.getProperty("os.arch").equals("amd64")))
-			{
+			if (!(SystemUtils.IS_OS_LINUX && System.getProperty("os.arch").equals("amd64"))) {
 				String name = System.getProperty("os.name");
 				String version = System.getProperty("os.version");
 				String arch = System.getProperty("os.arch");
 				String msg = "Unsupported os" + name + " version" + version + " " + arch;
 				dbg_msg(msg);
 				System.exit(1);
-			} else
-			{
+			} else {
 				java.nio.file.Path rPath = Paths
 					.get(
 						"../org.eclipse.jubula.product.autagent.start/target/products/org.eclipse.jubula.product.autagent.start/linux/gtk/x86_64/autagent")
@@ -210,22 +209,26 @@ public class AUT_run {
 	}
 
 	private static void startAUT(){
-		dbg_msg("Calling startAUT ");
-		aut_id = m_agent.startAUT(aut_config);
-		if (aut_id != null) {
-			dbg_msg("started AUT as " + aut_id.getID() + " will sleep 2 seconds");
-			m_aut = m_agent.getAUT(aut_id, SwtComponents.getToolkitInformation());
-			dbg_msg("AUT will connect");
-			m_aut.connect();
-			dbg_msg("AUT connected");
-		} else {
-			Assert.fail("AUT did not start as expected? Why"); //$NON-NLS-1$
+		try {
+			dbg_msg("Calling startAUT ");
+			aut_id = m_agent.startAUT(aut_config);
+			if (aut_id != null) {
+				dbg_msg("started AUT as " + aut_id.getID() + " will sleep 2 seconds");
+				m_aut = m_agent.getAUT(aut_id, SwtComponents.getToolkitInformation());
+				dbg_msg("AUT will connect");
+				m_aut.connect();
+				dbg_msg("AUT connected");
+			} else {
+				Assert.fail("AUT did not start as expected? Why"); //$NON-NLS-1$
+			}
+			dbg_msg("AUT activate via titlebar");
+			m_aut.execute(app.activate(AUTActivationMethod.titlebar), null);
+			dbg_msg("AUT created and activated");
+		} catch (ActionException | CommunicationException e) {
+			dbg_msg("Action Exception startAUT reason: " + e.getMessage()); //$NON-NLS-1$
+			takeScreenshot("start_aut_failed.png");
+			Assert.fail("unable to start AUT"); //$NON-NLS-1$
 		}
-		dbg_msg("AUT createApplication");
-		app = SwtComponents.createApplication();
-		dbg_msg("AUT activate via titlebar");
-		m_aut.execute(app.activate(AUTActivationMethod.titlebar), null);
-		dbg_msg("AUT created and activated");
 
 	}
 
@@ -277,7 +280,8 @@ public class AUT_run {
 		//		config.get(Constants.WORK_DIR), args, Locale.GERMANY, Locale.getDefault());
 		dbg_msg("Got aut_config as " + aut_config.getLaunchInformation());
 		Thread.sleep(1000);
-
+		dbg_msg("AUT createApplication");
+		app = SwtComponents.createApplication();
 		startAUT();
 	}
 
@@ -295,6 +299,28 @@ public class AUT_run {
 					LinkOption.NOFOLLOW_LINKS);
 			dbg_msg("Created " + fullname + " exists " + foundFile);
 			Assert.assertTrue(foundFile);
+		} catch (ActionException e) {
+			dbg_msg("Action Exception " + fullname + " reason: " + e.getMessage());
+			//			Assert.fail("Unable to create screenshot " + imageName);
+		}
+	}
+
+	public static void takeScreenshot(String imageName){
+		String fullname =
+			new File(config.get(Constants.RESULT_DIR) + "/" + imageName).getAbsolutePath();
+		dbg_msg("Request takeScreenshot " + fullname + " for " + imageName);
+		try {
+			if (m_aut == null || app == null) {
+				dbg_msg("skip as null for m_aut " + m_aut + " or app " + app);
+			} else {
+
+				m_aut.execute(app.takeScreenshot(fullname, 1000, "rename", 100, true), null);
+				boolean foundFile = Files.exists(
+					new File(config.get(Constants.RESULT_DIR) + "/" + imageName).toPath(),
+					LinkOption.NOFOLLOW_LINKS);
+				dbg_msg("Created " + fullname + " exists " + foundFile);
+				Assert.assertTrue(foundFile);
+			}
 		} catch (ActionException e) {
 			dbg_msg("Action Exception " + fullname + " reason: " + e.getMessage());
 			//			Assert.fail("Unable to create screenshot " + imageName);
