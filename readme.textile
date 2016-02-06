@@ -69,7 +69,7 @@ We will probably soon add a possibility to add a specific command before a test 
 
 h2. notes
 
-h3. Why do we install Jubula in the docker
+h3. Why we do NOT install Jubula in the docker
 
 The following arguments were in favor:
 * Once the docker images is created, running the tests would be easy
@@ -79,6 +79,7 @@ The following arguments were in favor:
 The following arguments were against:
 * Jubula 8.2 is quite large (almost 900 MB) after the installation. We are able to zip the needed autagent to about 55MB.
 * We want to install Jubula only once on the target host
+* As moved to using the "ClientAPI":http://www.bredex.de/blog_article_en/jubula-client-api.html we could get rid of using dbtool, etc.
 
 h3. testing inside docker
 
@@ -115,6 +116,11 @@ bc. <location includeAllPlatforms="false" includeConfigurePhase="false" includeM
 <repository location="http://download.eclipse.org/jubula/nightly/repo"/>
 </location>
 
+h3. Upgrading to a newer version of Jubula
+
+The following steps are needed.
+* Update jubula_root and jubula_version in scripts/defaults.yaml to the new version
+* Replace assets/rcp-support.zip by the locally downloaded new version, e.g. /opt/jubula_8.2.2.050/development/rcp-support.zip
 
 h1. pitfalls
 
