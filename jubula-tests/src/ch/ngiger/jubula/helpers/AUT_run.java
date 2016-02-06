@@ -10,6 +10,7 @@ import java.io.UnsupportedEncodingException;
 import java.lang.management.ManagementFactory;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.PosixFilePermission;
@@ -140,8 +141,22 @@ public class AUT_run {
 		config.put(Constants.AGENT_HOST, "localhost");
 		config.put(Constants.AGENT_PORT, "6333");
 		config.put(Constants.WORK_DIR, USER_DIR);
-		config.put(Constants.AUT_EXE,
-			Paths.get(USER_DIR + "/../work/Elexis3").toAbsolutePath().normalize().toString());
+		Path elexis3 = Paths.get(USER_DIR + "/../work/Elexis3");
+		Path medelexis3 = Paths.get(USER_DIR + "/../work/Medelexis");
+		if (elexis3.toFile().canExecute()) {
+			config.put(Constants.AUT_EXE,
+				elexis3.toAbsolutePath().normalize().toString());
+		} else {
+			if (medelexis3.toFile().canExecute())
+			{
+			config.put(Constants.AUT_EXE,
+				medelexis3.toAbsolutePath().normalize().toString());
+			}
+			else {
+				dbg_msg("Could not find an executable Elexis3  " + elexis3.toAbsolutePath().toString() +
+					" nor " + medelexis3.toAbsolutePath().toString());
+			}
+		}
 		config.put(Constants.AUT_LOCALE, "de_DE");
 		config.put(Constants.AUT_ID, "elexis");
 		config.put(Constants.AUT_PROGRAM_ARGS,
@@ -275,9 +290,7 @@ public class AUT_run {
 		System.out.println("Keyboard_Locale: " + Keyboard_Locale.toString());
 		aut_config = new RCPAUTConfiguration("ch.elexis.core.application", //$NON-NLS-1$
 			config.get(Constants.AUT_ID), config.get(Constants.AUT_EXE),
-			config.get(Constants.WORK_DIR), args, Locale.getDefault(), Keyboard_Locale);
-		// config.get(Constants.WORK_DIR), args, Locale.getDefault(), Locale.getDefault());
-		//		config.get(Constants.WORK_DIR), args, Locale.GERMANY, Locale.getDefault());
+			config.get(Constants.WORK_DIR), args, Locale.US);
 		dbg_msg("Got aut_config as " + aut_config.getLaunchInformation());
 		Thread.sleep(1000);
 		dbg_msg("AUT createApplication");

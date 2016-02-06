@@ -2,6 +2,8 @@ package ch.ngiger.jubula.testsuites;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.eclipse.jubula.client.exceptions.ActionException;
 import org.eclipse.jubula.client.exceptions.CheckFailedException;
@@ -10,13 +12,16 @@ import org.eclipse.jubula.toolkit.enums.ValueSets.Operator;
 import org.eclipse.jubula.toolkit.swt.SwtComponents;
 import org.eclipse.jubula.tools.ComponentIdentifier;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import ch.ngiger.jubula.elexiscore.OM;
 import ch.ngiger.jubula.helpers.AUT_run;
 import ch.ngiger.jubula.helpers.Common;
+import ch.ngiger.jubula.helpers.Constants;
 import ch.ngiger.jubula.helpers.Eigenleistung;
+import ch.ngiger.jubula.helpers.Invoice;
 import ch.ngiger.jubula.helpers.Patients;
 import ch.ngiger.jubula.helpers.Perspectives;
 import ch.ngiger.jubula.helpers.Software;
@@ -69,6 +74,11 @@ public class Smoketest {
 	public void smoketest() throws Exception{
 		Software.showAbout("first");
 		Software.installAllFeatures();
+		if (AUT_run.config.get(Constants.AUT_EXE) != null
+			&& AUT_run.config.get(Constants.AUT_EXE).toLowerCase().contains("medelexis")) {
+			AUT_run.dbg_msg("AUT_EXE is medelexis" + AUT_run.config.get(Constants.AUT_EXE));
+			Common.openMenu("Datei/Beenden");
+		}
 		AUT_run.restartApp();
 		Software.showAbout("second");
 		// TODO: Artikelstamm.importArtikelstamm(null); // Fails at the moment
@@ -84,13 +94,13 @@ public class Smoketest {
 		pat.createCase("KVG", "Husten", "Testperson", "Nr. 34.56", "24.12.14");
 		pat.createConsultation("Scheint ein Simulant zu sein", "Kann gut fabulieren");
 		Perspectives.openLeistungenPerspective();
-		/* TODO:
-		 * Having problem with drag/drop
-		pat.eigenleistungVerrechnen(eigenleistung.substring(0, 4));
 		pat.invoiceActiveConsultation();
-		Invoice.showInvoices("smoketest/first_invoice.png");
-		Perspectives.openLeistungenPerspective();
-		*/
+		String test = Invoice.getInvoicesAsString("invoice/after_first_invoice.png");
+		Pattern p = Pattern.compile("[0-9]{4}.*Testperson.*ArmesWesen.*1990");
+		Matcher m = p.matcher(test);
+		boolean found = m.find();
+		AUT_run.dbg_msg("getInvoicesAsString Testing >" + test + "< matches <" + p + "> returns found " + found);
+		Assert.assertTrue(found);
 	}
 
 	@AfterClass

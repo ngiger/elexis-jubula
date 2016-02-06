@@ -400,15 +400,9 @@ public class Patients {
 		AUT_run.takeScreenshotActiveWindow("cons/eigenleistung/item_selected.png"); //$NON-NLS-1$
 		Common.sleep1second();
 		Common.dragTopLeftCell(OM.Eigenleistung_Alle_Table_1_tbl);
-//		Common.sleep1second();
 		Common.dropIntoMiddleOfComponent(OM.Kons_Verrechnung_table);
-//		Common.sleep1second();
 		AUT_run.takeScreenshotActiveWindow("cons/eigenleistung/dropped.png"); //$NON-NLS-1$
-//		Common.clickComponent(OM.Kons_Verrechnung_table);
-		AUT_run.dbg_msg("Waiting 10 seconds for manual drop");
 		Common.sleep1second();
-		Common.sleepMs(Constants.ONE_SECOND * 10);
-//		AUT_run.takeScreenshotActiveWindow("cons/eigenleistung/table.png"); //$NON-NLS-1$
 		Common.clickComponent(OM.Kons_Texteingabe_txf);
 		Common.sleep1second();
 		AUT_run.takeScreenshotActiveWindow("cons/eigenleistung/done.png"); //$NON-NLS-1$
@@ -416,8 +410,11 @@ public class Patients {
 
 	public void invoiceActiveConsultation(){
 		selectCasesWindow();
+		Common.sleep1second();
 		Common.selectTopLeftCell(OM.Cases_Table_1_tbl);
+		Common.sleep1second();
+		AUT_run.takeScreenshotActiveWindow("cons/invoice/before_invocing.png"); //$NON-NLS-1$
 		Common.contextMenuByText(OM.Cases_Table_1_tbl, "Rechnung erstellen.*", true);
-		AUT_run.takeScreenshotActiveWindow("cons/invocie/active_done.png"); //$NON-NLS-1$
+		AUT_run.takeScreenshotActiveWindow("cons/invoice/active_done.png"); //$NON-NLS-1$
 	}
 }

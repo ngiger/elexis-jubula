@@ -45,7 +45,7 @@ public class Software {
 
 	public static void showAbout(String add){
 		String menu_about = "Hilfe/.*Elexis.*";
-		String about_title = "About.*Elexis.*";
+		String about_title = "About.*"; // only OpenSource Elexis has Elexis
 		String details_title = ".*Installation Details.*";
 		root = "sw_inst/" + add + "/";
 
@@ -136,6 +136,12 @@ public class Software {
 	}
 
 	public static void installFeature(String feature_name){
+		if (AUT_run.config.get(Constants.AUT_EXE) != null
+			&& AUT_run.config.get(Constants.AUT_EXE).toLowerCase().contains("medelexis")) {
+			AUT_run.dbg_msg("AUT_EXE is medelexis" + AUT_run.config.get(Constants.AUT_EXE)
+				+ ". Don't know howto install " + feature_name);
+			return;
+		}
 		AUT_run.dbg_msg("installFeature " + feature_name);
 		swInitAll();
 		Common.synchronizedTextReplace(OM.Install_Text_1_txf, feature_name);
@@ -157,6 +163,11 @@ public class Software {
 	}
 
 	public static void installAllFeatures(){
+		if (AUT_run.config.get(Constants.AUT_EXE) != null
+			&& AUT_run.config.get(Constants.AUT_EXE).toLowerCase().contains("medelexis")) {
+			AUT_run.dbg_msg("AUT_EXE is medelexis" + AUT_run.config.get(Constants.AUT_EXE));
+			return;
+		}
 		AUT_run.dbg_msg("installAllFeatures finished");
 		swInitAll();
 		Common.clickComponent(OM.SW_Install_SelectAll_btn);
