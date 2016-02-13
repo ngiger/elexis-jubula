@@ -1,6 +1,7 @@
 $LOAD_PATH.unshift File.dirname(__FILE__)
 require 'scripts/version'
 require 'scripts/common'
+require 'scripts/jubularunner'
 require 'rubocop/rake_task'
 RuboCop::RakeTask.new
 
@@ -48,12 +49,11 @@ task :jubula_docker, [:test_to_run] do |_target, args|
 end
 
 desc 'Run Jubula-GUI test (default Screenshot) via Maven'
-task :jubula_mvn, [:test_to_run] => :elexis_install_os do |_target, args|
+task :jubula_mvn, [:test_to_run, :via_xvfb] => :elexis_install_os do |_target, args|
   saved_dir = Dir.pwd
   begin
-    args.with_default(test_to_run: 'Screenshot')
-    test_to_run = args[:test_to_run]
-    test_to_run ||= 'Screenshot'
+    test_to_run = args[:test_to_run] ? args[:test_to_run] : 'Smoketest'
+    via_xvfb = !!args[:via_xvfb]
     # The next 5 lines are just for making https://srv.elexis.info/jenkins/job/Elexis-3.0-Jubula-Matrix-Linux
     # work with minimal fuss
     src = File.join(Dir.pwd, 'work', 'ch.elexis.core.p2site-3.1.0-SNAPSHOT-linux.gtk.x86_64.zip')
@@ -64,10 +64,35 @@ task :jubula_mvn, [:test_to_run] => :elexis_install_os do |_target, args|
     FileUtils.rm_rf(File.join(Dir.pwd, 'workspace'), verbose: true)
     FileUtils.ln_s(src, dst) if File.exist?(src) && !File.exist?(dst)
     puts "Before calling mvn #{Dir.pwd} saved_dir #{saved_dir} test_to_run #{test_to_run}"
+    unless via_xvfb
+      xvfb_thread = nil
+      meat_thread = nil
+    else
+      ENV['DISPLAY']=JubulaRunner::DISPLAY
+      xvfb_thread = Thread.new do
+        puts "Starting Xvfb via #{JubulaRunner::START_XVFB_CMD}"
+        system(JubulaRunner::START_XVFB_CMD)
+        puts 'Done with xvfb_thread'
+      end
+      sleep 1
+      meat_thread = Thread.new do
+        puts "Starting meta_city via #{JubulaRunner::START_META_CMD}"
+        puts JubulaRunner::START_META_CMD
+        system(JubulaRunner::START_META_CMD)
+        puts 'Done with meat_thread'
+      end
+    end
     Dir.chdir saved_dir
-    cmd = "pwd && mvn clean integration-test  -Dtest_to_run=#{test_to_run}"
+    cmd = "pwd && mvn clean integration-test -Dtest_to_run=#{test_to_run}"
+    cmd += "-DDISPLAY=#{JubulaRunner::DISPLAY}" if via_xvfb
     puts "Will call #{cmd}"
     fail 'Running mvn failed' unless system(cmd)
+  ensure
+    if xvfb_thread
+      puts 'Must stop xvfb_thread'
+      xvfb_thread.exit
+    end
+    meat_thread.exit if meat_thread
   end
 end
 

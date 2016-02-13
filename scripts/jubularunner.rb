@@ -75,6 +75,14 @@ end
 # In all cases we assume that the correct Jubula executable is installed on the host
 class JubulaRunner
   attr_reader :start_time, :jubula_test_db_params, :jubula_test_data_dir, :rcp_support, :test_params
+  DISPLAY= ':1.5' # must match with values in START_XVFB_CMD and START_META_CMD
+  START_XVFB_CMD = 'Xvfb :1 -screen 5 1280x1024x24 -nolisten tcp'
+  START_META_CMD = "export DISPLAY=#{DISPLAY}
+    /usr/bin/metacity --replace --sm-disable &
+    sleep 1
+    /usr/bin/metacity-message disable-keybindings
+    /usr/bin/xclock &
+  "
 
   def get_h2_db_params(full_path)
     "-dburl 'jdbc:h2:#{full_path};MVCC=TRUE;AUTO_SERVER=TRUE;DB_CLOSE_ON_EXIT=FALSE' -dbuser 'sa' -dbpw ''"
@@ -97,16 +105,11 @@ class JubulaRunner
     # with startx this did not gow
     return unless @docker
     puts 'Starting start_xvfb in docker'
-    start_meta = "/usr/bin/metacity display=$DISPLAY --replace --sm-disable &
-    sleep 1
-    /usr/bin/metacity-message disable-keybindings
-    /usr/bin/xclock &
-  "
-    start_xvfb_cmd = 'Xvfb :1 -screen 5 1280x1024x24 -nolisten tcp'
-    store_cmd('start_xvfb_cmd.sh', start_xvfb_cmd)
-    @docker.start_docker('./start_xvfb_cmd.sh', 'DISPLAY=:1.5')
+
+    store_cmd('start_xvfb_cmd.sh', START_XVFB_CMD)
+    @docker.start_docker('./start_xvfb_cmd.sh', 'DISPLAY=' +DISPLAY)
     sleep(0.5)
-    store_cmd('start_meta.sh', start_meta)
+    store_cmd('start_meta.sh', START_META_CMD)
     @docker.exec_in_docker('./start_meta.sh', detach: true)
     sleep(0.5)
     system('docker ps')
@@ -209,18 +212,20 @@ exit $status
   end
 end
 
-if ARGV.index('docker_build')
-  docker_build
-  ARGV.delete('docker_build')
-  exit if ARGV.size == 0
-end
+if $0.eql?(__FILE__)
+  if ARGV.index('docker_build')
+    docker_build
+    ARGV.delete('docker_build')
+    exit if ARGV.size == 0
+  end
 
-if ARGV.index('run_in_docker')
-  @run_in_docker = true
-  ARGV.delete('run_in_docker')
-end
+  if ARGV.index('run_in_docker')
+    @run_in_docker = true
+    ARGV.delete('run_in_docker')
+  end
 
-ARGV.each do |a_test|
-  test = JubulaRunner.new(a_test)
-  test.run_test_suite(@run_in_docker)
+  ARGV.each do |a_test|
+    test = JubulaRunner.new(a_test)
+    test.run_test_suite(@run_in_docker)
+  end
 end
