@@ -45,4 +45,6 @@ unless File.executable?(Elexis)
 end
 install_rcp_support_for_jubula(inst_dir)
 patch_ini_file_for_jubula_rc(inst_dir)
+prepare_medelexis(inst_dir)
+
 puts "Done with #{File.basename(__FILE__)}"

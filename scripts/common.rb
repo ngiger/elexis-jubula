@@ -113,6 +113,31 @@ def patch_acl_for_elexis_and_current_user(force=false)
   end
 end
 
+def prepare_medelexis(inst_dir)
+  if Dir.glob(File.join(inst_dir, 'plugins', 'ch.medelexis.application_*.jar')).size > 0
+    prefs = File.join(inst_dir, 'configuration', '.settings', 'MedelexisDesk.prefs')
+    unless File.exist?(prefs)
+      FileUtils.makedirs(File.dirname(prefs))
+      File.open(prefs, 'w+') do |f|
+        f.puts "eclipse.preferences.version=1
+usageConditionAcceptanceDate=#{Time.now}
+usageConditionAccepted=true"
+      end
+      puts "created #{prefs}"
+    end
+    license_from = File.join(ENV['HOME'], 'medelexis_jubula_license.xml')
+    license_to = File.join(ENV['HOME'], 'elexis', 'license.xml')
+    unless File.exist?(license_to)
+      FileUtils.makedirs(File.dirname(license_to))
+    end
+    unless File.exist?(license_from)
+      puts "Cannot continue without a valid #{license_from}"
+      exit 1
+    end
+    FileUtils.cp(license_from, license_to, verbose: true) unless File.exist?(license_to)
+  end
+end
+
 def install_rcp_support_for_jubula(inst_dir)
   return if DRY_RUN
   rcp_support = File.expand_path(File.join(File.dirname(__FILE__), '..', 'assets', 'rcp-support.zip'))
