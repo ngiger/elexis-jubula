@@ -162,10 +162,40 @@ public class Software {
 		AUT_run.dbg_msg("installFeature finished " + feature_name);
 	}
 
+	class CallExitViaMenu extends Thread {
+		public CallExitViaMenu(String dummy) {
+			super(dummy);
+			AUT_run.dbg_msg("dummy is: " + dummy);
+		}
+	 
+		@Override
+		public void run() {
+		}
+	}
 	public static void installAllFeatures(){
 		if (AUT_run.config.get(Constants.AUT_EXE) != null
 			&& AUT_run.config.get(Constants.AUT_EXE).toLowerCase().contains("medelexis")) {
-			AUT_run.dbg_msg("AUT_EXE is medelexis" + AUT_run.config.get(Constants.AUT_EXE));
+			Common.sleep1second();
+			Runnable r = new Runnable() {
+				@Override
+				public void run() {
+					AUT_run.dbg_msg("Calling Datei Beenden");
+					Common.openMenu("Datei/Beenden");
+					AUT_run.dbg_msg("Wait for end");
+				}
+			};
+			AUT_run.dbg_msg("before t");
+			Thread t = new Thread(r);
+			AUT_run.dbg_msg("before run");
+			t.run();
+			AUT_run.dbg_msg("after run");
+			int j = 0;
+			while (j < 30 && AUT_run.m_aut.isConnected())
+			{
+				j++;
+				AUT_run.dbg_msg("Wait for installation ended " + j);
+				Common.sleep1second();
+			}
 			return;
 		}
 		AUT_run.dbg_msg("installAllFeatures finished");

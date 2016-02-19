@@ -23,7 +23,9 @@ import java.io.UnsupportedEncodingException;
 import org.eclipse.jubula.client.Result;
 import org.eclipse.jubula.client.exceptions.ActionException;
 import org.eclipse.jubula.client.exceptions.CheckFailedException;
+import org.eclipse.jubula.client.exceptions.CommunicationException;
 import org.eclipse.jubula.client.exceptions.ComponentNotFoundException;
+import org.eclipse.jubula.client.exceptions.ExecutionException;
 import org.eclipse.jubula.toolkit.base.components.GraphicsComponent;
 import org.eclipse.jubula.toolkit.concrete.ConcreteComponents;
 import org.eclipse.jubula.toolkit.concrete.components.MenuBarComponent;
@@ -224,7 +226,7 @@ public class Common {
 				mbr.waitForComponent(Constants.ONE_SECOND * 5, Constants.NR_MS_WAIT_AFTER_ACTION),
 				null);
 			AUT_run.m_aut.execute(mbr.selectMenuEntryByTextpath(menu, Operator.matches), null);
-		} catch (ActionException e) {
+		} catch (ExecutionException | CommunicationException e) {
 			String msg = String.format("openMenu %s after 5 second failed", menu); //$NON-NLS-1$
 			AUT_run.dbg_msg(msg);
 			e.printStackTrace(AUT_run.writer);
@@ -285,7 +287,7 @@ public class Common {
 		TextInputComponent tic = SwtComponents.createTextInputComponent(cid);
 		AUT_run.m_aut.execute(tic.waitForComponent(Constants.ONE_SECOND, 0), null);
 		try {
-			String changedValue = filter ? newValue.replaceAll("[^\\w\\s\\.-_]", "_") : newValue; // Stuff like üis not possible
+			String changedValue = filter ? newValue.replaceAll("[^\\w\\s\\.-_/]", "_") : newValue; // Stuff like üis not possible
 			Thread.sleep(100);
 			AUT_run.dbg_msg(String.format("synchronizedTextReplace: %s -> %s %s",
 				cid.toString(), newValue, filter ? "changed " + changedValue : " unfiltered"));
@@ -293,7 +295,7 @@ public class Common {
 			Thread.sleep(100);
 			AUT_run.m_aut.execute(tic.checkText(changedValue, Operator.equals), null);
 		} catch (InterruptedException | ActionException | CheckFailedException e) {
-			String msg = String.format("synchronizedTextReplace: new: %s error %s", newValue,
+			String msg = String.format("synchronizedTextReplace: new: %s  error %s", newValue,
 				e.getMessage());
 			AUT_run.dbg_msg(msg);
 			e.printStackTrace(AUT_run.writer);

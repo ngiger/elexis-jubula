@@ -60,6 +60,7 @@ public class AUT_run {
 	private static AUTConfiguration aut_config = null;
 	private static java.nio.file.Path ElexisLog =
 		Paths.get(System.getProperty("user.home") + "/elexis/logs/elexis-3.log");
+	public static boolean isMedelexis = false;
 
 	public static void dbg_msg(String msg){
 		String timeStamp =
@@ -149,6 +150,7 @@ public class AUT_run {
 		} else {
 			if (medelexis3.toFile().canExecute())
 			{
+				isMedelexis = true;
 			config.put(Constants.AUT_EXE,
 				medelexis3.toAbsolutePath().normalize().toString());
 			}
@@ -161,14 +163,20 @@ public class AUT_run {
 		config.put(Constants.AUT_ID, "elexis");
 		config.put(Constants.AUT_PROGRAM_ARGS,
 			"-Xdebug -Xrunjdwp:transport=dt_socket,server=y,address=8000");
-
+		// with the following String I started on wheezy
+		// ./Medelexis -eclipse.password ~/.medelexis.dummy.password -clean -debug -consoleLog -vmargs -Delexis-run-mode=RunFromScratch -Dch.elexis.username=007 -Dch.elexis.password=topsecret 
 		config.put(Constants.AUT_VM_ARGS,
 			"-nl " + config.get(Constants.AUT_LOCALE)
 				+ " -clean -vmargs -Declipse.p2.unsignedPolicy=allow" + " -Dautagent_port="
 				+ config.get(Constants.AGENT_PORT) + " -Dautagent_host="
 				+ config.get(Constants.AGENT_HOST)
-				+ " -Dorg.eclipse.swt.browser.DefaultType=mozilla -Dch.elexis.username=007"
-				+ " -Dch.elexis.password=topsecret -Delexis-run-mode=RunFromScratch");
+				+ " -Dch.elexis.username=007 -Dch.elexis.password=topsecret "
+				+ " -Delexis-run-mode=RunFromScratch");
+		if (isMedelexis) {config.put(Constants.AUT_VM_ARGS, "-eclipse.password ~/.medelexis.dummy.password " + 
+				config.get(Constants.AUT_VM_ARGS) +
+				" -Dprovisioning.UpdateRepository=snapshot");
+			}
+
 		config.put(Constants.AUT_KEYBOARD, "de_DE");
 		for (Map.Entry<String, String> entry : config.entrySet()) {
 			String from_env = System.getenv(entry.getKey());
@@ -282,7 +290,7 @@ public class AUT_run {
 			Assert.fail("EXE File " + config.get(Constants.AUT_EXE)
 				+ " does not exist or cannot be executed");
 		}
-		System.out.println("Languageis " + config.get(Constants.AUT_LOCALE));
+		System.out.println("Language is " + config.get(Constants.AUT_LOCALE));
 		System.out.println("Keyboard Layout is " + config.get(Constants.AUT_KEYBOARD));
 		System.out.println("Default is " + Locale.getDefault());
 		System.out.println("German is " + Locale.GERMANY + " " + Locale.GERMAN);
