@@ -1,0 +1,36 @@
+# Copyright (c) 2015 by Niklaus Giger niklaus.giger@member.fsf.org
+#
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the Eclipse Public License v1.0
+# which accompanies this distribution, and is available at
+# http:#www.eclipse.org/legal/epl-v10.html
+#
+# This is a setup for running tests
+# Security is not really a concern!
+#
+#  image: evarga/jenkins-slave:latest
+
+jenkinsCache:
+  image: busybox
+  command: echo 'Data Container for Maven'
+  volumes:
+    - /home/jenkins/.m2
+    - /home/jenkins/tools
+
+# see https://github.com/carlossg/jenkins-slave-docker/blob/master/jenkins-slave.sh
+# java -jar slave.jar -jnlpUrl http://localhost:8081/computer/slave/slave-agent.jnlp -secret c2d1f5f20765638e5b3d6c7137eb4d3e9271b9a224059d6ab28211d564e53c25
+slave_1:
+  # image: "csanchez/jenkins-slave:latest"
+  build: .
+#  environment:
+#    SLAVE_1_URL: http://172.17.0.6:8080
+#    SLAVE_1_SECRET: c2d1f5f20765638e5b3d6c7137eb4d3e9271b9a224059d6ab28211d564e53c25
+  command : "-url ${SLAVE_1_URL} ${SLAVE_1_SECRET} slave"
+  volumes_from:
+    - jenkinsCache
+
+#  env_file:
+#    - ./secrets_defaults.env
+#    - /etc/secrets.env
+# set -x SLAVE_1_URL http://172.17.0.6:8080
+# set -x SLAVE_1_SECRET c2d1f5f20765638e5b3d6c7137eb4d3e9271b9a224059d6ab28211d564e53c25
