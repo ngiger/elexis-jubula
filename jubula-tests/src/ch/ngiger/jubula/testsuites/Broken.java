@@ -127,6 +127,7 @@ public class Broken {
 		pat.createConsultation("Scheint ein Simulant zu sein", "Kann gut fabulieren");
 		Perspectives.openLeistungenPerspective();
 		pat.eigenleistungVerrechnen(eigenleistung.substring(0, 4));
+		// pat.artikelstammItemVerrechnen("CYKLOKAPRON");
 		pat.invoiceActiveConsultation();
 		Invoice.showInvoices("invoices/one_item.png");
 		Assert.assertEquals(1, Common.nrRowsInTable(OM.Rechnungsübersicht_tbl));

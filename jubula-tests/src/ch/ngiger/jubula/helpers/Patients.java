@@ -417,4 +417,24 @@ public class Patients {
 		Common.contextMenuByText(OM.Cases_Table_1_tbl, "Rechnung erstellen.*", true);
 		AUT_run.takeScreenshotActiveWindow("cons/invoice/active_done.png"); //$NON-NLS-1$
 	}
+
+	public void artikelstammItemVerrechnen(String item){
+		AUT_run.dbg_msg("artikelstammItemVerrechnen: " + item); //$NON-NLS-1$
+		AUT_run.takeScreenshotActiveWindow("cons/artikel/start.png"); //$NON-NLS-1$
+		Perspectives.openPatientenPerspective();
+		Perspectives.resetPerspective();
+		selectAndClickInKonsView();
+		AUT_run.takeScreenshotActiveWindow("cons/artikel/in_cons_view.png"); //$NON-NLS-1$
+		// Clicking on Kons_Verrechnung_grc opens the perspective full
+		Common.clickComponent(OM.Kons_Verrechnung_grc);
+		Common.sleep1second();
+		Common.selectTabByValue(OM.CTabFolder_1_tpn, "Artikelstamm");
+		AUT_run.takeScreenshotActiveWindow("cons/artikel/selected_artikelstamm.png"); //$NON-NLS-1$
+		Artikelstamm.selectFirstItemMatching(item);
+		AUT_run.takeScreenshotActiveWindow("cons/artikel/before_drag_top_left.png"); //$NON-NLS-1$
+		Common.dragTopLeftCell(OM.Artikelstamm_Alle_Table_1_tbl);
+		Common.dropIntoMiddleOfComponent(OM.Kons_Verrechnung_table);
+		AUT_run.takeScreenshotActiveWindow("cons/artikel/done.png"); //$NON-NLS-1$
+		AUT_run.dbg_msg("artikelstammItemVerrechnen done: " + item); //$NON-NLS-1$
+	}
 }
