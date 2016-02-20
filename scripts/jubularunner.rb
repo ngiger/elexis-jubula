@@ -136,7 +136,7 @@ class JubulaRunner
     cmd = "status=99
 mkdir -p /home/elexis/results
 cp $0 /home/elexis/results
-#{@mvn_cmd}
+#{@mvn_cmd} -DDISPLAY=#{DISPLAY}
 status=$?
 echo run_test_in_docker done
 sleep 1
