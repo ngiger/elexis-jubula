@@ -1,14 +1,11 @@
 package ch.ngiger.jubula.testsuites;
 
-import org.eclipse.jubula.toolkit.enums.ValueSets.AUTActivationMethod;
-import org.eclipse.jubula.toolkit.swt.SwtComponents;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import ch.ngiger.jubula.helpers.AUT_run;
-import ch.ngiger.jubula.helpers.Perspectives;
-import ch.ngiger.jubula.helpers.Software;
+import ch.ngiger.jubula.helpers.Common;
 import ch.ngiger.jubula.helpers.Views;
 
 public class SuiteVisitAllViews {
@@ -21,14 +18,8 @@ public class SuiteVisitAllViews {
 
 	@Test()
 	public void suite_visit_all_views() throws Exception{
-		// We must open Leistungen first, as this take a lot of time
-		Perspectives.openLeistungenPerspective();
+		Common.initialWorkWithRunFromScatch();
 		Views all = new Views();
-		Software.installAllFeatures();
-		org.eclipse.jubula.toolkit.concrete.components.Application application =
-			SwtComponents.createApplication();
-		Thread.sleep(1000); // Don't know why this is needed!
-		AUT_run.m_aut.execute(application.activate(AUTActivationMethod.titlebar), null);
 		all.visit_all_views();
 	}
 

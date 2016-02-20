@@ -75,6 +75,7 @@ public class Smoketest {
 	
 	@Test()
 	public void smoketest() throws Exception{
+		Common.initialWorkWithRunFromScatch();
 		if (AUT_run.isMedelexis) {
 			AUT_run.dbg_msg("AUT_EXE is medelexis: " + AUT_run.config.get(Constants.AUT_EXE));
 			Common.clickComponent(OM.Medelexis_Abo_perspective_tbi);

@@ -32,6 +32,7 @@ import org.eclipse.jubula.toolkit.concrete.components.MenuBarComponent;
 import org.eclipse.jubula.toolkit.concrete.components.TabComponent;
 import org.eclipse.jubula.toolkit.concrete.components.TableComponent;
 import org.eclipse.jubula.toolkit.concrete.components.TextInputComponent;
+import org.eclipse.jubula.toolkit.enums.ValueSets.AUTActivationMethod;
 import org.eclipse.jubula.toolkit.enums.ValueSets.BinaryChoice;
 import org.eclipse.jubula.toolkit.enums.ValueSets.InteractionMode;
 import org.eclipse.jubula.toolkit.enums.ValueSets.Modifier;
@@ -274,6 +275,18 @@ public class Common {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public static void initialWorkWithRunFromScatch() {
+		if (!AUT_run.isMedelexis) {
+			Software.installAllFeatures();
+		}
+		// We must open Leistungen first, as this take a lot of time
+		Perspectives.openLeistungenPerspective();
+		org.eclipse.jubula.toolkit.concrete.components.Application application =
+				SwtComponents.createApplication();
+		Common.sleep1second(); // Don't know why this is needed!
+		AUT_run.m_aut.execute(application.activate(AUTActivationMethod.titlebar), null);
 	}
 	public static void synchronizedTextReplace(
 		@SuppressWarnings("rawtypes") ComponentIdentifier cid, String newValue){
