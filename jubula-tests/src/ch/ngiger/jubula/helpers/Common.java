@@ -224,11 +224,12 @@ public class Common {
 	public static void openMenu(String menu){
 		try {
 			AUT_run.m_aut.execute(
-				mbr.waitForComponent(Constants.ONE_SECOND * 5, Constants.NR_MS_WAIT_AFTER_ACTION),
+				mbr.waitForComponent(Constants.ONE_SECOND * 30, Constants.NR_MS_WAIT_AFTER_ACTION),
 				null);
 			AUT_run.m_aut.execute(mbr.selectMenuEntryByTextpath(menu, Operator.matches), null);
 		} catch (ExecutionException | CommunicationException e) {
-			String msg = String.format("openMenu %s after 5 second failed", menu); //$NON-NLS-1$
+			String msg = String.format("openMenu %s after 5 second failed", menu + //$NON-NLS-1$
+				" " + e.getMessage()); //$NON-NLS-1$
 			AUT_run.dbg_msg(msg);
 			e.printStackTrace(AUT_run.writer);
 			AUT_run.takeScreenshotActiveWindow("open_menu_failed.png"); //$NON-NLS-1$
@@ -276,11 +277,10 @@ public class Common {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public static void initialWorkWithRunFromScatch() {
-		if (!AUT_run.isMedelexis) {
-			Software.installAllFeatures();
-		}
+		Perspectives.openPatientenPerspective();
+		Perspectives.resetPerspective();
 		// We must open Leistungen first, as this take a lot of time
 		Perspectives.openLeistungenPerspective();
 		org.eclipse.jubula.toolkit.concrete.components.Application application =

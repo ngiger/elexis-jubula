@@ -46,7 +46,7 @@ public class AUT_run {
 	/** the AUT */
 	public static AUT m_aut;
 	public static String SAVE_RESULTS_DIR = null;
-	
+
 	/** the logger */
 	// private static Logger log = LoggerFactory.getLogger(AUT_run.class);
 	public static final String AUT_ID = "elexis_3_1"; //$NON-NLS-1$
@@ -61,7 +61,7 @@ public class AUT_run {
 	private static java.nio.file.Path ElexisLog =
 		Paths.get(System.getProperty("user.home") + "/elexis/logs/elexis-3.log");
 	public static boolean isMedelexis = false;
-	
+
 	public static void dbg_msg(String msg){
 		String timeStamp =
 			new SimpleDateFormat("dd.MM.yyyy HH:mm:ss").format(Calendar.getInstance().getTime());
@@ -85,24 +85,24 @@ public class AUT_run {
 		writer.println(timeStamp + ": " + msg);
 		writer.flush();
 	}
-	
+
 	public static boolean run_system_cmd(String args[]){
 		String s = null;
-		
+
 		try {
 			dbg_msg("run_system_cmd: " + StringUtils.join(args, " "));
 			Process p = Runtime.getRuntime().exec(args);
-			
+
 			BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
-			
+
 			BufferedReader stdError = new BufferedReader(new InputStreamReader(p.getErrorStream()));
-			
+
 			// read the output from the command
 			// dbg_msg("Here is the standard output of the command:\n");
 			while ((s = stdInput.readLine()) != null) {
 				dbg_msg(s);
 			}
-			
+
 			// read any errors from the attempted command
 			// dbg_msg("Here is the standard error of the command (if any):\n");
 			while ((s = stdError.readLine()) != null) {
@@ -116,7 +116,7 @@ public class AUT_run {
 			// System.exit(-1);
 		}
 	}
-	
+
 	private static void setupResultDir(){
 		java.nio.file.Path rPath = Paths.get("../results").toAbsolutePath().normalize();
 		config.put(Constants.RESULT_DIR, rPath.toString());
@@ -137,7 +137,7 @@ public class AUT_run {
 		}
 		System.out.println("SAVE_RESULTS_DIR is: " + SAVE_RESULTS_DIR);
 	}
-	
+
 	private static void setupConfig(){
 		config.put(Constants.AGENT_HOST, "localhost");
 		config.put(Constants.AGENT_PORT, "6333");
@@ -161,7 +161,7 @@ public class AUT_run {
 		config.put(Constants.AUT_PROGRAM_ARGS,
 			"-Xdebug -Xrunjdwp:transport=dt_socket,server=y,address=8000");
 		// with the following String I started on wheezy
-		// ./Medelexis -eclipse.password ~/.medelexis.dummy.password -clean -debug -consoleLog -vmargs -Delexis-run-mode=RunFromScratch -Dch.elexis.username=007 -Dch.elexis.password=topsecret 
+		// ./Medelexis -eclipse.password ~/.medelexis.dummy.password -clean -debug -consoleLog -vmargs -Delexis-run-mode=RunFromScratch -Dch.elexis.username=007 -Dch.elexis.password=topsecret
 		config.put(Constants.AUT_VM_ARGS,
 			"-nl " + config.get(Constants.AUT_LOCALE)
 				+ " -clean -vmargs -Declipse.p2.unsignedPolicy=allow" + " -Dautagent_port="
@@ -178,7 +178,7 @@ public class AUT_run {
 				"-eclipse.password ~/.medelexis.dummy.password " + config.get(Constants.AUT_VM_ARGS)
 					+ " -Dprovisioning.UpdateRepository=" + variant);
 		}
-		
+
 		config.put(Constants.AUT_KEYBOARD, "de_DE");
 		for (Map.Entry<String, String> entry : config.entrySet()) {
 			String from_env = System.getenv(entry.getKey());
@@ -196,9 +196,9 @@ public class AUT_run {
 			dbg_msg("Config : " + entry.getKey() + " is: " + entry.getValue());
 		}
 	}
-	
+
 	public static class AgentThread extends Thread {
-		
+
 		@Override
 		public void run(){
 			dbg_msg("In AgentThread run");
@@ -226,17 +226,23 @@ public class AUT_run {
 			}
 		}
 	}
-	
+
 	private static void startAutagent(){
 		dbg_msg("Calling startAutagent ");
 		agent_thread = new AgentThread();
 		agent_thread.start();
 	}
-	
+
 	private static void startAUT(){
 		try {
-			dbg_msg("Calling startAUT ");
+			int j = 0;
+			while (j< 10 && ! m_agent.isConnected())
+			{
+				dbg_msg("Calling startAUT "+ j + " isConnected " + m_agent.isConnected());
+				Common.sleep1second();
+			}
 			aut_id = m_agent.startAUT(aut_config);
+			dbg_msg("Calling startAUT returned " + aut_id);
 			if (aut_id != null) {
 				dbg_msg("started AUT as " + aut_id.getID() + " will sleep 2 seconds");
 				m_aut = m_agent.getAUT(aut_id, SwtComponents.getToolkitInformation());
@@ -254,9 +260,9 @@ public class AUT_run {
 			takeScreenshot("start_aut_failed.png");
 			Assert.fail("unable to start AUT"); //$NON-NLS-1$
 		}
-		
+
 	}
-	
+
 	@BeforeClass
 	public static void setUp() throws Exception{
 		setupResultDir();
@@ -267,7 +273,7 @@ public class AUT_run {
 		} catch (IOException e) {
 			dbg_msg("Did not delete " + ElexisLog.toAbsolutePath());
 		}
-		
+
 		/* Connecting to external Jubula AUT Agent which
 		   must be started manually BEFORE test execution! */
 		String msg = "AUT_run.setup port : " + Constants.AGENT_PORT + " is: "
@@ -307,7 +313,7 @@ public class AUT_run {
 		app = SwtComponents.createApplication();
 		startAUT();
 	}
-	
+
 	public static void takeScreenshotActiveWindow(String imageName){
 		String fullname =
 			new File(config.get(Constants.RESULT_DIR) + "/" + imageName).getAbsolutePath();
@@ -327,7 +333,7 @@ public class AUT_run {
 			//			Assert.fail("Unable to create screenshot " + imageName);
 		}
 	}
-	
+
 	public static void takeScreenshot(String imageName){
 		String fullname =
 			new File(config.get(Constants.RESULT_DIR) + "/" + imageName).getAbsolutePath();
@@ -336,7 +342,7 @@ public class AUT_run {
 			if (m_aut == null || app == null) {
 				dbg_msg("skip as null for m_aut " + m_aut + " or app " + app);
 			} else {
-				
+
 				m_aut.execute(app.takeScreenshot(fullname, 1000, "rename", 100, true), null);
 				boolean foundFile = Files.exists(
 					new File(config.get(Constants.RESULT_DIR) + "/" + imageName).toPath(),
@@ -349,7 +355,7 @@ public class AUT_run {
 			//			Assert.fail("Unable to create screenshot " + imageName);
 		}
 	}
-	
+
 	/** cleanup */
 	@AfterClass
 	public static void tearDown() throws Exception{
@@ -370,7 +376,7 @@ public class AUT_run {
 		}
 		saveLogs();
 	}
-	
+
 	private static void saveLogs(){
 		java.nio.file.Path newdir = Paths.get(SAVE_RESULTS_DIR, "elexis-3.log");
 		try {
@@ -379,7 +385,7 @@ public class AUT_run {
 			// Just ignore this error, probably we had no elexis log
 		}
 	}
-	
+
 	public static void restartApp(){
 		dbg_msg("AUT_run.restartApp ");
 		m_agent.stopAUT(aut_id);
@@ -390,5 +396,5 @@ public class AUT_run {
 		dbg_msg("m_agent.connected ");
 		startAUT();
 	}
-	
+
 }
