@@ -40,15 +40,12 @@ h3. Catch up with previous capabilities
 h3. pending improvements
 
 * Artikelstamm
-** Support OpenSource useage of Artikelstamm
 ** Show migration of legecy (stock, billing)
 ** Check whether we need any scripts from the db_check
 * -Test whether we are able to input umlauts and other special characters-
-* Add a custom articlestamm.xml with a good selection of drugs to make a good demo
 * Rework some Elexis-GUI elements, e.g.
 ** -DatePickers should allow entering a date via the keyboard. This is needed when a consultation for a previous date has to be entered- Done. Thanks to marco! see "commit":https://github.com/elexis/elexis-3-core/commit/b83089cc72c01c20b06aa9f1aaf86964f6eb9469
 * Complete basic tests until we can prove that Elexis creates correct bills
-* As we have now the whole Jubula installed inside the container, we should copy the jar from within the container!
 
 h2. concepts
 
@@ -64,8 +61,9 @@ bc. "-DdbOpts=h2 -Delexis-run-mode=RunFromScratch
 -Dch.elexis.username=007 -Dch.elexis.password=topsecret
 -Declipse.p2.unsignedPolicy=allow -Dorg.eclipse.swt.browser.DefaultType=mozilla"
 
-We will probably soon add a possibility to add a specific command before a test execution, eg. to download a file. 
+We will probably soon add a possibility to add a specific command before a test execution, eg. to download a file.
 
+Setting the environment variable VARIANT allows changing the download location for installing the Elexis OpenSource for the Beta, PreRelease and Release versions.
 
 h2. notes
 

@@ -27,7 +27,13 @@ task :docker_run do
   fail "docker_run failed! #{cmd}" unless system(cmd)
 end
 
-desc 'Install latest snapshot of OpenSource Elexis'
+if  ENV['VARIANT']
+  VARIANT = ENV['VARIANT']
+  desc "Install latest #{VARIANT} (as specified by env variable VARIANT) of OpenSource Elexis"
+else
+  VARIANT = 'snapshot'
+  desc 'Install latest snapshot of OpenSource Elexis'
+end
 task :elexis_install_os do
   fail 'elexis_install_os failed!' unless system('scripts/install_open_source_elexis.rb')
 end

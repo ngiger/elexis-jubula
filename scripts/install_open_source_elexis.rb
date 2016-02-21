@@ -2,8 +2,10 @@
 $LOAD_PATH.unshift File.dirname(__FILE__)
 require 'common'
 
-elexis_zip = Config[:elexis_fsf][:full_zip_url]
 director_zip = Config[:director_latest]
+
+VARIANT = ENV['VARIANT'] ? ENV['VARIANT'] : 'snapshot'
+elexis_zip = Config[:elexis_fsf][VARIANT][:full_zip_url]
 
 if macos?
   elexis_zip.sub!('linux.gtk.x86_64', 'macosx.cocoa.x86_64')
@@ -12,7 +14,7 @@ end
 
 INSTALL_FROM_JENKINS = true
 if INSTALL_FROM_JENKINS # install from jenkins
-  download_and_unzip(elexis_zip, File.join(WorkDir, '**/plugins'))
+  download_and_unzip(elexis_zip.gsub('snapshot', VARIANT), File.join(WorkDir, '**/plugins'))
 else # install via director
   download_and_unzip(director_zip, File.join(WorkDir, 'director'))
   to_install = Config[:elexis_fsf][:features_2_install]
