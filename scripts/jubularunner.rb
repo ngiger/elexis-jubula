@@ -136,7 +136,7 @@ class JubulaRunner
     cmd = "status=99
 mkdir -p /home/elexis/results
 cp $0 /home/elexis/results
-#{@mvn_cmd}
+#{@mvn_cmd} -DDISPLAY=#{DISPLAY}
 status=$?
 echo run_test_in_docker done
 sleep 1
@@ -193,6 +193,7 @@ exit $status
     @mvn_cmd = "mvn integration-test -Dtest_to_run=#{@test_params[:test_to_run]}"
     @docker ? run_test_in_docker : run_test_exec
   ensure
+    FileUtils.cp_r(@result_dir, @result_dir + '-' + @test_params[:test_to_run], verbose: true, preserve: true)
     diff_time = (Time.now - @start_time).to_i
     puts "Running took #{diff_time} seconds"
     Dir.chdir(saved_dir)

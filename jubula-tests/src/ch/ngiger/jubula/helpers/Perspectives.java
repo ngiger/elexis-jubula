@@ -71,7 +71,7 @@ public class Perspectives {
 	public static void openLeistungenPerspective(){
 		String name = "Leistungen";
 		AUT_run
-			.dbg_msg("fastOpenPerspectives: " + name + " first_leistungen is " + first_leistungen);
+			.dbg_msg("openLeistungenPerspective: " + name + " first_leistungen is " + first_leistungen);
 		if (first_leistungen) {
 			AUT_run.dbg_msg("fastOpenPerspectives: " + name + " via menu");
 			Perspectives.openPerspectiveByName(name + ".*"); // Match (default) for Patientenübersicht

@@ -29,19 +29,19 @@ import ch.ngiger.jubula.helpers.Software;
 
 public class Smoketest {
 	/** test generating a snapshot of the currently active window */
-	
+
 	@BeforeClass
 	public static void setup() throws Exception{
 		AUT_run.setUp();
 		AUT_run.dbg_msg("setup done"); //$NON-NLS-1$
 	}
-	
+
 	public void testTextInput(ComponentIdentifier<TextInputComponent> cid, String char2test){
 		AUT_run.dbg_msg(
 			AUT_run.Keyboard_Locale.toString() + " testTextInput: " + cid + " with " + char2test);
 		TextInputComponent tic = SwtComponents.createTextInputComponent(cid);
 		Common.synchronizedTextReplace(cid, "");//$NON-NLS-1$
-		
+
 		for (int i = 0, n = char2test.length(); i < n; i++) {
 			String tst_string = char2test.substring(i, i + 1);
 			try {
@@ -55,43 +55,47 @@ public class Smoketest {
 			}
 		}
 	}
-	
+
 	private void testAllChars(){
 		@SuppressWarnings("unchecked")
 		ComponentIdentifier<TextInputComponent> text_intput_to_use = OM.Patienten_SelectName_grc; //$NON-NLS-1$
 		String normal = "01234567890 abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 		String extras = "+\"*%&/()=?_:;,.-<>|@#|[]{}\\";
 		String problems = "äöüéàè¼{½¬€";
-		
+
 		List<String> myList = Arrays.asList(normal, extras, problems);
 		myList.forEach(element -> testTextInput(text_intput_to_use, element));
-		
+
 		// We don't call synchronizedTextReplace on each element as this fails, and I don't
 		// have time to debug why, as we had no problems
 		// myList.forEach(element -> Common.synchronizedTextReplace(text_intput_to_use, element));
 	}
-	
-	private static boolean miminized = true;
-	
+
+	private static boolean miminized = false;
+
 	@Test()
 	public void smoketest() throws Exception{
+		AUT_run.dbg_msg("smoketest miminized is " + miminized + " Medelexis " + AUT_run.isMedelexis);
+		Common.initialWorkWithRunFromScatch();
 		if (AUT_run.isMedelexis) {
 			AUT_run.dbg_msg("AUT_EXE is medelexis: " + AUT_run.config.get(Constants.AUT_EXE));
 			Common.clickComponent(OM.Medelexis_Abo_perspective_tbi);
 			Common.sleepMs(5 * 1000); // wait 5 seconds: TODO: should wait till populated
 		}
-		
+
 		if (!miminized) {
 			Software.showAbout("first");
-			Software.installAllFeatures();
 			if (AUT_run.isMedelexis) {
 				AUT_run.dbg_msg("AUT_EXE is medelexis" + AUT_run.config.get(Constants.AUT_EXE));
 				Common.openMenu("Datei/Beenden");
 			} else {
+				Software.installAllFeatures();
 				AUT_run.restartApp();
+				Common.initialWorkWithRunFromScatch();
 			}
 			Software.showAbout("second");
 		}
+		AUT_run.dbg_msg("Calling importArtikelstamm" + AUT_run.config.get(Constants.AUT_EXE));
 		Artikelstamm.importArtikelstamm(null);
 		if (!miminized) {
 			String eigenleistung = "Meine Eigenleistung";
@@ -106,12 +110,12 @@ public class Smoketest {
 		pat.createConsultation("Scheint ein Simulant zu sein", "Kann gut fabulieren");
 		Perspectives.openLeistungenPerspective();
 		pat.artikelstammItemVerrechnen("CYKLOKAPRON");
-		
+
 		String eigenleistung = "Meine Eigenleistung";
 		Eigenleistung.createEigenleistung("mfk", eigenleistung, 5000, 8000, 10);
 		Perspectives.openLeistungenPerspective();
 		pat.eigenleistungVerrechnen(eigenleistung.substring(0, 4));
-		
+
 		pat.invoiceActiveConsultation();
 		String test = Invoice.getInvoicesAsString("invoice/after_first_invoice.png");
 		Pattern p = Pattern.compile("[0-9]{4}.*Testperson.*ArmesWesen.*1990");
@@ -121,7 +125,7 @@ public class Smoketest {
 			+ "> returns found " + found);
 		Assert.assertTrue(found);
 	}
-	
+
 	@AfterClass
 	public static void teardown() throws Exception{
 		AUT_run.dbg_msg("Smoketest.teardown"); //$NON-NLS-1$

@@ -145,18 +145,15 @@ public class AUT_run {
 		Path elexis3 = Paths.get(USER_DIR + "/../work/Elexis3");
 		Path medelexis3 = Paths.get(USER_DIR + "/../work/Medelexis");
 		if (elexis3.toFile().canExecute()) {
-			config.put(Constants.AUT_EXE,
-				elexis3.toAbsolutePath().normalize().toString());
+			config.put(Constants.AUT_EXE, elexis3.toAbsolutePath().normalize().toString());
 		} else {
-			if (medelexis3.toFile().canExecute())
-			{
+			if (medelexis3.toFile().canExecute()) {
 				isMedelexis = true;
-			config.put(Constants.AUT_EXE,
-				medelexis3.toAbsolutePath().normalize().toString());
-			}
-			else {
-				dbg_msg("Could not find an executable Elexis3  " + elexis3.toAbsolutePath().toString() +
-					" nor " + medelexis3.toAbsolutePath().toString());
+				config.put(Constants.AUT_EXE, medelexis3.toAbsolutePath().normalize().toString());
+			} else {
+				dbg_msg(
+					"Could not find an executable Elexis3  " + elexis3.toAbsolutePath().toString()
+						+ " nor " + medelexis3.toAbsolutePath().toString());
 			}
 		}
 		config.put(Constants.AUT_LOCALE, "de_DE");
@@ -164,7 +161,7 @@ public class AUT_run {
 		config.put(Constants.AUT_PROGRAM_ARGS,
 			"-Xdebug -Xrunjdwp:transport=dt_socket,server=y,address=8000");
 		// with the following String I started on wheezy
-		// ./Medelexis -eclipse.password ~/.medelexis.dummy.password -clean -debug -consoleLog -vmargs -Delexis-run-mode=RunFromScratch -Dch.elexis.username=007 -Dch.elexis.password=topsecret 
+		// ./Medelexis -eclipse.password ~/.medelexis.dummy.password -clean -debug -consoleLog -vmargs -Delexis-run-mode=RunFromScratch -Dch.elexis.username=007 -Dch.elexis.password=topsecret
 		config.put(Constants.AUT_VM_ARGS,
 			"-nl " + config.get(Constants.AUT_LOCALE)
 				+ " -clean -vmargs -Declipse.p2.unsignedPolicy=allow" + " -Dautagent_port="
@@ -172,10 +169,15 @@ public class AUT_run {
 				+ config.get(Constants.AGENT_HOST)
 				+ " -Dch.elexis.username=007 -Dch.elexis.password=topsecret "
 				+ " -Delexis-run-mode=RunFromScratch");
-		if (isMedelexis) {config.put(Constants.AUT_VM_ARGS, "-eclipse.password ~/.medelexis.dummy.password " + 
-				config.get(Constants.AUT_VM_ARGS) +
-				" -Dprovisioning.UpdateRepository=snapshot");
+		if (isMedelexis) {
+			String variant = System.getenv("VARIANT");
+			if (variant == null) {
+				variant = "snapshot";
 			}
+			config.put(Constants.AUT_VM_ARGS,
+				"-eclipse.password ~/.medelexis.dummy.password " + config.get(Constants.AUT_VM_ARGS)
+					+ " -Dprovisioning.UpdateRepository=" + variant);
+		}
 
 		config.put(Constants.AUT_KEYBOARD, "de_DE");
 		for (Map.Entry<String, String> entry : config.entrySet()) {
@@ -233,8 +235,14 @@ public class AUT_run {
 
 	private static void startAUT(){
 		try {
-			dbg_msg("Calling startAUT ");
+			int j = 0;
+			while (j< 10 && ! m_agent.isConnected())
+			{
+				dbg_msg("Calling startAUT "+ j + " isConnected " + m_agent.isConnected());
+				Common.sleep1second();
+			}
 			aut_id = m_agent.startAUT(aut_config);
+			dbg_msg("Calling startAUT returned " + aut_id);
 			if (aut_id != null) {
 				dbg_msg("started AUT as " + aut_id.getID() + " will sleep 2 seconds");
 				m_aut = m_agent.getAUT(aut_id, SwtComponents.getToolkitInformation());

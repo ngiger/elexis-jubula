@@ -62,7 +62,7 @@ public class Views {
 	@SuppressWarnings("unchecked")
 	public void visit_all_views() throws Exception{
 		int major = 0, minor = 0, nr_views = 0;
-		int restart_after = 40;
+		int restart_after = 35; // On my wheezy with a relatively small window I could open 37 view
 		String new_pos = "first_time", new_pos2 = ""; //$NON-NLS-1$ //$NON-NLS-2$
 		ComponentIdentifier<Tree> tree = OM.ShowView_ViewTree_grc; //$NON-NLS-1$
 		Assert.assertNotNull("ShowView_ViewTree_grc may not be null", tree);
@@ -97,18 +97,18 @@ public class Views {
 							Common.sleep1second(); // give view time to stabilize, eg. load a web page/patient
 							Common.maximixeView();
 							Common.sleep1second();
-							AUT_run.takeScreenshotActiveWindow("view_" + new_pos2 + ".png"); //$NON-NLS-1$ //$NON-NLS-2$
+							AUT_run.takeScreenshotActiveWindow("window/view_" + new_pos2 + ".png"); //$NON-NLS-1$ //$NON-NLS-2$
 							nr_views++;
 							if (nr_views % restart_after == 0) {
 								AUT_run.dbg_msg("Restarting app as nr_views is: " + nr_views);
 								AUT_run.takeScreenshotActiveWindow(
-									"before_restart_after_" + nr_views + ".png"); //$NON-NLS-1$ //$NON-NLS-2$
+									"window/before_restart_after_" + nr_views + ".png"); //$NON-NLS-1$ //$NON-NLS-2$
 								AUT_run.restartApp();
 							}
 						} catch (ComponentNotFoundException e) {
 							if (nr_views > 20) {
 								AUT_run.takeScreenshotActiveWindow(
-									"list_too_long_after_" + nr_views + ".png"); //$NON-NLS-1$ //$NON-NLS-2$
+									"window/list_too_long_after_" + nr_views + ".png"); //$NON-NLS-1$ //$NON-NLS-2$
 								Assert.fail("We cannot handle very long lists of nr_views " + nr_views); //$NON-NLS-1$
 								// breaks when nr_views == 52 and no restart in between
 							}
@@ -118,7 +118,7 @@ public class Views {
 								AUT_run.dbg_msg(String.format(
 									"ActionException minor with %s -> No more entries found for %d %d. Found  %d", //$NON-NLS-1$
 									new_pos, major, minor, nr_views));
-								AUT_run.takeScreenshotActiveWindow("minor 1.png"); //$NON-NLS-1$
+								AUT_run.takeScreenshotActiveWindow("window/minor_1.png"); //$NON-NLS-1$
 								return; // No more entries found for mayor
 							}
 							minor = 0;
@@ -146,7 +146,7 @@ public class Views {
 		} catch (CheckFailedException e) {
 			AUT_run.dbg_msg("visit_all_views: error was " + e.getMessage());
 			e.printStackTrace(AUT_run.writer);
-			AUT_run.takeScreenshotActiveWindow("CheckFailedException.png"); //$NON-NLS-1$
+			AUT_run.takeScreenshotActiveWindow("window/CheckFailedException.png"); //$NON-NLS-1$
 			e.printStackTrace();
 		} finally {
 			AUT_run.dbg_msg("visit_all_views: done. Found views: " + nr_views);
