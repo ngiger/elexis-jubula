@@ -409,6 +409,8 @@ public class Patients {
 	}
 
 	public void invoiceActiveConsultation(){
+		Perspectives.openPatientenPerspective();
+		Perspectives.resetPerspective();
 		selectCasesWindow();
 		Common.sleep1second();
 		Common.selectTopLeftCell(OM.Cases_Table_1_tbl);

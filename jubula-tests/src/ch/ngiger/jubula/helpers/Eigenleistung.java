@@ -47,6 +47,7 @@ public class Eigenleistung {
 			Assert.assertTrue("Eigentleistung CTB must be enabled", tab_enabled);
 		}
 		// Blöcke has an umlaut
+		AUT_run.takeScreenshotActiveWindow("eigenleistung/before_selectin_bloecke.png"); //$NON-NLS-1$
 		Common.selectTabByValue(OM.CTabFolder_1_tpn, "Bl.cke");
 		Common.clickComponent(OM.Blöcke_EigeneLeistungenhinzufügen_btn);
 

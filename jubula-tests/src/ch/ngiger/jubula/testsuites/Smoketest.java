@@ -94,26 +94,24 @@ public class Smoketest {
 				Common.initialWorkWithRunFromScatch();
 			}
 			Software.showAbout("second");
+			AUT_run.dbg_msg("Calling importArtikelstamm" + AUT_run.config.get(Constants.AUT_EXE));
+			Artikelstamm.importArtikelstamm(null);
 		}
-		AUT_run.dbg_msg("Calling importArtikelstamm" + AUT_run.config.get(Constants.AUT_EXE));
-		Artikelstamm.importArtikelstamm(null);
-		if (!miminized) {
-			String eigenleistung = "Meine Eigenleistung";
-			Perspectives.openLeistungenPerspective();
-			Eigenleistung.createEigenleistung("mfk", eigenleistung, 5000, 8000, 10);
-		}
+
+		String eigenleistung = "Motorfaehigkeit testen";
+		Eigenleistung.createEigenleistung("mfk", eigenleistung, 5000, 8000, 10);
+
 		Patients pat = new Patients();
 		pat.createPatient("Testperson", "ArmesWesen", "31.01.1990");
 		Perspectives.openPatientenPerspective();
+
 		// We need swiss base feature to be able to invoice!
 		pat.createCase("KVG", "Husten", "Testperson", "Nr. 34.56", "24.12.14");
 		pat.createConsultation("Scheint ein Simulant zu sein", "Kann gut fabulieren");
-		Perspectives.openLeistungenPerspective();
-		pat.artikelstammItemVerrechnen("CYKLOKAPRON");
 
-		String eigenleistung = "Meine Eigenleistung";
-		Eigenleistung.createEigenleistung("mfk", eigenleistung, 5000, 8000, 10);
-		Perspectives.openLeistungenPerspective();
+		if (!miminized) {
+			pat.artikelstammItemVerrechnen("CYKLOKAPRON");
+		}
 		pat.eigenleistungVerrechnen(eigenleistung.substring(0, 4));
 
 		pat.invoiceActiveConsultation();

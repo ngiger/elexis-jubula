@@ -81,12 +81,7 @@ public class Perspectives {
 			AUT_run.takeScreenshotActiveWindow("Leistungen_first_time.png"); //$NON-NLS-1$
 			first_leistungen = false;
 		} else {
-			@SuppressWarnings("rawtypes")
-			ComponentIdentifier cid = OM.Perspective_Leistungen_tbi;
-			if (Common.componentIsEnabled(cid)) {
-				AUT_run.dbg_msg("fastOpenPerspectives: " + name + " by cid");
-				Common.clickComponent(cid);
-			}
+			fastOpenPerspectives(OM.Perspective_Leistungen_tbi, name);
 		}
 
 	}

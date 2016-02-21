@@ -35,6 +35,7 @@ public class Invoice {
 		if (snapshot != null) {
 			AUT_run.takeScreenshotActiveWindow(snapshot);
 		}
+		AUT_run.dbg_msg("getInvoicesAsString: till EOS\n" + text + "EOS\n");
 		return text;
 	}
 
