@@ -10,11 +10,13 @@
  *******************************************************************************/
 package ch.ngiger.jubula.helpers;
 
+import org.eclipse.jubula.client.AUT;
 import org.eclipse.jubula.client.exceptions.ActionException;
 import org.eclipse.jubula.client.exceptions.CheckFailedException;
 import org.eclipse.jubula.client.exceptions.CommunicationException;
 import org.eclipse.jubula.client.exceptions.ComponentNotFoundException;
 import org.eclipse.jubula.client.exceptions.ConfigurationException;
+import org.eclipse.jubula.toolkit.concrete.components.Application;
 import org.eclipse.jubula.toolkit.concrete.components.ButtonComponent;
 import org.eclipse.jubula.toolkit.concrete.components.TreeComponent;
 import org.eclipse.jubula.toolkit.enums.ValueSets;
@@ -33,25 +35,26 @@ import ch.ngiger.jubula.elexiscore.OM;
 /** @author BREDEX GmbH */
 @SuppressWarnings("restriction")
 public class PreferencePages {
-	/** the logger */
-	// When using a logger the output is not shown in the maven output
-	// Don't know where it disappears
-	// private static Logger log = LoggerFactory.getLogger(VisitAllPreferencePages.class);
-	AUT_run runner = new AUT_run();
 
-	private boolean gotoPreferencPage(AUT_run runner, String position){
+	private Common runner = null;
+
+	public PreferencePages(AUT aut, Application app){
+		runner = new Common(aut, app);
+	}
+
+	boolean gotoPreferencPage(String position){
 		String window_title = Messages.getString("VisitAllPreferencePages.4"); //$NON-NLS-1$
 		// AUT_run.dbg_msg("gotoPreferencPage: " + position);
-		Common.waitForWindowClose(window_title);
-		Common.waitForElexisMainWindow(Constants.ONE_SECOND);
-		Common.openMenu(Messages.getString("VisitAllPreferencePages.7")); //$NON-NLS-1$
+		runner.waitForWindowClose(window_title);
+		runner.waitForElexisMainWindow(Constants.ONE_SECOND);
+		runner.openMenu(Messages.getString("VisitAllPreferencePages.7")); //$NON-NLS-1$
 		try {
 			AUT_run.m_aut.execute(
 				treeComp.selectNodeByIndexpath(SearchType.absolute, new Integer(0), position,
 					new Integer(1), InteractionMode.primary, ValueSets.BinaryChoice.no),
 				null);
 		} catch (ActionException e) {
-			AUT_run.dbg_msg("gotoPreferencPage " + position + " msg: " + e.getMessage()); //$NON-NLS-1$
+			Utils.dbg_msg("gotoPreferencPage " + position + " msg: " + e.getMessage()); //$NON-NLS-1$
 			return false;
 		}
 		// AUT_run.dbg_msg("gotoPreferencPage " + position + " done"); //$NON-NLS-1$
@@ -86,30 +89,30 @@ public class PreferencePages {
 			while (true) {
 				int minor = 1;
 				new_pos = Integer.toString(major); //$NON-NLS-1$
-				if (!gotoPreferencPage(runner, new_pos)) {
-					Common.clickComponent(ok_btn);
+				if (!gotoPreferencPage(new_pos)) {
+					runner.clickComponent(ok_btn);
 					break;
 				}
 				nr_preferencePages++;
-				AUT_run.takeScreenshotActiveWindow("preferences/page_" + new_pos + ".png"); //$NON-NLS-1$ //$NON-NLS-2$
-				Common.clickComponent(ok_btn);
+				Utils.takeScreenshotActiveWindow("preferences/page_" + new_pos + ".png"); //$NON-NLS-1$ //$NON-NLS-2$
+				runner.clickComponent(ok_btn);
 				while (true) {
 					new_pos = Integer.toString(major) + "/" + Integer.toString(minor); //$NON-NLS-1$
-					if (!gotoPreferencPage(runner, new_pos)) {
-						Common.clickComponent(ok_btn);
+					if (!gotoPreferencPage(new_pos)) {
+						runner.clickComponent(ok_btn);
 						break;
 					}
 					nr_preferencePages++;
-					AUT_run.takeScreenshotActiveWindow(
+					Utils.takeScreenshotActiveWindow(
 						"preferences/page_" + new_pos.replace("/", "_") + ".png"); //$NON-NLS-1$ //$NON-NLS-2$
 					try {
-						Common.clickComponent(ok_btn);
+						runner.clickComponent(ok_btn);
 					} catch (ActionException e) {
 						// happens with security!
-						AUT_run.dbg_msg("visit_all_preferencePages. must cancel. Got exception: " + e.getMessage());
-						AUT_run.takeScreenshotActiveWindow(
+						Utils.dbg_msg("visit_all_preferencePages. must cancel. Got exception: " + e.getMessage());
+						Utils.takeScreenshotActiveWindow(
 							"preferences/cancel_" + new_pos.replace("/", "_") + ".png"); //$NON-NLS-1$ //$NON-NLS-2$
-						Common.clickComponent(cancel_btn);
+						runner.clickComponent(cancel_btn);
 					}
 					minor++;
 				}
@@ -117,14 +120,14 @@ public class PreferencePages {
 			}
 		} catch (ComponentNotFoundException | CommunicationException | ConfigurationException
 				| CheckFailedException | ActionException | AssertException e) {
-			AUT_run.dbg_msg("Got exception: " + e.getMessage());
-			AUT_run.takeScreenshotActiveWindow("preferences/exception.png"); //$NON-NLS-1$
-			e.printStackTrace(AUT_run.writer);
+			Utils.dbg_msg("Got exception: " + e.getMessage());
+			Utils.takeScreenshotActiveWindow("preferences/exception.png"); //$NON-NLS-1$
+			e.printStackTrace(Utils.writer);
 
 		} finally {
-			AUT_run.dbg_msg("visit_all_preferencePages done. nr_preferencePages  is " + nr_preferencePages);
+			Utils.dbg_msg("visit_all_preferencePages done. nr_preferencePages  is " + nr_preferencePages);
 		}
-		AUT_run.takeScreenshotActiveWindow("preferences/last_page.png"); //$NON-NLS-1$
+		Utils.takeScreenshotActiveWindow("preferences/last_page.png"); //$NON-NLS-1$
 		Assert.assertTrue("Must visit at least 10 preferences", nr_preferencePages > 10);
 	}
 }

@@ -2,15 +2,12 @@ package ch.ngiger.jubula.testsuites;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.eclipse.jubula.client.exceptions.ActionException;
 import org.eclipse.jubula.client.exceptions.CheckFailedException;
 import org.eclipse.jubula.toolkit.concrete.components.TextInputComponent;
 import org.eclipse.jubula.tools.ComponentIdentifier;
 import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -19,35 +16,26 @@ import ch.ngiger.jubula.elexiscore.OM;
 import ch.ngiger.jubula.helpers.AUT_run;
 import ch.ngiger.jubula.helpers.Artikelstamm;
 import ch.ngiger.jubula.helpers.Common;
-import ch.ngiger.jubula.helpers.Eigenleistung;
-import ch.ngiger.jubula.helpers.Invoice;
-import ch.ngiger.jubula.helpers.Patients;
 import ch.ngiger.jubula.helpers.Perspectives;
 import ch.ngiger.jubula.helpers.Software;
 import ch.ngiger.jubula.helpers.Utils;
-import ch.ngiger.jubula.helpers.Views;
 
-public class Broken {
+public class Keyboard {
 
 	// Here we put all test that are currently broken for one reason or another
+
 	static int nr_tests = 0;
 	private static Common runner = new Common(AUT_run.doctor, AUT_run.elexis);
-	private static Eigenleistung eigenleistung = null;
 	private static Artikelstamm artikelstamm = null;
 	private static Perspectives perspectives = null;
 	private static Software software = null;
-	private static Patients pat = null;
-	private static Invoice invoice = null;
 
 	@BeforeClass
 	public static void setup() throws Exception{
 		AUT_run.setUp();
-		eigenleistung = new Eigenleistung(AUT_run.doctor, AUT_run.elexis);
 		artikelstamm = new Artikelstamm(AUT_run.doctor, AUT_run.elexis);
 		perspectives = new Perspectives(AUT_run.doctor, AUT_run.elexis);
 		software = new Software(AUT_run.doctor, AUT_run.elexis);
-		pat = new Patients(AUT_run.doctor, AUT_run.elexis);
-		invoice = new Invoice(AUT_run.doctor, AUT_run.elexis);
 	}
 
 	@Before
@@ -116,42 +104,6 @@ public class Broken {
 		software.installFeature("Elexis Swiss Open");
 		perspectives.openLeistungenPerspective();
 		artikelstamm.importArtikelstamm(null);
-	}
-
-	public void test_getInvoicesAsString() throws Exception{
-		String test = invoice.getInvoicesAsString("invoice/get_first.png");
-		String matcher = "Keine Rechnung.*";
-		Assert.assertTrue( test + " should match " + matcher, test.matches(matcher));
-	}
-
-	@Test()
-	public void test_drop_eigenartikel() throws Exception{
-		test_getInvoicesAsString();
-		String leistungsname = "Meine Eigenleistung";
-		Assert.assertEquals(0, runner.nrRowsInTable(OM.Pat_List_tbl));
-		perspectives.openLeistungenPerspective();
-		eigenleistung.createEigenleistung("mfk", leistungsname, 5000, 8000, 10);
-		pat.createPatient("Testperson", "ArmesWesen", "31.01.1990");
-		Assert.assertEquals(1, runner.nrRowsInTable(OM.Pat_List_tbl));
-		pat.createPatient("Aesculap", "Weise", "15.01.1990");
-		Assert.assertEquals(2, runner.nrRowsInTable(OM.Pat_List_tbl));
-		perspectives.openPatientenPerspective();
-		// We need swiss base feature to be able to invoice!
-		pat.createCase("KVG", "Husten", "Testperson", "Nr. 34.56", "24.12.14");
-		pat.createConsultation("Scheint ein Simulant zu sein", "Kann gut fabulieren");
-		perspectives.openLeistungenPerspective();
-		pat.eigenleistungVerrechnen(leistungsname.substring(0, 4));
-		// pat.artikelstammItemVerrechnen("CYKLOKAPRON");
-		pat.invoiceActiveConsultation();
-		invoice.showInvoices("invoices/one_item.png");
-		Assert.assertEquals(1, runner.nrRowsInTable(OM.Rechnungsübersicht_tbl));
-		invoice.showInvoices("invoices/one_item.png");
-		String test = invoice.getInvoicesAsString("invoice/after_first_invoice.png");
-		Pattern p = Pattern.compile("[0-9]{4}.*Testperson.*ArmesWesen.*1990");
-		Matcher m = p.matcher(test);
-		boolean found = m.find();
-		Utils.dbg_msg("getInvoicesAsString Testing >" + test + "< matches <" + p + "> returns found " + found);
-		Assert.assertTrue(found);
 	}
 
 	@AfterClass

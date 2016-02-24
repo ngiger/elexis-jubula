@@ -26,31 +26,49 @@ import ch.ngiger.jubula.helpers.Invoice;
 import ch.ngiger.jubula.helpers.Patients;
 import ch.ngiger.jubula.helpers.Perspectives;
 import ch.ngiger.jubula.helpers.Software;
+import ch.ngiger.jubula.helpers.Utils;
+import ch.ngiger.jubula.helpers.Views;
 
 public class Smoketest {
 	/** test generating a snapshot of the currently active window */
 
+	private static Common runner = new Common(AUT_run.doctor, AUT_run.elexis);
+	private static Views views = null;
+	private static Eigenleistung eigenleistung = null;
+	private static Artikelstamm artikelstamm = null;
+	private static Perspectives perspectives = null;
+	private static Software software = null;
+	private static Patients pat = null;
+	private static Invoice invoice = null;
+
 	@BeforeClass
 	public static void setup() throws Exception{
 		AUT_run.setUp();
-		AUT_run.dbg_msg("setup done"); //$NON-NLS-1$
+		Utils.dbg_msg("setup done"); //$NON-NLS-1$
+		views = new Views(AUT_run.doctor, AUT_run.elexis);
+		eigenleistung = new Eigenleistung(AUT_run.doctor, AUT_run.elexis);
+		artikelstamm = new Artikelstamm(AUT_run.doctor, AUT_run.elexis);
+		perspectives = new Perspectives(AUT_run.doctor, AUT_run.elexis);
+		software = new Software(AUT_run.doctor, AUT_run.elexis);
+		pat = new Patients(AUT_run.doctor, AUT_run.elexis);
+		invoice = new Invoice(AUT_run.doctor, AUT_run.elexis);
 	}
 
 	public void testTextInput(ComponentIdentifier<TextInputComponent> cid, String char2test){
-		AUT_run.dbg_msg(
+		Utils.dbg_msg(
 			AUT_run.Keyboard_Locale.toString() + " testTextInput: " + cid + " with " + char2test);
 		TextInputComponent tic = SwtComponents.createTextInputComponent(cid);
-		Common.synchronizedTextReplace(cid, "");//$NON-NLS-1$
+		runner.synchronizedTextReplace(cid, "");//$NON-NLS-1$
 
 		for (int i = 0, n = char2test.length(); i < n; i++) {
 			String tst_string = char2test.substring(i, i + 1);
 			try {
-				AUT_run.m_aut.execute(tic.replaceText(tst_string), null);
-				AUT_run.m_aut.execute(tic.checkText(tst_string, Operator.matches), null);
+				runner.execute(tic.replaceText(tst_string), null);
+				runner.execute(tic.checkText(tst_string, Operator.matches), null);
 			} catch (ActionException | CheckFailedException e) {
-				AUT_run.dbg_msg(AUT_run.Keyboard_Locale.toString() + "  FAILED: " + i + " -> "
+				Utils.dbg_msg(AUT_run.Keyboard_Locale.toString() + "  FAILED: " + i + " -> "
 					+ tst_string + " " + e.getMessage());
-				AUT_run.takeScreenshotActiveWindow(
+				Utils.takeScreenshotActiveWindow(
 					AUT_run.Keyboard_Locale.toString() + "_failed_" + tst_string + ".png");
 			}
 		}
@@ -68,42 +86,41 @@ public class Smoketest {
 
 		// We don't call synchronizedTextReplace on each element as this fails, and I don't
 		// have time to debug why, as we had no problems
-		// myList.forEach(element -> Common.synchronizedTextReplace(text_intput_to_use, element));
+		// myList.forEach(element -> runner.synchronizedTextReplace(text_intput_to_use, element));
 	}
 
 	private static boolean miminized = false;
 
 	@Test()
 	public void smoketest() throws Exception{
-		AUT_run.dbg_msg("smoketest miminized is " + miminized + " Medelexis " + AUT_run.isMedelexis);
-		Common.initialWorkWithRunFromScatch();
+		Utils.dbg_msg("smoketest miminized is " + miminized + " Medelexis " + AUT_run.isMedelexis);
+		runner.initialWorkWithRunFromScatch();
 		if (AUT_run.isMedelexis) {
-			AUT_run.dbg_msg("AUT_EXE is medelexis: " + AUT_run.config.get(Constants.AUT_EXE));
-			Common.clickComponent(OM.Medelexis_Abo_perspective_tbi);
-			Common.sleepMs(5 * 1000); // wait 5 seconds: TODO: should wait till populated
+			Utils.dbg_msg("AUT_EXE is medelexis: " + AUT_run.config.get(Constants.AUT_EXE));
+			runner.clickComponent(OM.Medelexis_Abo_perspective_tbi);
+			Utils.sleepMs(5 * 1000); // wait 5 seconds: TODO: should wait till populated
 		}
 
 		if (!miminized) {
-			Software.showAbout("first");
+			software.showAbout("first");
 			if (AUT_run.isMedelexis) {
-				AUT_run.dbg_msg("AUT_EXE is medelexis" + AUT_run.config.get(Constants.AUT_EXE));
-				Common.openMenu("Datei/Beenden");
+				Utils.dbg_msg("AUT_EXE is medelexis" + AUT_run.config.get(Constants.AUT_EXE));
+				runner.openMenu("Datei/Beenden");
 			} else {
-				Software.installAllFeatures();
+				software.installAllFeatures();
 				AUT_run.restartApp();
-				Common.initialWorkWithRunFromScatch();
+				runner.initialWorkWithRunFromScatch();
 			}
-			Software.showAbout("second");
-			AUT_run.dbg_msg("Calling importArtikelstamm" + AUT_run.config.get(Constants.AUT_EXE));
-			Artikelstamm.importArtikelstamm(null);
+			software.showAbout("second");
+			Utils.dbg_msg("Calling importArtikelstamm" + AUT_run.config.get(Constants.AUT_EXE));
+			artikelstamm.importArtikelstamm(null);
 		}
 
-		String eigenleistung = "Motorfaehigkeit testen";
-		Eigenleistung.createEigenleistung("mfk", eigenleistung, 5000, 8000, 10);
+		String leisungs_name = "Motorfaehigkeit testen";
+		eigenleistung.createEigenleistung("mfk", leisungs_name, 5000, 8000, 10);
 
-		Patients pat = new Patients();
 		pat.createPatient("Testperson", "ArmesWesen", "31.01.1990");
-		Perspectives.openPatientenPerspective();
+		perspectives.openPatientenPerspective();
 
 		// We need swiss base feature to be able to invoice!
 		pat.createCase("KVG", "Husten", "Testperson", "Nr. 34.56", "24.12.14");
@@ -112,21 +129,21 @@ public class Smoketest {
 		if (!miminized) {
 			pat.artikelstammItemVerrechnen("CYKLOKAPRON");
 		}
-		pat.eigenleistungVerrechnen(eigenleistung.substring(0, 4));
+		pat.eigenleistungVerrechnen(leisungs_name.substring(0, 4));
 
 		pat.invoiceActiveConsultation();
-		String test = Invoice.getInvoicesAsString("invoice/after_first_invoice.png");
+		String test = invoice.getInvoicesAsString("invoice/after_first_invoice.png");
 		Pattern p = Pattern.compile("[0-9]{4}.*Testperson.*ArmesWesen.*1990");
 		Matcher m = p.matcher(test);
 		boolean found = m.find();
-		AUT_run.dbg_msg("getInvoicesAsString Testing >" + test + "< matches <" + p
+		Utils.dbg_msg("getInvoicesAsString Testing >" + test + "< matches <" + p
 			+ "> returns found " + found);
 		Assert.assertTrue(found);
 	}
 
 	@AfterClass
 	public static void teardown() throws Exception{
-		AUT_run.dbg_msg("Smoketest.teardown"); //$NON-NLS-1$
+		Utils.dbg_msg("Smoketest.teardown"); //$NON-NLS-1$
 		AUT_run.tearDown();
 	}
 }

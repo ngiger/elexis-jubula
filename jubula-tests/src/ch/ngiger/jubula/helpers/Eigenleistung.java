@@ -10,19 +10,24 @@
  *******************************************************************************/
 package ch.ngiger.jubula.helpers;
 
+import org.eclipse.jubula.client.AUT;
+import org.eclipse.jubula.toolkit.concrete.components.Application;
 import org.junit.Assert;
-import org.junit.Test;
 
 import ch.ngiger.jubula.elexiscore.OM;
 
 /** @author BREDEX GmbH */
 public class Eigenleistung {
-	/**
-	 * the logger
-	 *
-	 * @param i
-	 */
-	@Test
+
+	private Common runner = null;
+	private Perspectives perspectives = null;
+
+	public Eigenleistung(AUT aut, Application app){
+		runner = new Common(aut, app);
+		perspectives = new Perspectives(aut, app);
+	}
+
+
 	@SuppressWarnings("unchecked")
 	/*
 	 * @param: abbrev abbreviated name of block
@@ -33,45 +38,45 @@ public class Eigenleistung {
 	 *
 	 */
 
-	public static void createEigenleistung(String abbrev, String description, int cost, int selling,
+	public void createEigenleistung(String abbrev, String description, int cost, int selling,
 		int time_needed){
 		String window_title = "Eigenleistung";
 		// TODO Auto-generated method stub
 		//testLoadFromStream();
-		Perspectives.openLeistungenPerspective();
-		Perspectives.resetPerspective();
-		Common.waitForComponent(OM.CTabFolder_1_tpn);
-		boolean tab_enabled = Common.isEnabled(OM.CTabFolder_1_tpn);
+		perspectives.openLeistungenPerspective();
+		perspectives.resetPerspective();
+		runner.waitForComponent(OM.CTabFolder_1_tpn);
+		boolean tab_enabled = runner.isEnabled(OM.CTabFolder_1_tpn);
 		if (!tab_enabled) {
-			AUT_run.takeScreenshotActiveWindow("eigenleistung/ctab_not_enabled.png"); //$NON-NLS-1$
+			Utils.takeScreenshotActiveWindow("eigenleistung/ctab_not_enabled.png"); //$NON-NLS-1$
 			Assert.assertTrue("Eigentleistung CTB must be enabled", tab_enabled);
 		}
 		// Blöcke has an umlaut
-		AUT_run.takeScreenshotActiveWindow("eigenleistung/before_selectin_bloecke.png"); //$NON-NLS-1$
-		Common.selectTabByValue(OM.CTabFolder_1_tpn, "Bl.cke");
-		Common.clickComponent(OM.Blöcke_EigeneLeistungenhinzufügen_btn);
+		Utils.takeScreenshotActiveWindow("eigenleistung/before_selectin_bloecke.png"); //$NON-NLS-1$
+		runner.selectTabByValue(OM.CTabFolder_1_tpn, "Bl.cke");
+		runner.clickComponent(OM.Blöcke_EigeneLeistungenhinzufügen_btn);
 
-		Common.waitForWindow(window_title);
-		AUT_run.dbg_msg(String.format("createEigenleistung: a: %s d: %s cost %d/%d/%d", abbrev,
+		runner.waitForWindow(window_title);
+		Utils.dbg_msg(String.format("createEigenleistung: a: %s d: %s cost %d/%d/%d", abbrev,
 			description, cost, selling, time_needed));
-		Common.synchronizedTextReplace(OM.Eigenleistung_Text_1_txf, description);
-		Common.synchronizedTextReplace(OM.Eigenleistung_Text_2_txf, abbrev);
-		Common.synchronizedTextReplace(OM.Eigenleistung_Text_3_txf, Integer.toString(cost));
-		Common.synchronizedTextReplace(OM.Eigenleistung_Text_4_txf, Integer.toString(selling));
-		Common.synchronizedTextReplace(OM.Eigenleistung_Text_5_txf, Integer.toString(time_needed));
-		AUT_run.takeScreenshotActiveWindow("eigenleistung/create_done.png"); //$NON-NLS-1$
-		Common.pressEnter();
-		Common.waitForWindowClose(window_title);
+		runner.synchronizedTextReplace(OM.Eigenleistung_Text_1_txf, description);
+		runner.synchronizedTextReplace(OM.Eigenleistung_Text_2_txf, abbrev);
+		runner.synchronizedTextReplace(OM.Eigenleistung_Text_3_txf, Integer.toString(cost));
+		runner.synchronizedTextReplace(OM.Eigenleistung_Text_4_txf, Integer.toString(selling));
+		runner.synchronizedTextReplace(OM.Eigenleistung_Text_5_txf, Integer.toString(time_needed));
+		Utils.takeScreenshotActiveWindow("eigenleistung/create_done.png"); //$NON-NLS-1$
+		runner.pressEnter();
+		runner.waitForWindowClose(window_title);
 
 		selectEigenleistung(description);
-		AUT_run.takeScreenshotActiveWindow("eigenleistung/3_chars.png"); //$NON-NLS-1$
-		Common.selectTabByValue(OM.Eigenleistung_Table_1_tbl,description);
-		AUT_run.takeScreenshotActiveWindow("eigenleistung/show.png"); //$NON-NLS-1$
+		Utils.takeScreenshotActiveWindow("eigenleistung/3_chars.png"); //$NON-NLS-1$
+		runner.selectTabByValue(OM.Eigenleistung_Table_1_tbl,description);
+		Utils.takeScreenshotActiveWindow("eigenleistung/show.png"); //$NON-NLS-1$
 	}
 
-	public static void selectEigenleistung(String description){
-		Common.selectTabByValue(OM.CTabFolder_1_tpn, "Eigenleistung");
-		Common.synchronizedTextReplace(OM.Eigenleistung_Code_txf, description.substring(0, 3));
+	public void selectEigenleistung(String description){
+		runner.selectTabByValue(OM.CTabFolder_1_tpn, "Eigenleistung");
+		runner.synchronizedTextReplace(OM.Eigenleistung_Code_txf, description.substring(0, 3));
 	}
 
 }

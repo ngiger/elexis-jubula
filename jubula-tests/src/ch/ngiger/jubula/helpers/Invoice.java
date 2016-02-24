@@ -10,32 +10,44 @@
  *******************************************************************************/
 package ch.ngiger.jubula.helpers;
 
+import org.eclipse.jubula.client.AUT;
+import org.eclipse.jubula.toolkit.concrete.components.Application;
+
 import ch.ngiger.jubula.elexiscore.OM;
 
 /** @author BREDEX GmbH */
 public class Invoice {
+
+	private Common runner = null;
+	private Views views = null;
+
+	public Invoice(AUT aut, Application app){
+		views = new Views(aut, app);
+		runner = new Common(aut, app);
+	}
+
 	/*
 	 * Opens the view Rechnungsübersicht and takes a screenshot
 	 * @param: snapshot if != null name of screenshot
 	 *
 	 */
 
-	public static void showInvoices(String snapshot){
-		Views.openViewByName("Abrechnung/Rechnungsübersicht.*");
-		Common.maximixeView();
+	public void showInvoices(String snapshot){
+		views.openViewByName("Abrechnung/Rechnungsübersicht.*");
+		runner.maximixeView();
 		if (snapshot != null) {
-			AUT_run.takeScreenshotActiveWindow(snapshot);
+			Utils.takeScreenshotActiveWindow(snapshot);
 		}
 	}
-	public static String getInvoicesAsString(String snapshot){
-		Views.openViewByName("Abrechnung/Rechnungsübersicht.*");
-		Common.clickComponent(OM.Pat_List_tbl);
-		Common.contextMenuByText(OM.BillSummary_ToolItem, "Export.*", false);
-		String text = Common.getClipboarAsString();
+	public String getInvoicesAsString(String snapshot){
+		views.openViewByName("Abrechnung/Rechnungsübersicht.*");
+		runner.clickComponent(OM.Pat_List_tbl);
+		runner.contextMenuByText(OM.BillSummary_ToolItem, "Export.*", false);
+		String text = runner.getClipboarAsString();
 		if (snapshot != null) {
-			AUT_run.takeScreenshotActiveWindow(snapshot);
+			Utils.takeScreenshotActiveWindow(snapshot);
 		}
-		AUT_run.dbg_msg("getInvoicesAsString: till EOS\n" + text + "EOS\n");
+		Utils.dbg_msg("getInvoicesAsString: till EOS\n" + text + "EOS\n");
 		return text;
 	}
 
