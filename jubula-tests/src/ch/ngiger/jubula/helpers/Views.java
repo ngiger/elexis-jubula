@@ -10,12 +10,10 @@
  *******************************************************************************/
 package ch.ngiger.jubula.helpers;
 
-import org.eclipse.jubula.client.AUT;
 import org.eclipse.jubula.client.exceptions.ActionException;
 import org.eclipse.jubula.client.exceptions.CheckFailedException;
 import org.eclipse.jubula.client.exceptions.ComponentNotFoundException;
 import org.eclipse.jubula.toolkit.concrete.ConcreteComponents;
-import org.eclipse.jubula.toolkit.concrete.components.Application;
 import org.eclipse.jubula.toolkit.concrete.components.TableComponent;
 import org.eclipse.jubula.toolkit.concrete.components.TreeComponent;
 import org.eclipse.jubula.toolkit.enums.ValueSets;
@@ -34,18 +32,11 @@ import ch.ngiger.jubula.Messages;
 import ch.ngiger.jubula.elexiscore.OM;
 
 /** @author BREDEX GmbH */
-public class Views {
-
-	private Common runner = null;
-
-	public Views(AUT aut, Application app){
-		runner = new Common(aut, app);
-	}
-
+public class Views extends Common {
 
 	void openViewByName(String name){
-		runner.openMenu("Fenster.*/Ansicht.*/Other.*");
-		runner.waitForWindow("Show View", Constants.ONE_SECOND);
+		openMenu("Fenster.*/Ansicht.*/Other.*");
+		waitForWindow("Show View", Constants.ONE_SECOND);
 
 		@SuppressWarnings("unchecked")
 		org.eclipse.jubula.toolkit.concrete.components.TextInputComponent viewTxt =
@@ -61,9 +52,9 @@ public class Views {
 		AUT_run.m_aut.execute(tbl2.selectNodeByTextpath(SearchType.absolute, new Integer(0), name,
 			Operator.matches, 1, InteractionMode.primary, BinaryChoice.no), null);
 
-		runner.clickComponent(OM.ShowView_OkButton_grc);
+		clickComponent(OM.ShowView_OkButton_grc);
 		Utils.sleep1second();
-		runner.waitForElexisMainWindow(Constants.ONE_SECOND);
+		waitForElexisMainWindow(Constants.ONE_SECOND);
 	}
 
 	/** test visiting all views */
@@ -88,8 +79,8 @@ public class Views {
 					minor = 0;
 					while (true) {
 						minor++;
-						runner.openMenu(Messages.getString("VisitAllViews.7")); //$NON-NLS-1$
-						runner.waitForWindow(window_title);
+						openMenu(Messages.getString("VisitAllViews.7")); //$NON-NLS-1$
+						waitForWindow(window_title);
 						Utils.dbg_msg("window_title " + window_title); //$NON-NLS-1$
 						new_pos = Integer.toString(major) + "/" + Integer.toString(minor); //$NON-NLS-1$
 						new_pos2 = Integer.toString(major) + "_" + Integer.toString(minor); //$NON-NLS-1$
@@ -101,10 +92,10 @@ public class Views {
 							AUT_run.m_aut.execute(treeComp.selectNodeByIndexpath(
 								SearchType.absolute, new Integer(0), new_pos, new Integer(1),
 								InteractionMode.primary, ValueSets.BinaryChoice.no), null);
-							runner.clickComponent(OM.ShowView_OkButton_grc); //$NON-NLS-1$
-							runner.waitForElexisMainWindow();
+							clickComponent(OM.ShowView_OkButton_grc); //$NON-NLS-1$
+							waitForElexisMainWindow();
 							Utils.sleep1second(); // give view time to stabilize, eg. load a web page/patient
-							runner.maximixeView();
+							maximixeView();
 							Utils.sleep1second();
 							Utils.takeScreenshotActiveWindow("window/view_" + new_pos2 + ".png"); //$NON-NLS-1$ //$NON-NLS-2$
 							nr_views++;
@@ -131,8 +122,8 @@ public class Views {
 								return; // No more entries found for mayor
 							}
 							minor = 0;
-							runner.clickComponent(OM.ShowView_OkButton_grc); //$NON-NLS-1$
-							runner.waitForWindowClose(window_title);
+							clickComponent(OM.ShowView_OkButton_grc); //$NON-NLS-1$
+							waitForWindowClose(window_title);
 							break;
 						}
 					}

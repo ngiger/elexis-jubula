@@ -10,20 +10,15 @@
  *******************************************************************************/
 package ch.ngiger.jubula.helpers;
 
-import org.eclipse.jubula.client.AUT;
-import org.eclipse.jubula.toolkit.concrete.components.Application;
-
 import ch.ngiger.jubula.elexiscore.OM;
 
 /** @author BREDEX GmbH */
-public class Invoice {
+public class Invoice extends Common {
 
-	private Common runner = null;
 	private Views views = null;
 
-	public Invoice(AUT aut, Application app){
-		views = new Views(aut, app);
-		runner = new Common(aut, app);
+	public Invoice(){
+		views = new Views();
 	}
 
 	/*
@@ -34,16 +29,16 @@ public class Invoice {
 
 	public void showInvoices(String snapshot){
 		views.openViewByName("Abrechnung/Rechnungsübersicht.*");
-		runner.maximixeView();
+		maximixeView();
 		if (snapshot != null) {
 			Utils.takeScreenshotActiveWindow(snapshot);
 		}
 	}
 	public String getInvoicesAsString(String snapshot){
 		views.openViewByName("Abrechnung/Rechnungsübersicht.*");
-		runner.clickComponent(OM.Pat_List_tbl);
-		runner.contextMenuByText(OM.BillSummary_ToolItem, "Export.*", false);
-		String text = runner.getClipboarAsString();
+		clickComponent(OM.Pat_List_tbl);
+		contextMenuByText(OM.BillSummary_ToolItem, "Export.*", false);
+		String text = getClipboarAsString();
 		if (snapshot != null) {
 			Utils.takeScreenshotActiveWindow(snapshot);
 		}

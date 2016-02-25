@@ -12,8 +12,6 @@ package ch.ngiger.jubula.helpers;
 
 import java.util.HashMap;
 
-import org.eclipse.jubula.client.AUT;
-import org.eclipse.jubula.toolkit.concrete.components.Application;
 import org.eclipse.jubula.toolkit.concrete.components.ComboComponent;
 import org.eclipse.jubula.toolkit.enums.ValueSets.BinaryChoice;
 import org.eclipse.jubula.toolkit.enums.ValueSets.InteractionMode;
@@ -26,14 +24,10 @@ import org.eclipse.jubula.tools.ComponentIdentifier;
 import ch.ngiger.jubula.elexiscore.OM;
 
 /** @author BREDEX GmbH */
-public class Software {
+public class Software extends Common {
 
-	private Common runner = null;
-
-	public Software(AUT aut, Application app){
-		runner = new Common(aut, app);
+	public Software(){
 	}
-
 
 	private static String root = "sw_inst/";
 
@@ -44,12 +38,12 @@ public class Software {
 		// Select tab, take screenshot and save
 		Utils.dbg_msg("handleAboutDetail: " + abbrev + " => " + name);
 		AUT_run.m_aut.execute(AUT_run.elexis.copyTextToClipboard("empty"), null);
-		runner.selectTabByValue(tab_id, name);
+		selectTabByValue(tab_id, name);
 		Utils.sleep1second(); // It takes some time to construct the view
 		Utils.takeScreenshotActiveWindow(root + "about_" + abbrev + ".png");
-		String info = runner.getTextFromCompent(tab_id);
+		String info = getTextFromCompent(tab_id);
 		if (info != null && !info.startsWith("empty")) {
-			runner.writeStringToResultsFile(info, root + "about_" + abbrev + ".txt");
+			writeStringToResultsFile(info, root + "about_" + abbrev + ".txt");
 		}
 	}
 
@@ -59,12 +53,12 @@ public class Software {
 		String details_title = ".*Installation Details.*";
 		root = "sw_inst/" + add + "/";
 
-		runner.openMenu(menu_about);
-		runner.waitForWindow(about_title);
+		openMenu(menu_about);
+		waitForWindow(about_title);
 		Utils.takeScreenshotActiveWindow(root + "about.png"); //$NON-NLS-1$
 
-		runner.clickComponent(OM.SW_About_Detail_btn); //$NON-NLS-1$
-		runner.waitForWindow(details_title);
+		clickComponent(OM.SW_About_Detail_btn); //$NON-NLS-1$
+		waitForWindow(details_title);
 
 		HashMap<String, String> map = new HashMap<String, String>();
 		map.put("configuration", "Configuration"); //$NON-NLS-1$
@@ -73,12 +67,12 @@ public class Software {
 		map.put("plugins", "Plug.*"); //$NON-NLS-1$
 		map.forEach((abbrev, name) -> handleAboutDetail(abbrev, name));
 
-		runner.pressEnter();
-		// 		runner.clickButton(OM.AboutElexisOpenSource_ElexisOpenSourceInstallatio0_Close_btn); //$NON-NLS-1$
-		runner.waitForWindowClose(details_title);
+		pressEnter();
+		// 		clickButton(OM.AboutElexisOpenSource_ElexisOpenSourceInstallatio0_Close_btn); //$NON-NLS-1$
+		waitForWindowClose(details_title);
 
-		runner.clickComponent(OM.SW_about_ok_btn); //$NON-NLS-1$
-		runner.waitForWindowClose(about_title);
+		clickComponent(OM.SW_about_ok_btn); //$NON-NLS-1$
+		waitForWindowClose(about_title);
 	}
 
 	private void swInitAll(){
@@ -86,7 +80,7 @@ public class Software {
 		String menu_install = "Hilfe/Neue Software installieren";
 
 		// Open SW Install Window
-		runner.openMenu(menu_install);
+		openMenu(menu_install);
 
 		// Select all SW from all sites
 		@SuppressWarnings("unchecked")
@@ -114,34 +108,34 @@ public class Software {
 		// Wait 1 second to be sure the text gets displayed
 		Utils.sleep1second();
 		Utils.takeScreenshotActiveWindow(root + "sw_inst-before-next.png"); //$NON-NLS-1$;
-		runner.clickComponent(OM.SW_Install_Next_btn);
+		clickComponent(OM.SW_Install_Next_btn);
 		Utils.sleep1second();
 
-		String sw_details = runner.getTextFromCompent(OM.Install_SW_Details);
-		runner.writeStringToResultsFile(sw_details, "sw_inst-details.log"); //$NON-NLS-1$;
+		String sw_details = getTextFromCompent(OM.Install_SW_Details);
+		writeStringToResultsFile(sw_details, "sw_inst-details.log"); //$NON-NLS-1$;
 		Utils.sleep1second();
 		Utils.takeScreenshotActiveWindow(root + "sw-has-updates-or-not.png"); //$NON-NLS-1$;
-		if (runner.componentIsEnabled(finish_button)) {
+		if (componentIsEnabled(finish_button)) {
 			Utils.dbg_msg("SW_Install_Finish_btn is enabled"); //$NON-NLS-1$;
-			runner.clickComponent(finish_button);
+			clickComponent(finish_button);
 		} else {
 			Utils.dbg_msg("SW_Install_Finish_btn is NOT enabled. Already updated?");
-			runner.clickComponent(cancel_button);//$NON-NLS-1$
-			runner.waitForWindowClose("Install", 5 * Constants.ONE_SECOND);
+			clickComponent(cancel_button);//$NON-NLS-1$
+			waitForWindowClose("Install", 5 * Constants.ONE_SECOND);
 			return;
 		}
-		runner.waitForWindowClose(install_title, 5 * Constants.ONE_SECOND);
+		waitForWindowClose(install_title, 5 * Constants.ONE_SECOND);
 
-		runner.waitForWindow(installing_title, 15 * Constants.ONE_SECOND);
+		waitForWindow(installing_title, 15 * Constants.ONE_SECOND);
 		// Comment: We assume -Declipse.p2.unsignedPolicy=allow passed as vmarg to the application
 		// Else we would have to activate "SW_SecurityWarning_OK_btn"
-		runner.waitForWindowClose(installing_title, 180 * Constants.ONE_SECOND);
+		waitForWindowClose(installing_title, 180 * Constants.ONE_SECOND);
 
-		runner.waitForWindow(updates_title, 5 * Constants.ONE_SECOND);
+		waitForWindow(updates_title, 5 * Constants.ONE_SECOND);
 
 		// Click on "No". If we clicked "now", we could not detect restart of application
-		runner.clickComponent(OM.SW_Update_Dialog_no);
-		runner.waitForWindowClose(updates_title, 15 * Constants.ONE_SECOND);
+		clickComponent(OM.SW_Update_Dialog_no);
+		waitForWindowClose(updates_title, 15 * Constants.ONE_SECOND);
 
 	}
 
@@ -154,12 +148,12 @@ public class Software {
 		}
 		Utils.dbg_msg("installFeature " + feature_name);
 		swInitAll();
-		runner.synchronizedTextReplace(OM.Install_Text_1_txf, feature_name);
+		synchronizedTextReplace(OM.Install_Text_1_txf, feature_name);
 		Utils.takeScreenshotActiveWindow(root + feature_name + "_1.png"); //$NON-NLS-1$
 		Utils.sleep1second();
 		@SuppressWarnings("unchecked")
 		TreeTable tre = SwtComponents.createTreeTable(OM.Install_Tree_1_tre);
-		runner.waitForComponent(OM.Install_Tree_1_tre);
+		waitForComponent(OM.Install_Tree_1_tre);
 		AUT_run.m_aut.execute(tre.selectNodeByIndexpath(SearchType.absolute, 0, "1/1", 1,
 			InteractionMode.primary, BinaryChoice.no), null);
 		Utils.takeScreenshotActiveWindow(root + feature_name + "_2.png"); //$NON-NLS-1$
@@ -190,7 +184,7 @@ public class Software {
 				@Override
 				public void run() {
 					Utils.dbg_msg("Calling Datei Beenden");
-					runner.openMenu("Datei/Beenden");
+					openMenu("Datei/Beenden");
 					Utils.dbg_msg("Wait for end");
 				}
 			};
@@ -210,7 +204,7 @@ public class Software {
 		}
 		Utils.dbg_msg("installAllFeatures finished");
 		swInitAll();
-		runner.clickComponent(OM.SW_Install_SelectAll_btn);
+		clickComponent(OM.SW_Install_SelectAll_btn);
 		finishInstallSelectedSW();
 		Utils.dbg_msg("installAllFeatures finished");
 	}

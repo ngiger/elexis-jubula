@@ -1,27 +1,22 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<?pde version="3.8"?><target name="jubula+nightly" sequenceNumber="2">
+<?pde version="3.8"?><target name="jubula+nightly" sequenceNumber="3">
 <locations>
-<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="slicer" includeSource="true" type="InstallableUnit">
+<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.jubula.feature.api.core.feature.group" version="0.0.0"/>
 <unit id="org.eclipse.jubula.client.api.converter.annotations" version="0.0.0"/>
 <unit id="org.eclipse.jubula.feature.api.core.source.feature.group" version="0.0.0"/>
 <repository location="http://download.eclipse.org/jubula/nightly/repo"/>
 </location>
-<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="slicer" includeSource="true" type="InstallableUnit">
-<unit id="org.eclipse.core.runtime.compatibility" version="0.0.0"/>
-<unit id="org.eclipse.platform.ide" version="0.0.0"/>
-<unit id="org.eclipse.equinox.executable.feature.group" version="0.0.0"/>
-<unit id="org.eclipse.pde.feature.group" version="0.0.0"/>
-<unit id="org.eclipse.jdt.feature.group" version="0.0.0"/>
-<unit id="javax.xml" version="0.0.0"/>
-<unit id="org.eclipse.mylyn.commons.sdk.feature.group" version="0.0.0"/>
-<repository location="http://download.eclipse.org/releases/luna"/>
-</location>
-<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="slicer" includeSource="true" type="InstallableUnit">
+<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.jubula.feature.feature.group" version="0.0.0"/>
 <unit id="org.eclipse.jubula.feature.api.feature.group" version="0.0.0"/>
 <unit id="org.eclipse.jubula.feature.api.source.feature.group" version="0.0.0"/>
 <repository location="http://download.eclipse.org/jubula/nightly/repo"/>
+</location>
+<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
+<unit id="org.eclipse.pde.feature.group" version="3.10.1.v20150204-1700"/>
+<unit id="org.eclipse.jdt.feature.group" version="3.10.1.v20150204-1700"/>
+<repository location="http://download.eclipse.org/releases/luna"/>
 </location>
 </locations>
 </target>

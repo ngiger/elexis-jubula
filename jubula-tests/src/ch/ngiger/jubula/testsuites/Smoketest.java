@@ -29,10 +29,9 @@ import ch.ngiger.jubula.helpers.Software;
 import ch.ngiger.jubula.helpers.Utils;
 import ch.ngiger.jubula.helpers.Views;
 
-public class Smoketest {
+public class Smoketest extends Common {
 	/** test generating a snapshot of the currently active window */
 
-	private static Common runner = new Common(AUT_run.doctor, AUT_run.elexis);
 	private static Views views = null;
 	private static Eigenleistung eigenleistung = null;
 	private static Artikelstamm artikelstamm = null;
@@ -45,26 +44,26 @@ public class Smoketest {
 	public static void setup() throws Exception{
 		AUT_run.setUp();
 		Utils.dbg_msg("setup done"); //$NON-NLS-1$
-		views = new Views(AUT_run.doctor, AUT_run.elexis);
-		eigenleistung = new Eigenleistung(AUT_run.doctor, AUT_run.elexis);
-		artikelstamm = new Artikelstamm(AUT_run.doctor, AUT_run.elexis);
-		perspectives = new Perspectives(AUT_run.doctor, AUT_run.elexis);
-		software = new Software(AUT_run.doctor, AUT_run.elexis);
-		pat = new Patients(AUT_run.doctor, AUT_run.elexis);
-		invoice = new Invoice(AUT_run.doctor, AUT_run.elexis);
+		views = new Views();
+		eigenleistung = new Eigenleistung();
+		artikelstamm = new Artikelstamm();
+		perspectives = new Perspectives();
+		software = new Software();
+		pat = new Patients();
+		invoice = new Invoice();
 	}
 
 	public void testTextInput(ComponentIdentifier<TextInputComponent> cid, String char2test){
 		Utils.dbg_msg(
 			AUT_run.Keyboard_Locale.toString() + " testTextInput: " + cid + " with " + char2test);
 		TextInputComponent tic = SwtComponents.createTextInputComponent(cid);
-		runner.synchronizedTextReplace(cid, "");//$NON-NLS-1$
+		synchronizedTextReplace(cid, "");//$NON-NLS-1$
 
 		for (int i = 0, n = char2test.length(); i < n; i++) {
 			String tst_string = char2test.substring(i, i + 1);
 			try {
-				runner.execute(tic.replaceText(tst_string), null);
-				runner.execute(tic.checkText(tst_string, Operator.matches), null);
+				views.m_aut.execute(tic.replaceText(tst_string), null);
+				views.m_aut.execute(tic.checkText(tst_string, Operator.matches), null);
 			} catch (ActionException | CheckFailedException e) {
 				Utils.dbg_msg(AUT_run.Keyboard_Locale.toString() + "  FAILED: " + i + " -> "
 					+ tst_string + " " + e.getMessage());
@@ -86,7 +85,7 @@ public class Smoketest {
 
 		// We don't call synchronizedTextReplace on each element as this fails, and I don't
 		// have time to debug why, as we had no problems
-		// myList.forEach(element -> runner.synchronizedTextReplace(text_intput_to_use, element));
+		// myList.forEach(element -> synchronizedTextReplace(text_intput_to_use, element));
 	}
 
 	private static boolean miminized = false;
@@ -94,10 +93,10 @@ public class Smoketest {
 	@Test()
 	public void smoketest() throws Exception{
 		Utils.dbg_msg("smoketest miminized is " + miminized + " Medelexis " + AUT_run.isMedelexis);
-		runner.initialWorkWithRunFromScatch();
+		Utils.initialWorkWithRunFromScatch(perspectives);
 		if (AUT_run.isMedelexis) {
 			Utils.dbg_msg("AUT_EXE is medelexis: " + AUT_run.config.get(Constants.AUT_EXE));
-			runner.clickComponent(OM.Medelexis_Abo_perspective_tbi);
+			clickComponent(OM.Medelexis_Abo_perspective_tbi);
 			Utils.sleepMs(5 * 1000); // wait 5 seconds: TODO: should wait till populated
 		}
 
@@ -105,11 +104,11 @@ public class Smoketest {
 			software.showAbout("first");
 			if (AUT_run.isMedelexis) {
 				Utils.dbg_msg("AUT_EXE is medelexis" + AUT_run.config.get(Constants.AUT_EXE));
-				runner.openMenu("Datei/Beenden");
+				openMenu("Datei/Beenden");
 			} else {
 				software.installAllFeatures();
 				AUT_run.restartApp();
-				runner.initialWorkWithRunFromScatch();
+				Utils.initialWorkWithRunFromScatch(perspectives);
 			}
 			software.showAbout("second");
 			Utils.dbg_msg("Calling importArtikelstamm" + AUT_run.config.get(Constants.AUT_EXE));

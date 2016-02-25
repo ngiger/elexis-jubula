@@ -10,11 +10,9 @@
  *******************************************************************************/
 package ch.ngiger.jubula.helpers;
 
-import org.eclipse.jubula.client.AUT;
 import org.eclipse.jubula.client.exceptions.ActionException;
 import org.eclipse.jubula.client.exceptions.CheckFailedException;
 import org.eclipse.jubula.toolkit.concrete.ConcreteComponents;
-import org.eclipse.jubula.toolkit.concrete.components.Application;
 import org.eclipse.jubula.toolkit.concrete.components.TableComponent;
 import org.eclipse.jubula.toolkit.enums.ValueSets;
 import org.eclipse.jubula.toolkit.enums.ValueSets.InteractionMode;
@@ -23,33 +21,26 @@ import org.eclipse.jubula.toolkit.enums.ValueSets.Unit;
 import org.eclipse.jubula.toolkit.swt.components.Table;
 import org.eclipse.jubula.tools.ComponentIdentifier;
 import org.junit.Assert;
-import org.junit.Test;
 
 import ch.ngiger.jubula.Messages;
 import ch.ngiger.jubula.elexiscore.OM;
 
 /** @author BREDEX GmbH */
-public class Perspectives {
-
-	private Common runner = null;
-
-	public Perspectives(AUT aut, Application app){
-		runner = new Common(aut, app);
-	}
+public class Perspectives extends Common {
 
 	static boolean first_leistungen = true;
 
 	public void resetPerspective(){
-		runner.openMenu("Fenster/Perspektive/Reset.*");
-		runner.waitForWindow("Reset Perspective", Constants.ONE_SECOND);
-		runner.clickComponent(OM.ResetPerspektive_OkButton_grc); //$NON-NLS-1$
+		openMenu("Fenster/Perspektive/Reset.*");
+		waitForWindow("Reset Perspective", Constants.ONE_SECOND);
+		clickComponent(OM.ResetPerspektive_OkButton_grc); //$NON-NLS-1$
 	}
 
 	private void fastOpenPerspectives(@SuppressWarnings("rawtypes") ComponentIdentifier cid,
 		String name){
-		if (runner.componentIsEnabled(cid)) {
+		if (componentIsEnabled(cid)) {
 			Utils.dbg_msg("fastOpenPerspectives: " + name + " by cid");
-			runner.clickComponent(cid);
+			clickComponent(cid);
 		} else {
 			Utils.dbg_msg("fastOpenPerspectives: " + name + " via menu");
 			openPerspectiveByName(name + ".*"); // Match (default) for Patientenübersicht
@@ -86,7 +77,7 @@ public class Perspectives {
 			openPerspectiveByName(name + ".*"); // Match (default) for Patientenübersicht
 			// Comment: Niklaus did see 110 second on his PC with PostgreSQL (2014.05.24)
 			Utils.sleepMs(5 * Constants.ONE_SECOND);
-			runner.waitForWindowClose(".*Progress.*", 120 * Constants.ONE_SECOND);
+			waitForWindowClose(".*Progress.*", 120 * Constants.ONE_SECOND);
 			Utils.takeScreenshotActiveWindow("Leistungen_first_time.png"); //$NON-NLS-1$
 			first_leistungen = false;
 		} else {
@@ -106,8 +97,8 @@ public class Perspectives {
 	public void openPerspectiveByName(String name){
 		String localized_name = Messages.getString("VisitAllPerspectives.2");
 		Utils.dbg_msg(String.format("openPerspectiveByName %s via %s", name, localized_name));
-		runner.openMenu(localized_name);
-		runner.waitForWindow("Open Perspective", Constants.ONE_SECOND);
+		openMenu(localized_name);
+		waitForWindow("Open Perspective", Constants.ONE_SECOND);
 		@SuppressWarnings("unchecked")
 		TableComponent tbl =
 			ConcreteComponents.createTableComponent(OM.OpenPerspective_ViewTree_grc);
@@ -116,11 +107,10 @@ public class Perspectives {
 		AUT_run.m_aut.execute(tbl.selectCell(name, Operator.matches, "1", Operator.equals,
 			new Integer(1), new Integer(50), Unit.percent, new Integer(50), Unit.percent,
 			ValueSets.BinaryChoice.no, InteractionMode.primary), null);
-		runner.clickComponent(OM.ShowView_OkButton_grc);
+		clickComponent(OM.ShowView_OkButton_grc);
 	}
 
 	/** test visiting all perspectives */
-	@Test
 	public void visit_all_perspectives() throws Exception{
 		int j = 0;
 		try {
@@ -128,7 +118,7 @@ public class Perspectives {
 			while (true) {
 				j++;
 				Utils.dbg_msg("Visiting perspective number " + j); //$NON-NLS-1$
-				runner.openMenu(Messages.getString("VisitAllPerspectives.2"));
+				openMenu(Messages.getString("VisitAllPerspectives.2"));
 				AUT_run.m_aut.execute(AUT_run.elexis.waitForWindow(window_title, Operator.matches,
 					1000, Constants.NR_MS_WAIT_AFTER_ACTION), null);
 				@SuppressWarnings({
@@ -142,13 +132,15 @@ public class Perspectives {
 					Operator.equals, new Integer(1), new Integer(50), Unit.percent, new Integer(50),
 					Unit.percent, ValueSets.BinaryChoice.no, InteractionMode.primary), null);
 				// TODO: We should get the name of the selected perspective
-				runner.clickComponent(OM.ShowView_OkButton_grc);
+				clickComponent(OM.ShowView_OkButton_grc);
 
-				runner.waitForWindowClose(window_title);
-				runner.waitForElexisMainWindow(Constants.ONE_SECOND);
+				waitForWindowClose(window_title);
+				waitForElexisMainWindow(Constants.ONE_SECOND);
 				Utils.takeScreenshotActiveWindow("Perspective_" + j + ".png"); //$NON-NLS-1$ //$NON-NLS-2$
 			}
 		} catch (ActionException e) {
+			clickComponent(OM.ShowView_OkButton_grc);
+			waitForElexisMainWindow(Constants.ONE_SECOND);
 			if (j <= 3) {
 				Assert.fail("We should have more than 3 perspectives to visit!"); //$NON-NLS-1$
 			}

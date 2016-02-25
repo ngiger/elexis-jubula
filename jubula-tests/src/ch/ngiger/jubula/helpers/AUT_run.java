@@ -2,6 +2,7 @@ package ch.ngiger.jubula.helpers;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Hashtable;
@@ -38,12 +39,10 @@ public class AUT_run {
 	public static AUT doctor = null;
 
 	/**
-	 * The AUT for the supported Role: assistant.
-	 * It is not yet use, but will be needed to test whether
-	 * Changes by the assistant affect the view of the doctor.
+	 * The AUT for the supported Role: assistant. It is not yet use, but will be needed to test
+	 * whether Changes by the assistant affect the view of the doctor.
 	 */
 	public static AUT mpa = null;
-
 
 	static AUT m_aut;
 
@@ -66,6 +65,15 @@ public class AUT_run {
 		config.put(Constants.WORK_DIR, USER_DIR);
 		Path elexis3 = Paths.get(USER_DIR + "/../work/Elexis3");
 		Path medelexis3 = Paths.get(USER_DIR + "/../work/Medelexis");
+		try {
+			Files.list(new File(System.getProperty("user.home") + "/elexis/").toPath())
+				.forEach(element -> {
+					if (element.toString().contains("elexis/elexislock")) {
+						element.toFile().delete();
+					}
+				});
+		} catch (IOException e) {}
+
 		if (elexis3.toFile().canExecute()) {
 			config.put(Constants.AUT_EXE, elexis3.toAbsolutePath().normalize().toString());
 		} else {
@@ -150,17 +158,16 @@ public class AUT_run {
 	}
 
 	private static void startAutagent(){
-		Utils.dbg_msg("Calling startAutagent ");
-		agent_thread = new AgentThread();
-		agent_thread.start();
+		Utils.dbg_msg("NOT Calling startAutagent ");
+		// agent_thread = new AgentThread();
+		// agent_thread.start();
 	}
 
 	private static void startAUT(){
 		try {
 			int j = 0;
-			while (j< 10 && ! m_agent.isConnected())
-			{
-				Utils.dbg_msg("Calling startAUT "+ j + " isConnected " + m_agent.isConnected());
+			while (j < 10 && !m_agent.isConnected()) {
+				Utils.dbg_msg("Calling startAUT " + j + " isConnected " + m_agent.isConnected());
 				Utils.sleep1second();
 				j++;
 			}

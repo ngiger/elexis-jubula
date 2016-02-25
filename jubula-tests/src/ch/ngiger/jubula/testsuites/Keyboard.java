@@ -20,12 +20,11 @@ import ch.ngiger.jubula.helpers.Perspectives;
 import ch.ngiger.jubula.helpers.Software;
 import ch.ngiger.jubula.helpers.Utils;
 
-public class Keyboard {
+public class Keyboard extends Common {
 
 	// Here we put all test that are currently broken for one reason or another
 
 	static int nr_tests = 0;
-	private static Common runner = new Common(AUT_run.doctor, AUT_run.elexis);
 	private static Artikelstamm artikelstamm = null;
 	private static Perspectives perspectives = null;
 	private static Software software = null;
@@ -33,9 +32,9 @@ public class Keyboard {
 	@BeforeClass
 	public static void setup() throws Exception{
 		AUT_run.setUp();
-		artikelstamm = new Artikelstamm(AUT_run.doctor, AUT_run.elexis);
-		perspectives = new Perspectives(AUT_run.doctor, AUT_run.elexis);
-		software = new Software(AUT_run.doctor, AUT_run.elexis);
+		artikelstamm = new Artikelstamm();
+		perspectives = new Perspectives();
+		software = new Software();
 	}
 
 	@Before
@@ -73,7 +72,7 @@ public class Keyboard {
 		// have time to debug why, as we had no problems
 		myList.forEach(element -> {
 			Utils.dbg_msg("testAllChars with string: " + element);
-			runner.synchronizedTextReplace(tic, element, false);
+			synchronizedTextReplace(tic, element, false);
 		});
 	}
 
@@ -86,7 +85,7 @@ public class Keyboard {
 			for (int i = 0, n = element.length(); i < n; i++) {
 				String tst_string = element.substring(i, i + 1);
 				try {
-					runner.synchronizedTextReplace(tic, tst_string, false);
+					synchronizedTextReplace(tic, tst_string, false);
 				} catch (ActionException | CheckFailedException e) {
 					Utils.dbg_msg(AUT_run.Keyboard_Locale.toString() + "  FAILED: " + i + " -> "
 						+ tst_string + " " + e.getMessage());

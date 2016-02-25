@@ -25,13 +25,11 @@ import ch.ngiger.jubula.helpers.Patients;
 import ch.ngiger.jubula.helpers.Perspectives;
 import ch.ngiger.jubula.helpers.Software;
 import ch.ngiger.jubula.helpers.Utils;
-import ch.ngiger.jubula.helpers.Views;
 
-public class Broken {
+public class Broken extends Common{
 
 	// Here we put all test that are currently broken for one reason or another
 	static int nr_tests = 0;
-	private static Common runner = new Common(AUT_run.doctor, AUT_run.elexis);
 	private static Eigenleistung eigenleistung = null;
 	private static Artikelstamm artikelstamm = null;
 	private static Perspectives perspectives = null;
@@ -42,12 +40,12 @@ public class Broken {
 	@BeforeClass
 	public static void setup() throws Exception{
 		AUT_run.setUp();
-		eigenleistung = new Eigenleistung(AUT_run.doctor, AUT_run.elexis);
-		artikelstamm = new Artikelstamm(AUT_run.doctor, AUT_run.elexis);
-		perspectives = new Perspectives(AUT_run.doctor, AUT_run.elexis);
-		software = new Software(AUT_run.doctor, AUT_run.elexis);
-		pat = new Patients(AUT_run.doctor, AUT_run.elexis);
-		invoice = new Invoice(AUT_run.doctor, AUT_run.elexis);
+		eigenleistung = new Eigenleistung();
+		artikelstamm = new Artikelstamm();
+		perspectives = new Perspectives();
+		software = new Software();
+		pat = new Patients();
+		invoice = new Invoice();
 	}
 
 	@Before
@@ -85,7 +83,7 @@ public class Broken {
 		// have time to debug why, as we had no problems
 		myList.forEach(element -> {
 			Utils.dbg_msg("testAllChars with string: " + element);
-			runner.synchronizedTextReplace(tic, element, false);
+			synchronizedTextReplace(tic, element, false);
 		});
 	}
 
@@ -98,7 +96,7 @@ public class Broken {
 			for (int i = 0, n = element.length(); i < n; i++) {
 				String tst_string = element.substring(i, i + 1);
 				try {
-					runner.synchronizedTextReplace(tic, tst_string, false);
+					synchronizedTextReplace(tic, tst_string, false);
 				} catch (ActionException | CheckFailedException e) {
 					Utils.dbg_msg(AUT_run.Keyboard_Locale.toString() + "  FAILED: " + i + " -> "
 						+ tst_string + " " + e.getMessage());
@@ -128,13 +126,13 @@ public class Broken {
 	public void test_drop_eigenartikel() throws Exception{
 		test_getInvoicesAsString();
 		String leistungsname = "Meine Eigenleistung";
-		Assert.assertEquals(0, runner.nrRowsInTable(OM.Pat_List_tbl));
+		Assert.assertEquals(0, nrRowsInTable(OM.Pat_List_tbl));
 		perspectives.openLeistungenPerspective();
 		eigenleistung.createEigenleistung("mfk", leistungsname, 5000, 8000, 10);
 		pat.createPatient("Testperson", "ArmesWesen", "31.01.1990");
-		Assert.assertEquals(1, runner.nrRowsInTable(OM.Pat_List_tbl));
+		Assert.assertEquals(1, nrRowsInTable(OM.Pat_List_tbl));
 		pat.createPatient("Aesculap", "Weise", "15.01.1990");
-		Assert.assertEquals(2, runner.nrRowsInTable(OM.Pat_List_tbl));
+		Assert.assertEquals(2, nrRowsInTable(OM.Pat_List_tbl));
 		perspectives.openPatientenPerspective();
 		// We need swiss base feature to be able to invoice!
 		pat.createCase("KVG", "Husten", "Testperson", "Nr. 34.56", "24.12.14");
@@ -144,7 +142,7 @@ public class Broken {
 		// pat.artikelstammItemVerrechnen("CYKLOKAPRON");
 		pat.invoiceActiveConsultation();
 		invoice.showInvoices("invoices/one_item.png");
-		Assert.assertEquals(1, runner.nrRowsInTable(OM.Rechnungsübersicht_tbl));
+		Assert.assertEquals(1, nrRowsInTable(OM.Rechnungsübersicht_tbl));
 		invoice.showInvoices("invoices/one_item.png");
 		String test = invoice.getInvoicesAsString("invoice/after_first_invoice.png");
 		Pattern p = Pattern.compile("[0-9]{4}.*Testperson.*ArmesWesen.*1990");

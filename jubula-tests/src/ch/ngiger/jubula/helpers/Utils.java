@@ -30,6 +30,8 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jubula.client.exceptions.ActionException;
+import org.eclipse.jubula.toolkit.enums.ValueSets.AUTActivationMethod;
+import org.eclipse.jubula.toolkit.swt.SwtComponents;
 import org.junit.Assert;
 
 /** @author Niklaus Giger niklaus.giger@member.fsf.org */
@@ -167,6 +169,16 @@ public class Utils {
 			}
 		}
 		System.out.println("SAVE_RESULTS_DIR is: " + SAVE_RESULTS_DIR);
+	}
+	public static void initialWorkWithRunFromScatch(Perspectives perspectives){
+		perspectives.openPatientenPerspective();
+		perspectives.resetPerspective();
+		// We must open Leistungen first, as this take a lot of time
+		perspectives.openLeistungenPerspective();
+		org.eclipse.jubula.toolkit.concrete.components.Application application =
+			SwtComponents.createApplication();
+		Utils.sleep1second(); // Don't know why this is needed!
+		perspectives.m_aut.execute(application.activate(AUTActivationMethod.titlebar), null);
 	}
 
 }

@@ -27,7 +27,6 @@ import org.eclipse.jubula.client.exceptions.CheckFailedException;
 import org.eclipse.jubula.client.exceptions.CommunicationException;
 import org.eclipse.jubula.client.exceptions.ComponentNotFoundException;
 import org.eclipse.jubula.client.exceptions.ExecutionException;
-import org.eclipse.jubula.communication.CAP;
 import org.eclipse.jubula.toolkit.base.components.GraphicsComponent;
 import org.eclipse.jubula.toolkit.concrete.ConcreteComponents;
 import org.eclipse.jubula.toolkit.concrete.components.Application;
@@ -35,7 +34,6 @@ import org.eclipse.jubula.toolkit.concrete.components.MenuBarComponent;
 import org.eclipse.jubula.toolkit.concrete.components.TabComponent;
 import org.eclipse.jubula.toolkit.concrete.components.TableComponent;
 import org.eclipse.jubula.toolkit.concrete.components.TextInputComponent;
-import org.eclipse.jubula.toolkit.enums.ValueSets.AUTActivationMethod;
 import org.eclipse.jubula.toolkit.enums.ValueSets.BinaryChoice;
 import org.eclipse.jubula.toolkit.enums.ValueSets.InteractionMode;
 import org.eclipse.jubula.toolkit.enums.ValueSets.Modifier;
@@ -52,19 +50,18 @@ public class Common {
 
 	static MenuBarComponent mbr = SwtComponents.createMenu();
 
-	private AUT m_aut;
+	public AUT m_aut;
 	private Application elexis;
-	private Perspectives perspectives = null;
 
-	public Common(AUT aut, Application app){
-		elexis = app;
-		m_aut = aut;
-		perspectives = new Perspectives(aut, app);
+	public Common(){
+		m_aut = AUT_run.m_aut;
+		elexis = AUT_run.elexis;
+		Utils.dbg_msg("Common init " + m_aut + " app " + elexis);
 	}
 
-	public <T> Result<T> execute(CAP cap, T payload)
-		throws ExecutionException, CommunicationException{
-		return m_aut.execute(cap, payload);
+	public void setAutAndApp(AUT aut, Application app){
+		elexis = app;
+		m_aut = aut;
 	}
 
 	public void clickComponent(@SuppressWarnings("rawtypes") ComponentIdentifier cid){
@@ -292,17 +289,6 @@ public class Common {
 		m_aut.execute(tbl.selectCell("1", Operator.equals, "1", Operator.equals, new Integer(1),
 			new Integer(50), Unit.percent, new Integer(50), Unit.percent, BinaryChoice.no,
 			InteractionMode.primary), null);
-	}
-
-	public void initialWorkWithRunFromScatch(){
-		perspectives.openPatientenPerspective();
-		perspectives.resetPerspective();
-		// We must open Leistungen first, as this take a lot of time
-		perspectives.openLeistungenPerspective();
-		org.eclipse.jubula.toolkit.concrete.components.Application application =
-			SwtComponents.createApplication();
-		Utils.sleep1second(); // Don't know why this is needed!
-		m_aut.execute(application.activate(AUTActivationMethod.titlebar), null);
 	}
 
 	public void synchronizedTextReplace(@SuppressWarnings("rawtypes") ComponentIdentifier cid,
