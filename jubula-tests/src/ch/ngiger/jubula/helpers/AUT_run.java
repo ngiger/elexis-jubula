@@ -145,6 +145,7 @@ public class AUT_run {
 	}
 	
 	private static void startAUT(){
+		Utils.dbg_msg("Calling startAUT:");
 		try {
 			int j = 0;
 			while (j < 10 && !m_agent.isConnected()) {
@@ -170,6 +171,7 @@ public class AUT_run {
 			Utils.dbg_msg("Action Exception startAUT reason: " + e.getMessage()); //$NON-NLS-1$
 			takeScreenshot("start_aut_failed.png");
 			Assert.fail("unable to start AUT"); //$NON-NLS-1$
+			
 		}
 		
 	}
@@ -200,6 +202,8 @@ public class AUT_run {
 		try {
 			m_agent.connect();
 		} catch (org.eclipse.jubula.client.exceptions.CommunicationException e) {
+			Utils.sleep1second(); // Give it some time to start. 
+			// Needed some times when starting without a running agent
 			startAutagent();
 			Utils.sleepMs(Constants.ONE_SECOND * 5); // Give it some time to
 														// start up
@@ -313,6 +317,7 @@ public class AUT_run {
 		Utils.dbg_msg("m_agent.disconnected ");
 		m_agent.connect();
 		Utils.dbg_msg("m_agent.connected ");
+		Utils.sleep1second();
 		startAUT();
 	}
 	
