@@ -32,7 +32,6 @@ import org.eclipse.jubula.toolkit.concrete.components.MenuBarComponent;
 import org.eclipse.jubula.toolkit.concrete.components.TabComponent;
 import org.eclipse.jubula.toolkit.concrete.components.TableComponent;
 import org.eclipse.jubula.toolkit.concrete.components.TextInputComponent;
-import org.eclipse.jubula.toolkit.enums.ValueSets.AUTActivationMethod;
 import org.eclipse.jubula.toolkit.enums.ValueSets.BinaryChoice;
 import org.eclipse.jubula.toolkit.enums.ValueSets.InteractionMode;
 import org.eclipse.jubula.toolkit.enums.ValueSets.Modifier;
@@ -92,8 +91,8 @@ public class Common {
 				String msg = String.format("Mode %s contextMenuByText %s op %s passed", mode.toString(), menuEntry, op.toString());
 		} catch (ActionException | CheckFailedException | ComponentNotFoundException e) {
 			String msg = String.format("Mode %s contextMenuByText %s op %s failed. Error %s", mode.toString(), menuEntry, op.toString(), e.getMessage());
-			AUT_run.dbg_msg(msg);
-			e.printStackTrace(AUT_run.writer);
+			Utils.dbg_msg(msg);
+			e.printStackTrace(Utils.getWriter());
 			AUT_run.takeScreenshotActiveWindow("contextMenuByText_failed.png");
 		}
 	}
@@ -145,11 +144,11 @@ public class Common {
 			ConcreteComponents.createTextComponent(cid);
 		AUT_run.m_aut.execute(tic.waitForComponent(Constants.ONE_SECOND, 0), null);
 		AUT_run.m_aut.execute(tic.click(new Integer(1), InteractionMode.primary), null);
-		Common.sleep1second();
+		Utils.sleep1second();
 		AUT_run.m_aut.execute(AUT_run.app.externalKeyCombination(new Modifier[] {
 			Modifier.control
 		}, "a"), null); //$NON-NLS-1$
-		Common.sleep1second();
+		Utils.sleep1second();
 		AUT_run.m_aut.execute(AUT_run.app.externalKeyCombination(new Modifier[] {
 			Modifier.control
 		}, "c"), null); //$NON-NLS-1$
@@ -166,16 +165,16 @@ public class Common {
 		try {
 			result = AUT_run.m_aut.execute(comp.click(1, InteractionMode.primary), null);
 		} catch (ActionException e) {
-			AUT_run.dbg_msg("isEnabled false as error "+ e.getMessage());
+			Utils.dbg_msg("isEnabled false as error " + e.getMessage());
 			return false;
 		}
 		boolean okay = result != null && result.isOK();
-		AUT_run.dbg_msg("isEnabled will return "+okay);
+		Utils.dbg_msg("isEnabled will return " + okay);
 		return okay;
 	}
 
 	public static void maximixeView(){
-		AUT_run.dbg_msg("maximize does not work in elexis");
+		Utils.dbg_msg("maximize does not work in elexis");
 		/* Works only when running natively with keyboard set to de_CH, but not under xvfb
 		AUT_run.m_aut.execute(AUT_run.app.externalKeyCombination(new Modifier[] {
 			Modifier.none
@@ -185,11 +184,11 @@ public class Common {
 
 	@SuppressWarnings("rawtypes")
 	public static int nrRowsInTable(ComponentIdentifier cid){
-		AUT_run.dbg_msg(String.format("nrRowsInTable cid: " + cid));
+		Utils.dbg_msg(String.format("nrRowsInTable cid: " + cid));
 		int j = 0;
 		if (!Common.isEnabled(cid))
 		{
-			AUT_run.dbg_msg(String.format("nrRowsInTable return 0 as not enabled "));
+			Utils.dbg_msg(String.format("nrRowsInTable return 0 as not enabled "));
 			return 0;
 		}
 		try {
@@ -198,23 +197,23 @@ public class Common {
 	} catch (ActionException | CheckFailedException | ComponentNotFoundException e) {
 		String msg = String.format("nrRowsInTable j %d error %s %s ", j, e.getClass(), e.getMessage());
 		System.out.println(msg);
-		AUT_run.dbg_msg(msg);
+			Utils.dbg_msg(msg);
 		return 0;
 	}
 		@SuppressWarnings("unchecked")
 		TableComponent tbl = ConcreteComponents.createTableComponent(cid);
 		while (true) {
 			try {
-				AUT_run.dbg_msg("nrRowsInTable testing2 with = " + (j+1));
+				Utils.dbg_msg("nrRowsInTable testing2 with = " + (j + 1));
 			AUT_run.m_aut.execute(tbl.selectCell(new Integer(j+1).toString(), Operator.equals, "1", Operator.equals,
 				new Integer(1), new Integer(50), Unit.percent, new Integer(50), Unit.percent,
 				BinaryChoice.no, InteractionMode.primary), null);
 			} catch (ActionException | CheckFailedException | ComponentNotFoundException e) {
 				String msg = String.format("nrRowsInTable j %d error %s %s ", j, e.getClass(), e.getMessage());
 				System.out.println(msg);
-				AUT_run.dbg_msg(msg);
+				Utils.dbg_msg(msg);
 				e.printStackTrace(System.out);
-				e.printStackTrace(AUT_run.writer);
+				e.printStackTrace(Utils.getWriter());
 				return j;
 			}
 			j++;
@@ -230,15 +229,15 @@ public class Common {
 		} catch (ExecutionException | CommunicationException e) {
 			String msg = String.format("openMenu %s after 5 second failed", menu + //$NON-NLS-1$
 				" " + e.getMessage()); //$NON-NLS-1$
-			AUT_run.dbg_msg(msg);
-			e.printStackTrace(AUT_run.writer);
+			Utils.dbg_msg(msg);
+			e.printStackTrace(Utils.getWriter());
 			AUT_run.takeScreenshotActiveWindow("open_menu_failed.png"); //$NON-NLS-1$
 			Assert.fail(msg);
 		}
 	}
 
 	public static void pressEnter(){
-		AUT_run.dbg_msg("pressEnter");
+		Utils.dbg_msg("pressEnter");
 		/*
 		 * Allows to send special character like "Enter"
 		 */
@@ -251,8 +250,8 @@ public class Common {
 			 AUT_run.m_aut.execute(tab.selectTabByValue(tabName, Operator.matches), null);
 		} catch (ActionException | CheckFailedException | ComponentNotFoundException e) {
 			String msg = String.format("selectTabByValue %s failed. Error %s", tabName, e.getMessage());
-			AUT_run.dbg_msg(msg);
-			e.printStackTrace(AUT_run.writer);
+			Utils.dbg_msg(msg);
+			e.printStackTrace(Utils.getWriter());
 			AUT_run.takeScreenshotActiveWindow("selectTabByValue_failed.png");
 		}
 	}
@@ -266,28 +265,18 @@ public class Common {
 			BinaryChoice.no, InteractionMode.primary), null);
 	}
 
-	public static void sleep1second(){
-		sleepMs(Constants.ONE_SECOND);
-	}
-
-	public static void sleepMs(int timoutInMs){
-		try {
-			Thread.sleep(timoutInMs);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
+	/*
+		public static void initialWorkWithRunFromScatch() {
+			Perspectives.openPatientenPerspective();
+			Perspectives.resetPerspective();
+			// We must open Leistungen first, as this take a lot of time
+			Perspectives.openLeistungenPerspective();
+			org.eclipse.jubula.toolkit.concrete.components.Application application =
+					SwtComponents.createApplication();
+			Common.sleep1second(); // Don't know why this is needed!
+			AUT_run.m_aut.execute(application.activate(AUTActivationMethod.titlebar), null);
 		}
-	}
-
-	public static void initialWorkWithRunFromScatch() {
-		Perspectives.openPatientenPerspective();
-		Perspectives.resetPerspective();
-		// We must open Leistungen first, as this take a lot of time
-		Perspectives.openLeistungenPerspective();
-		org.eclipse.jubula.toolkit.concrete.components.Application application =
-				SwtComponents.createApplication();
-		Common.sleep1second(); // Don't know why this is needed!
-		AUT_run.m_aut.execute(application.activate(AUTActivationMethod.titlebar), null);
-	}
+		*/
 	public static void synchronizedTextReplace(
 		@SuppressWarnings("rawtypes") ComponentIdentifier cid, String newValue){
 		synchronizedTextReplace(cid, newValue, true);
@@ -302,7 +291,7 @@ public class Common {
 		try {
 			String changedValue = filter ? newValue.replaceAll("[^\\w\\s\\.-_/]", "_") : newValue; // Stuff like üis not possible
 			Thread.sleep(100);
-			AUT_run.dbg_msg(String.format("synchronizedTextReplace: %s -> %s %s",
+			Utils.dbg_msg(String.format("synchronizedTextReplace: %s -> %s %s",
 				cid.toString(), newValue, filter ? "changed " + changedValue : " unfiltered"));
 			AUT_run.m_aut.execute(tic.replaceText(changedValue), null);
 			Thread.sleep(100);
@@ -310,8 +299,8 @@ public class Common {
 		} catch (InterruptedException | ActionException | CheckFailedException e) {
 			String msg = String.format("synchronizedTextReplace: new: %s  error %s", newValue,
 				e.getMessage());
-			AUT_run.dbg_msg(msg);
-			e.printStackTrace(AUT_run.writer);
+			Utils.dbg_msg(msg);
+			e.printStackTrace(Utils.getWriter());
 			Assert.fail(msg);
 		}
 
@@ -326,8 +315,8 @@ public class Common {
 			return true;
 		} catch (ActionException | CheckFailedException | ComponentNotFoundException e) {
 			String msg = String.format("waitForComponent failed. Error %s", e.getMessage());
-			AUT_run.dbg_msg(msg);
-			e.printStackTrace(AUT_run.writer);
+			Utils.dbg_msg(msg);
+			e.printStackTrace(Utils.getWriter());
 			AUT_run.takeScreenshotActiveWindow("waitForComponent_failed.png");
 		}
 		return false;
@@ -352,7 +341,7 @@ public class Common {
 				null);
 		} catch (ActionException e) {
 			String msg = "waitForWindow " + window_title + " after " + timeoutInMs + " ms failed";
-			AUT_run.dbg_msg(msg);
+			Utils.dbg_msg(msg);
 			AUT_run.takeScreenshotActiveWindow("window/wait_failed_" + window_title + ".png");
 			Assert.fail(msg);
 		}
@@ -372,15 +361,15 @@ public class Common {
 		} catch (ActionException e) {
 			String msg =
 				"waitForWindowClose " + window_title + " after " + timeoutInMs + " ms failed";
-			AUT_run.dbg_msg(msg);
+			Utils.dbg_msg(msg);
 			AUT_run.takeScreenshotActiveWindow("window/close_failed_" + window_title + ".png");
 			Assert.fail(msg);
 		}
 	}
 	public static void writeStringToResultsFile(String msg, String filename){
-		AUT_run.dbg_msg("writeStringToResultsFile: RESULT_DIR >" + AUT_run.SAVE_RESULTS_DIR + "<");
+		Utils.dbg_msg("writeStringToResultsFile: RESULT_DIR >" + AUT_run.SAVE_RESULTS_DIR + "<");
 		File full = new File(AUT_run.SAVE_RESULTS_DIR + "/" + filename);
-		AUT_run.dbg_msg("writeStringToResultsFile: " + full.getAbsolutePath());
+		Utils.dbg_msg("writeStringToResultsFile: " + full.getAbsolutePath());
 		try {
 			PrintWriter writer = new PrintWriter(full, "UTF-8");
 			writer.println(msg);
