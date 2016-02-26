@@ -265,18 +265,6 @@ public class Common {
 			BinaryChoice.no, InteractionMode.primary), null);
 	}
 
-	/*
-		public static void initialWorkWithRunFromScatch() {
-			Perspectives.openPatientenPerspective();
-			Perspectives.resetPerspective();
-			// We must open Leistungen first, as this take a lot of time
-			Perspectives.openLeistungenPerspective();
-			org.eclipse.jubula.toolkit.concrete.components.Application application =
-					SwtComponents.createApplication();
-			Common.sleep1second(); // Don't know why this is needed!
-			AUT_run.m_aut.execute(application.activate(AUTActivationMethod.titlebar), null);
-		}
-		*/
 	public static void synchronizedTextReplace(
 		@SuppressWarnings("rawtypes") ComponentIdentifier cid, String newValue){
 		synchronizedTextReplace(cid, newValue, true);
