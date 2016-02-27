@@ -1,5 +1,6 @@
 package ch.ngiger.jubula.testsuites;
 
+import org.eclipse.jubula.client.AUT;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -12,6 +13,8 @@ public class Screenshot {
 
 	/** test generating a snapshot of the currently active window */
 
+	private static AUT m_aut;
+	
 	@BeforeClass
 	public static void setup() throws Exception {
 		AUT_run.setUp();
@@ -20,10 +23,12 @@ public class Screenshot {
 
 	@Test()
 	public void screenshot_active_window() throws Exception{
+		m_aut = AUT_run.startAUT();
 		Utils.dbg_msg("screenshot_active_window");
-		AUT_run.takeScreenshotActiveWindow("first_screenshot.png");
+		AUT_run.takeScreenshotActiveWindow(AUT_run.m_aut, AUT_run.app, "first_screenshot.png");
 		Assert.assertTrue(true);
 		Utils.dbg_msg("screenshot_active_window done");
+		AUT_run.stopAut(m_aut);
 	}
 
 	@AfterClass

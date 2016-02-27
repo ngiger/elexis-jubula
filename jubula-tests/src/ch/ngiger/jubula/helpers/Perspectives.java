@@ -10,9 +10,11 @@
  *******************************************************************************/
 package ch.ngiger.jubula.helpers;
 
+import org.eclipse.jubula.client.AUT;
 import org.eclipse.jubula.client.exceptions.ActionException;
 import org.eclipse.jubula.client.exceptions.CheckFailedException;
 import org.eclipse.jubula.toolkit.concrete.ConcreteComponents;
+import org.eclipse.jubula.toolkit.concrete.components.Application;
 import org.eclipse.jubula.toolkit.concrete.components.TableComponent;
 import org.eclipse.jubula.toolkit.enums.ValueSets;
 import org.eclipse.jubula.toolkit.enums.ValueSets.InteractionMode;
@@ -29,6 +31,11 @@ import ch.ngiger.jubula.elexiscore.OM;
 public class Perspectives extends Common {
 	
 	static boolean first_leistungen = true;
+	
+	public Perspectives(AUT aut, Application app){
+		super(aut, app);
+		Utils.dbg_msg("Perspectives init " + m_aut + " app " + m_app);
+	}
 	
 	public void resetPerspective(){
 		openMenu("Fenster/Perspektive/Reset.*");
@@ -78,7 +85,7 @@ public class Perspectives extends Common {
 			// Comment: Niklaus did see 110 second on his PC with PostgreSQL (2014.05.24)
 			Utils.sleepMs(5 * Constants.ONE_SECOND);
 			waitForWindowClose(".*Progress.*", 120 * Constants.ONE_SECOND);
-			AUT_run.takeScreenshotActiveWindow("Leistungen_first_time.png"); //$NON-NLS-1$
+			AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "Leistungen_first_time.png"); //$NON-NLS-1$
 			first_leistungen = false;
 		} else {
 			fastOpenPerspectives(OM.Perspective_Leistungen_tbi, name);
@@ -119,7 +126,7 @@ public class Perspectives extends Common {
 				j++;
 				Utils.dbg_msg("Visiting perspective number " + j); //$NON-NLS-1$
 				openMenu(Messages.getString("VisitAllPerspectives.2"));
-				Common.waitForWindow(window_title);
+				waitForWindow(window_title);
 				@SuppressWarnings({
 					"unchecked"
 				})
@@ -135,7 +142,7 @@ public class Perspectives extends Common {
 				
 				waitForWindowClose(window_title);
 				waitForElexisMainWindow(Constants.ONE_SECOND);
-				AUT_run.takeScreenshotActiveWindow("Perspective_" + j + ".png"); //$NON-NLS-1$ //$NON-NLS-2$
+				AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "Perspective_" + j + ".png"); //$NON-NLS-1$ //$NON-NLS-2$
 			}
 		} catch (ActionException e) {
 			clickComponent(OM.ShowView_OkButton_grc);

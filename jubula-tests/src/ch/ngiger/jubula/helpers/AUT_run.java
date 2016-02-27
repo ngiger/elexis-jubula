@@ -33,20 +33,19 @@ public class AUT_run {
 	/** the AUT */
 	public static AUT m_aut;
 	public static String SAVE_RESULTS_DIR = null;
+	public static Application app = null;
 	
 	/** the logger */
 	// private static Logger log = LoggerFactory.getLogger(AUT_run.class);
 	public static final String AUT_ID = "elexis_3_1"; //$NON-NLS-1$
-	public static Application app = null;
 	public static Map<String, String> config = new Hashtable<String, String>();
 	public static final String USER_DIR = System.getProperty("user.dir");
 	public static final Locale Keyboard_Locale = Locale.GERMANY;// Locale.US;
-	private static AUTIdentifier aut_id = null;
 	private static AUTConfiguration aut_config = null;
 	private static java.nio.file.Path ElexisLog =
 		Paths.get(System.getProperty("user.home") + "/elexis/logs/elexis-3.log");
 	public static boolean isMedelexis = false;
-		
+	
 	private static void setupConfig(){
 		config.put(Constants.AGENT_HOST, "localhost");
 		config.put(Constants.AGENT_PORT, "6333");
@@ -144,36 +143,52 @@ public class AUT_run {
 		agent_thread.start();
 	}
 	
-	private static void startAUT(){
-		Utils.dbg_msg("Calling startAUT:");
+	public static void activate(AUT aut){
+		Utils.dbg_msg("Calling activate " + aut);
+		aut.execute(app.activate(AUTActivationMethod.titlebar), null);
+		Utils.dbg_msg("Calling activate done");
+	}
+	
+	public static AUT startAUT(){
+		AUTIdentifier aut_id = null;
+		AUT new_aut = null;
+		Utils.dbg_msg("Calling startAUT: aut_config" + aut_config);
 		try {
 			int j = 0;
 			while (j < 10 && !m_agent.isConnected()) {
 				Utils.dbg_msg("Calling startAUT " + j + " isConnected " + m_agent.isConnected());
 				Utils.sleep1second();
 			}
-			aut_id = m_agent.startAUT(aut_config);
+			try {
+				aut_id = m_agent.startAUT(aut_config);
+			} catch (ActionException | CommunicationException e) {
+				Utils.dbg_msg("startAUT failed: aut_id " + aut_id + " " + e.getMessage()); //$NON-NLS-1$
+				takeScreenshot(m_aut, app, "try_start_.png");
+				aut_id = m_agent.startAUT(aut_config);
+				
+			}
 			Utils.dbg_msg("Calling startAUT returned " + aut_id);
 			if (aut_id != null) {
 				Utils.dbg_msg("started AUT as " + aut_id.getID());
-				m_aut = m_agent.getAUT(aut_id, SwtComponents.getToolkitInformation());
+				new_aut = m_agent.getAUT(aut_id, SwtComponents.getToolkitInformation());
 				Utils.dbg_msg("AUT will connect");
-				m_aut.connect();
+				new_aut.connect();
 				Utils.dbg_msg("AUT connected");
 			} else {
 				Assert.fail("AUT did not start as expected? Why"); //$NON-NLS-1$
 			}
 			Utils.dbg_msg("AUT activate via titlebar");
-			m_aut.execute(app.activate(AUTActivationMethod.titlebar), null);
+			activate(new_aut);
 			
 			Utils.dbg_msg("AUT created and activated");
 		} catch (ActionException | CommunicationException e) {
 			Utils.dbg_msg("Action Exception startAUT reason: " + e.getMessage()); //$NON-NLS-1$
-			takeScreenshot("start_aut_failed.png");
+			takeScreenshot(m_aut, app, "start_aut_failed.png");
 			Assert.fail("unable to start AUT"); //$NON-NLS-1$
 			
 		}
-		
+		m_aut = new_aut;
+		return new_aut;
 	}
 	
 	@BeforeClass
@@ -234,16 +249,14 @@ public class AUT_run {
 		Thread.sleep(1000);
 		Utils.dbg_msg("AUT createApplication");
 		app = SwtComponents.createApplication();
-		startAUT();
 	}
 	
-	public static void takeScreenshotActiveWindow(String imageName){
+	public static void takeScreenshotActiveWindow(AUT aut, Application app, String imageName){
 		String fullname =
 			new File(config.get(Constants.RESULT_DIR) + "/" + imageName).getAbsolutePath();
 		Utils.dbg_msg("Request takeScreenshotActiveWindow " + fullname + " for " + imageName);
-		// m_aut.execute(app.activate(AUTActivationMethod.none), null);
 		try {
-			m_aut.execute(
+			aut.execute(
 				app.takeScreenshotOfActiveWindow(fullname, 0, "rename", 100, true, 0, 0, 0, 0),
 				null);
 			boolean foundFile =
@@ -253,20 +266,19 @@ public class AUT_run {
 			Assert.assertTrue(foundFile);
 		} catch (ActionException e) {
 			Utils.dbg_msg("Action Exception " + fullname + " reason: " + e.getMessage());
-			// Assert.fail("Unable to create screenshot " + imageName);
 		}
 	}
 	
-	public static void takeScreenshot(String imageName){
+	public static void takeScreenshot(AUT aut, Application app, String imageName){
 		String fullname =
 			new File(config.get(Constants.RESULT_DIR) + "/" + imageName).getAbsolutePath();
 		Utils.dbg_msg("Request takeScreenshot " + fullname + " for " + imageName);
 		try {
-			if (m_aut == null || app == null) {
+			if (aut == null || app == null) {
 				Utils.dbg_msg("skip as null for m_aut " + m_aut + " or app " + app);
 			} else {
 				
-				m_aut.execute(app.takeScreenshot(fullname, 1000, "rename", 100, true), null);
+				aut.execute(app.takeScreenshot(fullname, 1000, "rename", 100, true), null);
 				boolean foundFile = Files.exists(
 					new File(config.get(Constants.RESULT_DIR) + "/" + imageName).toPath(),
 					LinkOption.NOFOLLOW_LINKS);
@@ -279,10 +291,18 @@ public class AUT_run {
 		}
 	}
 	
+	public static void stopAut(AUT aut){
+		Utils.dbg_msg("stopAut " + aut + " isCon " + aut.isConnected());
+		if (aut != null && aut.isConnected()) {
+			aut.disconnect();
+			m_agent.stopAUT(aut.getIdentifier());
+		}
+		Utils.dbg_msg("stoppedAut " + aut);
+	}
 	/** cleanup */
 	@AfterClass
 	public static void tearDown() throws Exception{
-		Utils.dbg_msg("AUT_run.tearDown ");
+		Utils.dbg_msg("AUT_run.tearDown " + m_aut + " isCon " + m_aut.isConnected());
 		if (m_aut != null && m_aut.isConnected()) {
 			m_aut.disconnect();
 			m_agent.stopAUT(m_aut.getIdentifier());
@@ -309,16 +329,16 @@ public class AUT_run {
 		}
 	}
 	
-	public static void restartApp(){
-		Utils.dbg_msg("AUT_run.restartApp ");
-		m_agent.stopAUT(aut_id);
-		Utils.dbg_msg("AUT_run.stoppedAUT ");
-		m_agent.disconnect();
-		Utils.dbg_msg("m_agent.disconnected ");
-		m_agent.connect();
-		Utils.dbg_msg("m_agent.connected ");
+	public static AUT restartApp(AUT aut){
+		Utils.dbg_msg(
+			"AUT_run.restartApp " + aut + " aut " + (aut != null ? aut.isConnected() : "null"));
+		if (aut != null) {
+			m_agent.stopAUT(aut.getIdentifier());
+			Utils.dbg_msg("AUT_run.stoppedAUT aut_id is null now? " + aut);
+			aut = null;
+		}
 		Utils.sleep1second();
-		startAUT();
+		return startAUT();
 	}
 	
 }
