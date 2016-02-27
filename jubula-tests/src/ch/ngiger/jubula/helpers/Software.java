@@ -57,7 +57,10 @@ public class Software extends Common {
 		String details_title = ".*Installation Details.*";
 		root = "sw_inst/" + add + "/";
 
-		openMenu(menu_about);
+		if (!openMenu(menu_about)) {
+			AUT_run.activate(m_aut);
+			openMenu(menu_about);
+		}
 		waitForWindow(about_title);
 		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, root + "about.png"); //$NON-NLS-1$
 

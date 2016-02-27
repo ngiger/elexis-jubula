@@ -1,6 +1,7 @@
 package ch.ngiger.jubula.testsuites;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -33,7 +34,26 @@ import ch.ngiger.jubula.helpers.Views;
 
 public class Smoketest {
 	/** test generating a snapshot of the currently active window */
-
+	
+	private static HashMap<String, Common> components = new HashMap<String, Common>() {
+		/**
+		 * Allow easy iterating over my components
+		 */
+		private static final long serialVersionUID = 1L;
+		
+		{
+			put("c", c);
+			put("views", views);
+			put("eigenleistung", eigenleistung);
+			put("artikelstamm", artikelstamm);
+			put("perspectives", perspectives);
+			put("software", software);
+			put("pat", pat);
+			put("invoice", invoice);
+		}
+	};
+	
+	private static Common c = null;
 	private static Views views = null;
 	private static Eigenleistung eigenleistung = null;
 	private static Artikelstamm artikelstamm = null;
@@ -41,9 +61,9 @@ public class Smoketest {
 	private static Software software = null;
 	private static Patients pat = null;
 	private static Invoice invoice = null;
+	
 	private static AUT m_aut = null;
 	private static Application m_app = null;
-	private static Common c = null;
 	
 	@BeforeClass
 	public static void setup() throws Exception{
@@ -53,22 +73,34 @@ public class Smoketest {
 		m_app = AUT_run.app;
 		
 		c = new Common(AUT_run.m_aut, AUT_run.app);
-		views = new Views(AUT_run.m_aut, AUT_run.app);
-		eigenleistung = new Eigenleistung(AUT_run.m_aut, AUT_run.app);
-		artikelstamm = new Artikelstamm(AUT_run.m_aut, AUT_run.app);
 		perspectives = new Perspectives(AUT_run.m_aut, AUT_run.app);
+		views = new Views(AUT_run.m_aut, AUT_run.app);
 		software = new Software(AUT_run.m_aut, AUT_run.app);
+		eigenleistung = new Eigenleistung(AUT_run.m_aut, AUT_run.app);
 		pat = new Patients(AUT_run.m_aut, AUT_run.app);
 		invoice = new Invoice(AUT_run.m_aut, AUT_run.app);
-		// perspectives.initialSetup();
+		artikelstamm = new Artikelstamm(AUT_run.m_aut, AUT_run.app, perspectives);
+		
+		perspectives.initialSetup();
 	}
-
+	
+	private static void showVars(){
+		components.forEach((k, v) -> {
+			if (v == null)
+				Utils.dbg_msg(k + " is null");
+			else if (v.m_aut == null)
+				Utils.dbg_msg(k + ".m_aut is null");
+			else
+				Utils.dbg_msg(k + " connected " + v.m_aut.isConnected() + " v" + v);
+		});
+	}
+	
 	public void testTextInput(ComponentIdentifier<TextInputComponent> cid, String char2test){
 		Utils.dbg_msg(
 			AUT_run.Keyboard_Locale.toString() + " testTextInput: " + cid + " with " + char2test);
 		TextInputComponent tic = SwtComponents.createTextInputComponent(cid);
 		c.synchronizedTextReplace(cid, "");//$NON-NLS-1$
-
+		
 		for (int i = 0, n = char2test.length(); i < n; i++) {
 			String tst_string = char2test.substring(i, i + 1);
 			try {
@@ -82,35 +114,37 @@ public class Smoketest {
 			}
 		}
 	}
-
+	
 	private void testAllChars(){
 		@SuppressWarnings("unchecked")
 		ComponentIdentifier<TextInputComponent> text_intput_to_use = OM.Patienten_SelectName_grc; //$NON-NLS-1$
 		String normal = "01234567890 abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 		String extras = "+\"*%&/()=?_:;,.-<>|@#|[]{}\\";
 		String problems = "äöüéàè¼{½¬€";
-
+		
 		List<String> myList = Arrays.asList(normal, extras, problems);
 		myList.forEach(element -> testTextInput(text_intput_to_use, element));
-
+		
 		// We don't call synchronizedTextReplace on each element as this fails, and I don't
 		// have time to debug why, as we had no problems
 		// myList.forEach(element -> synchronizedTextReplace(text_intput_to_use, element));
 	}
-
+	
 	private static boolean miminized = false;
-
+	
 	@Test()
 	public void smoketest() throws Exception{
 		Utils.dbg_msg("smoketest miminized is " + miminized + " Medelexis " + AUT_run.isMedelexis);
-		perspectives.initialSetup();
+		Utils.dbg_msg("Calling importArtikelstamm" + AUT_run.config.get(Constants.AUT_EXE));
+		showVars();
 		if (AUT_run.isMedelexis) {
 			Utils.dbg_msg("AUT_EXE is medelexis: " + AUT_run.config.get(Constants.AUT_EXE));
 			c.clickComponent(OM.Medelexis_Abo_perspective_tbi);
 			Utils.sleepMs(5 * 1000); // wait 5 seconds: TODO: should wait till populated
 		}
-
+		
 		if (!miminized) {
+			showVars();
 			software.showAbout("first");
 			if (AUT_run.isMedelexis) {
 				Utils.dbg_msg("AUT_EXE is medelexis" + AUT_run.config.get(Constants.AUT_EXE));
@@ -120,26 +154,27 @@ public class Smoketest {
 				AUT_run.restartApp(m_aut);
 				perspectives.initialSetup();
 			}
+			showVars();
 			software.showAbout("second");
 			Utils.dbg_msg("Calling importArtikelstamm" + AUT_run.config.get(Constants.AUT_EXE));
 			artikelstamm.importArtikelstamm(null);
 		}
-
+		
 		String leisungs_name = "Motorfaehigkeit testen";
 		eigenleistung.createEigenleistung("mfk", leisungs_name, 5000, 8000, 10);
-
+		
 		pat.createPatient("Testperson", "ArmesWesen", "31.01.1990");
 		perspectives.openPatientenPerspective();
-
+		
 		// We need swiss base feature to be able to invoice!
 		pat.createCase("KVG", "Husten", "Testperson", "Nr. 34.56", "24.12.14");
 		pat.createConsultation("Scheint ein Simulant zu sein", "Kann gut fabulieren");
-
+		
 		if (!miminized) {
-			pat.artikelstammItemVerrechnen("CYKLOKAPRON");
+			pat.artikelstammItemVerrechnen(artikelstamm, "CYKLOKAPRON");
 		}
-		pat.eigenleistungVerrechnen(leisungs_name.substring(0, 4));
-
+		pat.eigenleistungVerrechnen(eigenleistung, leisungs_name.substring(0, 4));
+		
 		pat.invoiceActiveConsultation();
 		String test = invoice.getInvoicesAsString("invoice/after_first_invoice.png");
 		Pattern p = Pattern.compile("[0-9]{4}.*Testperson.*ArmesWesen.*1990");
@@ -149,7 +184,7 @@ public class Smoketest {
 			+ "> returns found " + found);
 		Assert.assertTrue(found);
 	}
-
+	
 	@AfterClass
 	public static void teardown() throws Exception{
 		Utils.dbg_msg("Smoketest.teardown"); //$NON-NLS-1$

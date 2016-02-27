@@ -244,6 +244,7 @@ public class Common {
 				mbr.waitForComponent(Constants.ONE_SECOND * 30, Constants.NR_MS_WAIT_AFTER_ACTION),
 				null);
 			m_aut.execute(mbr.selectMenuEntryByTextpath(menu, Operator.matches), null);
+			Utils.dbg_msg(String.format("openMenu %s done", menu)); //$NON-NLS-1$		
 			return true;
 		} catch (ExecutionException | CommunicationException e) {
 			String msg = String.format("openMenu %s after 5 second failed", menu + //$NON-NLS-1$
@@ -300,6 +301,10 @@ public class Common {
 		TextInputComponent tic = SwtComponents.createTextInputComponent(cid);
 		m_aut.execute(tic.waitForComponent(Constants.ONE_SECOND, 0), null);
 		try {
+			m_aut.execute(tic.checkEnablement(true), null);
+			Utils.dbg_msg("synchronizedTextReplace: is enabled");
+			m_aut.execute(tic.checkEditability(true), null);
+			Utils.dbg_msg("synchronizedTextReplace: is editable");
 			String changedValue = filter ? newValue.replaceAll("[^\\w\\s\\.-_/]", "_") : newValue; // Stuff like üis not possible
 			Thread.sleep(100);
 			Utils.dbg_msg(String.format("synchronizedTextReplace: %s -> %s %s", cid.toString(),
@@ -307,7 +312,8 @@ public class Common {
 			m_aut.execute(tic.replaceText(changedValue), null);
 			Thread.sleep(100);
 			m_aut.execute(tic.checkText(changedValue, Operator.equals), null);
-		} catch (InterruptedException | ActionException | CheckFailedException e) {
+		} catch (InterruptedException | ActionException | CheckFailedException
+				| IllegalArgumentException e) {
 			String msg = String.format("synchronizedTextReplace: new: %s  error %s", newValue,
 				e.getMessage());
 			Utils.dbg_msg(msg);

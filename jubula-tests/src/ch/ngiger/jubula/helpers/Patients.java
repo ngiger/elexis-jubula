@@ -34,8 +34,6 @@ import ch.ngiger.jubula.elexiscore.OM;
 public class Patients extends Common {
 
 	private Views views = null;
-	private Eigenleistung eigenleistung = null;
-	private Artikelstamm artikelstamm = null;
 	private Perspectives perspectives = null;
 
 	public Patients(AUT aut, Application app){
@@ -43,8 +41,6 @@ public class Patients extends Common {
 		Utils.dbg_msg("Patients init " + m_aut + " app " + m_app);
 		perspectives = new Perspectives(aut, app);
 		views = new Views(aut, app);
-		eigenleistung = new Eigenleistung(aut, app);
-		artikelstamm = new Artikelstamm(aut, app);
 	}
 
 	private String family_name;
@@ -316,6 +312,7 @@ public class Patients extends Common {
 		waitForWindowClose(second_window);
 		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "cons/should_have_created_kons.png"); //$NON-NLS-1$
 		clickComponent(OM.Kons_Texteingabe_txf);
+		Utils.sleep1second(); // TODO: why???
 		synchronizedTextReplace(OM.Kons_Texteingabe_txf, info);
 		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "cons/kons_10.png"); //$NON-NLS-1$
 
@@ -338,7 +335,7 @@ public class Patients extends Common {
 	/*
 	 * We assume an open consultation
 	 */
-	public void eigenleistungVerrechnen(String item){
+	public void eigenleistungVerrechnen(Eigenleistung eigenleistung, String item){
 		Utils.dbg_msg("eigenleistungVerrechnen: " + item); //$NON-NLS-1$
 		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "cons/eigenleistung/start.png"); //$NON-NLS-1$
 		perspectives.openPatientenPerspective();
@@ -379,7 +376,7 @@ public class Patients extends Common {
 		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "cons/invoice/active_done.png"); //$NON-NLS-1$
 	}
 
-	public void artikelstammItemVerrechnen(String item){
+	public void artikelstammItemVerrechnen(Artikelstamm artikelstamm, String item){
 		Utils.dbg_msg("artikelstammItemVerrechnen: " + item); //$NON-NLS-1$
 		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "cons/artikel/start.png"); //$NON-NLS-1$
 		perspectives.openPatientenPerspective();
