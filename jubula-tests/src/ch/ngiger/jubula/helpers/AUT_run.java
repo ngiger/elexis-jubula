@@ -34,7 +34,7 @@ public class AUT_run {
 	public static AUT m_aut;
 	public static String SAVE_RESULTS_DIR = null;
 	public static Application app = null;
-	
+
 	/** the logger */
 	// private static Logger log = LoggerFactory.getLogger(AUT_run.class);
 	public static final String AUT_ID = "elexis_3_1"; //$NON-NLS-1$
@@ -45,7 +45,7 @@ public class AUT_run {
 	private static java.nio.file.Path ElexisLog =
 		Paths.get(System.getProperty("user.home") + "/elexis/logs/elexis-3.log");
 	public static boolean isMedelexis = false;
-	
+
 	private static void setupConfig(){
 		config.put(Constants.AGENT_HOST, "localhost");
 		config.put(Constants.AGENT_PORT, "6333");
@@ -88,27 +88,38 @@ public class AUT_run {
 				"-eclipse.password ~/.medelexis.dummy.password " + config.get(Constants.AUT_VM_ARGS)
 					+ " -Dprovisioning.UpdateRepository=" + variant);
 		}
-		
 		config.put(Constants.AUT_KEYBOARD, "de_DE");
+		overrideConfigWithEnvAndProperties();
+		dumpConfig("After setupConfig");
+	}
+
+	private static void overrideConfigWithEnvAndProperties(){
 		for (Map.Entry<String, String> entry : config.entrySet()) {
 			String from_env = System.getenv(entry.getKey());
 			if (from_env != null) {
 				config.put(entry.getKey(), from_env);
-				Utils.dbg_msg("Config : from env " + from_env + " for " + entry.getKey() + " is: "
-					+ entry.getValue());
+				Utils.dbg_msg("Config : override from env " + from_env + " for " + entry.getKey()
+					+ " was: " + entry.getValue());
 			}
 			String value = System.getProperty(entry.getKey());
 			if (value != null) {
-				Utils.dbg_msg("Config : from property " + value + " for " + entry.getKey() + " is: "
-					+ entry.getValue());
+				Utils.dbg_msg("Config : override from property " + value + " for " + entry.getKey()
+					+ " was: " + entry.getValue());
 				config.put(entry.getKey(), value);
 			}
-			Utils.dbg_msg("Config : " + entry.getKey() + " is: " + entry.getValue());
 		}
 	}
-	
+
+	private static void dumpConfig(String info){
+		Utils.dbg_msg(info);
+		for (Map.Entry<String, String> entry : config.entrySet()) {
+			Utils.dbg_msg("Config: " + entry.getKey() + " => " + entry.getValue());
+		}
+		Utils.getWriter().flush();
+	}
+
 	public static class AgentThread extends Thread {
-		
+
 		@Override
 		public void run(){
 			Utils.dbg_msg("In AgentThread run");
@@ -136,19 +147,19 @@ public class AUT_run {
 			}
 		}
 	}
-	
+
 	private static void startAutagent(){
 		Utils.dbg_msg("Calling startAutagent ");
 		agent_thread = new AgentThread();
 		agent_thread.start();
 	}
-	
+
 	public static void activate(AUT aut){
 		Utils.dbg_msg("Calling activate " + aut);
 		aut.execute(app.activate(AUTActivationMethod.titlebar), null);
 		Utils.dbg_msg("Calling activate done");
 	}
-	
+
 	public static AUT startAUT(){
 		AUTIdentifier aut_id = null;
 		AUT new_aut = null;
@@ -165,7 +176,7 @@ public class AUT_run {
 				Utils.dbg_msg("startAUT failed: aut_id " + aut_id + " " + e.getMessage()); //$NON-NLS-1$
 				takeScreenshot(m_aut, app, "try_start_.png");
 				aut_id = m_agent.startAUT(aut_config);
-				
+
 			}
 			Utils.dbg_msg("Calling startAUT returned " + aut_id);
 			if (aut_id != null) {
@@ -179,18 +190,18 @@ public class AUT_run {
 			}
 			Utils.dbg_msg("AUT activate via titlebar");
 			activate(new_aut);
-			
+
 			Utils.dbg_msg("AUT created and activated");
 		} catch (ActionException | CommunicationException e) {
 			Utils.dbg_msg("Action Exception startAUT reason: " + e.getMessage()); //$NON-NLS-1$
 			takeScreenshot(m_aut, app, "start_aut_failed.png");
 			Assert.fail("unable to start AUT"); //$NON-NLS-1$
-			
+
 		}
 		m_aut = new_aut;
 		return new_aut;
 	}
-	
+
 	@BeforeClass
 	public static void setUp() throws Exception{
 		Utils.setupResultDir();
@@ -201,23 +212,18 @@ public class AUT_run {
 		} catch (IOException e) {
 			Utils.dbg_msg("Did not delete " + ElexisLog.toAbsolutePath());
 		}
-		
+
 		/*
 		 * Connecting to external Jubula AUT Agent which must be started
 		 * manually BEFORE test execution!
 		 */
-		String msg = "AUT_run.setup port : " + Constants.AGENT_PORT + " is: "
-			+ config.get(Constants.AGENT_PORT) + " env: "
-			+ System.getenv().get(Constants.AGENT_PORT) + " property: "
-			+ System.getProperty(Constants.AGENT_PORT);
-		Utils.dbg_msg(msg);
 		m_agent = MakeR.createAUTAgent(config.get(Constants.AGENT_HOST),
 			new Integer(config.get(Constants.AGENT_PORT)));
-			
+
 		try {
 			m_agent.connect();
 		} catch (org.eclipse.jubula.client.exceptions.CommunicationException e) {
-			Utils.sleep1second(); // Give it some time to start. 
+			Utils.sleep1second(); // Give it some time to start.
 			// Needed some times when starting without a running agent
 			startAutagent();
 			Utils.sleepMs(Constants.ONE_SECOND * 5); // Give it some time to
@@ -226,22 +232,21 @@ public class AUT_run {
 				+ config.get(Constants.AGENT_PORT));
 			m_agent.connect();
 		}
-		String[] args = {
-			config.get(Constants.AUT_VM_ARGS)
-		};
-		Utils.dbg_msg("Start AUT: arg " + args[0] + "\n   exe: " + config.get(Constants.AUT_EXE)
-			+ "\n  workdir:" + config.get(Constants.WORK_DIR) + "\n  AUT_ID: "
-			+ config.get(Constants.AUT_ID));
 		if (!(new File(config.get(Constants.AUT_EXE))).canExecute()) {
 			Assert.fail("EXE File " + config.get(Constants.AUT_EXE)
 				+ " does not exist or cannot be executed");
 		}
-		System.out.println("Language is " + config.get(Constants.AUT_LOCALE));
-		System.out.println("Keyboard Layout is " + config.get(Constants.AUT_KEYBOARD));
-		System.out.println("Default is " + Locale.getDefault());
-		System.out.println("German is " + Locale.GERMANY + " " + Locale.GERMAN);
-		System.out.println("Swiss_German is " + Locale.forLanguageTag("de_CH"));
-		System.out.println("Keyboard_Locale: " + Keyboard_Locale.toString());
+		String[] args = {
+			config.get(Constants.AUT_VM_ARGS)
+		};
+		String args_as_string = config.get(Constants.AUT_VM_ARGS);
+		Utils.dbg_msg("Start AUT: aut_id  " + config.get(Constants.AUT_ID) + "\ncd "
+			+ config.get(Constants.WORK_DIR) + "\n" + "\n" + config.get(Constants.AUT_EXE) + " "
+			+ args_as_string);
+		Utils.dbg_msg("Default is " + Locale.getDefault());
+		Utils.dbg_msg("German is " + Locale.GERMANY + " " + Locale.GERMAN);
+		Utils.dbg_msg("Swiss_German is " + Locale.forLanguageTag("de_CH"));
+		Utils.dbg_msg("Keyboard_Locale: " + Keyboard_Locale.toString());
 		aut_config = new RCPAUTConfiguration("ch.elexis.core.application", //$NON-NLS-1$
 			config.get(Constants.AUT_ID), config.get(Constants.AUT_EXE),
 			config.get(Constants.WORK_DIR), args, Locale.US);
@@ -250,7 +255,7 @@ public class AUT_run {
 		Utils.dbg_msg("AUT createApplication");
 		app = SwtComponents.createApplication();
 	}
-	
+
 	public static void takeScreenshotActiveWindow(AUT aut, Application app, String imageName){
 		String fullname =
 			new File(config.get(Constants.RESULT_DIR) + "/" + imageName).getAbsolutePath();
@@ -259,16 +264,19 @@ public class AUT_run {
 			aut.execute(
 				app.takeScreenshotOfActiveWindow(fullname, 0, "rename", 100, true, 0, 0, 0, 0),
 				null);
-			boolean foundFile =
-				Files.exists(new File(config.get(Constants.RESULT_DIR) + "/" + imageName).toPath(),
+			String agent_host = config.get(Constants.AGENT_HOST);
+			if (agent_host.toLowerCase().equals("localhost")) {
+				boolean foundFile = Files.exists(
+					new File(config.get(Constants.RESULT_DIR) + "/" + imageName).toPath(),
 					LinkOption.NOFOLLOW_LINKS);
-			Utils.dbg_msg("Created " + fullname + " exists " + foundFile);
-			Assert.assertTrue(foundFile);
+				Utils.dbg_msg("Created " + fullname + " exists " + foundFile);
+				Assert.assertTrue(foundFile);
+			}
 		} catch (ActionException e) {
 			Utils.dbg_msg("Action Exception " + fullname + " reason: " + e.getMessage());
 		}
 	}
-	
+
 	public static void takeScreenshot(AUT aut, Application app, String imageName){
 		String fullname =
 			new File(config.get(Constants.RESULT_DIR) + "/" + imageName).getAbsolutePath();
@@ -277,7 +285,7 @@ public class AUT_run {
 			if (aut == null || app == null) {
 				Utils.dbg_msg("skip as null for m_aut " + m_aut + " or app " + app);
 			} else {
-				
+
 				aut.execute(app.takeScreenshot(fullname, 1000, "rename", 100, true), null);
 				boolean foundFile = Files.exists(
 					new File(config.get(Constants.RESULT_DIR) + "/" + imageName).toPath(),
@@ -290,7 +298,7 @@ public class AUT_run {
 			// Assert.fail("Unable to create screenshot " + imageName);
 		}
 	}
-	
+
 	public static void stopAut(AUT aut){
 		Utils.dbg_msg("stopAut " + aut + " isCon " + aut.isConnected());
 		if (aut != null && aut.isConnected()) {
@@ -299,6 +307,7 @@ public class AUT_run {
 		}
 		Utils.dbg_msg("stoppedAut " + aut);
 	}
+
 	/** cleanup */
 	@AfterClass
 	public static void tearDown() throws Exception{
@@ -319,7 +328,7 @@ public class AUT_run {
 		Utils.getWriter().close();
 		saveLogs();
 	}
-	
+
 	private static void saveLogs(){
 		java.nio.file.Path newdir = Paths.get(SAVE_RESULTS_DIR, "elexis-3.log");
 		try {
@@ -328,7 +337,7 @@ public class AUT_run {
 			// Just ignore this error, probably we had no elexis log
 		}
 	}
-	
+
 	public static AUT restartApp(AUT aut){
 		Utils.dbg_msg(
 			"AUT_run.restartApp " + aut + " aut " + (aut != null ? aut.isConnected() : "null"));
@@ -340,5 +349,5 @@ public class AUT_run {
 		Utils.sleep1second();
 		return startAUT();
 	}
-	
+
 }

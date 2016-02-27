@@ -49,6 +49,20 @@ h3. pending improvements
 
 h2. concepts
 
+h3. config variables for the Java main class AUT_run
+
+The following config entities can be changed via an environment variable or a Java system property. The default values are show here:
+
+- aut_id := @elexis@
+- work_dir := @/opt/src/elexis-jubula/jubula-tests@
+- agent_host := @localhost@
+- aut_keyboard := @de_DE@
+- aut_exe := @/opt/src/elexis-jubula/work/Elexis3@
+- agent_port := @6333@
+- aut_vm_args := @-nl de_DE -clean -vmargs -Declipse.p2.unsignedPolicy=allow -Dautagent_port=6333 -Dautagent_host=localhost -Dch.elexis.username=007 -Dch.elexis.password=topsecret  -Delexis-run-mode@
+
+h3. config variables for the rake 
+
 Config-Variables are accessed via the Hash Config and stored as follows:
 
 * "defaults.yaml":defaults.yaml default definition which common for all tests
@@ -78,6 +92,7 @@ The following arguments were against:
 * Jubula 8.2 is quite large (almost 900 MB) after the installation. We are able to zip the needed autagent to about 55MB.
 * We want to install Jubula only once on the target host
 * As moved to using the "ClientAPI":http://www.bredex.de/blog_article_en/jubula-client-api.html we could get rid of using dbtool, etc.
+* It proved easy to build a autagent for all our supported environments. It is only necessary to add the @-vm /usr/bin/java@ to avoid @No Java virtual machine was found@
 
 h3. testing inside docker
 
@@ -120,7 +135,25 @@ The following steps are needed.
 * Update jubula_root and jubula_version in scripts/defaults.yaml to the new version
 * Replace assets/rcp-support.zip by the locally downloaded new version, e.g. /opt/jubula_8.2.2.050/development/rcp-support.zip
 
-h1. pitfalls
+h1. developping new tests
 
-If you use a logger inside a test, running via maven may block. E.g. testsuites/Screenshot.java
+The most convenient method for me is to use the Jubula feature to run the AUT on a different host (a VirtualBox) than the test. This allows breaking anywhere in the test code, stepping, etc. without interfering with my keyboard clicks and being able to see the AUT-GUI.
 
+The following steps were needed
+* Run my favorite Eclipse-IDE on my desktop (localhost)
+* Booting a Virtual Machine with Debian Wheezy (hostname is wheezy)
+* @git clone git@github.com:ngiger/elexis-jubula.git /same/path@ on both my localhost and wheezy
+* on wheezy
+** @cd /same/path && mvn clean install@
+** Install the Elexis to be tested in the subdirectory work either
+*** by any method you are familiar with (and install the Jubula rc.rcp support) or
+*** @cd /same/path && rake elexis_install_os@
+** In a terminal of the wheezy GUI call @cd /same/path && org.eclipse.jubula.product.autagent.start/target/products/org.eclipse.jubula.product.autagent.start/linux/gtk/x86_64/autagent -vm /usr/bin/java -l -p 6333&@
+* On the localhost
+** Import the elexis-jubula test
+*** Set a breakpoint in the method @openMenu@ in @jubula-tests/src/ch/ngiger/jubula/helpers/Common.java@
+** Open the menu "Run/Debug Configuration..". 
+*** Select the JUnit target Elexis_Jubula. Verify that in the tab
+*** Select the Test class to the test you want to run, e.g. @ch.ngiger.jubula.testsuites.Smoketest@
+*** In the tab "Arguments" set "VM arguments" to @-Dagent_host=wheezy@
+*** Choose Debug. If everything is okay it will connect to the autagent, start Elexis and begin executing the tests, which will quite soon open a menu.
