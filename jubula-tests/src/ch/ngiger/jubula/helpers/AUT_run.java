@@ -156,7 +156,7 @@ public class AUT_run {
 
 	public static void activate(AUT aut){
 		Utils.dbg_msg("Calling activate " + aut);
-		aut.execute(app.activate(AUTActivationMethod.titlebar), null);
+		aut.execute(app.activate(AUTActivationMethod.autDefault), null);
 		Utils.dbg_msg("Calling activate done");
 	}
 

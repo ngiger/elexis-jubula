@@ -13,7 +13,6 @@ package ch.ngiger.jubula.helpers;
 import java.io.File;
 
 import org.eclipse.jubula.client.AUT;
-import org.eclipse.jubula.qa.api.converter.target.rcp.RuntimeContext;
 import org.eclipse.jubula.toolkit.concrete.ConcreteComponents;
 import org.eclipse.jubula.toolkit.concrete.components.Application;
 import org.eclipse.jubula.toolkit.concrete.components.TableComponent;
@@ -21,7 +20,6 @@ import org.eclipse.jubula.toolkit.enums.ValueSets.InteractionMode;
 import org.eclipse.jubula.toolkit.enums.ValueSets.Modifier;
 import org.eclipse.jubula.toolkit.enums.ValueSets.Operator;
 import org.eclipse.jubula.toolkit.enums.ValueSets.Unit;
-import org.junit.Assert;
 
 import ch.ngiger.jubula.elexiscore.OM;
 
@@ -41,13 +39,13 @@ public class Artikelstamm extends Common {
 	public String checkDefaultArtikelstamm(String filename){
 		String full_name = filename;
 		if (filename == null) {
-			filename = AUT_run.class.getClassLoader()
-				.getResource(RuntimeContext.DEFAULT_ARTIKELSTAMM).getPath();
-			full_name = System.getProperty("user.dir") + filename;
+			return null;
 		}
 		File stamm = new File(full_name);
-		Assert.assertTrue("Stamm must exist and be readable: " + full_name, //$NON-NLS-1$
-			stamm.canRead());
+		if (!stamm.canRead()) {
+			Utils.dbg_msg("Stamm must exist and be readable: " + full_name);//$NON-NLS-1$
+			return null;
+		}
 		return full_name;
 	}
 
@@ -74,11 +72,16 @@ public class Artikelstamm extends Common {
 	}
 
 	@SuppressWarnings("unchecked")
-	public void importArtikelstamm(String filename){
+	public boolean importArtikelstamm(String filename){
 		filename = checkDefaultArtikelstamm(filename);
+		if (filename == null) {
+			return false;
+		}
 		File stamm = new File(filename);
-		Assert.assertTrue("Stamm must exist and be readable: " + stamm.getAbsolutePath(), //$NON-NLS-1$
-			stamm.canRead());
+		if (!stamm.canRead()) {
+			Utils.dbg_msg("Stamm must exist and be readable: " + stamm.getAbsolutePath()); //$NON-NLS-1$
+			return false;
+		}
 
 		m_perspectives.openPerspectiveByName("Artikel");
 		waitForElexisMainWindow(Constants.ONE_SECOND);
@@ -118,6 +121,7 @@ public class Artikelstamm extends Common {
 			"import_artikelstamm/Artikelstamm_Import_done.png"); //$NON-NLS-1$
 
 		selectFirstItemMatching("ASPIRIN");
+		return true;
 
 	}
 
