@@ -149,9 +149,11 @@ exit $status
     puts "Starting testexec in docker: #{cmd}"
     store_cmd('testexec.sh', cmd)
     begin
-      res = @docker.exec_in_docker('./testexec.sh')
+      cmd_name = './testexec.sh'
+      res = @docker.exec_in_docker(cmd_name)
       puts "res of testexec.sh is #{res}"
       sleep(0.5)
+      FileUtils.rm_f(cmd_name)
       if res == 0 && /smoketest/i.match(@test_params[:test_to_run])
         # Copy newly installed plugins for further tests back
         FileUtils.cp_r(File.join(@docker.container_home, 'work'), WorkDir, verbose: true)
