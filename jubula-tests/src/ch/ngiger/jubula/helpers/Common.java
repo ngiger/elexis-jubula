@@ -241,13 +241,13 @@ public class Common {
 	public boolean openMenu(String menu){
 		try {
 			m_aut.execute(
-				mbr.waitForComponent(Constants.ONE_SECOND * 30, Constants.NR_MS_WAIT_AFTER_ACTION),
+				mbr.waitForComponent(Constants.ONE_SECOND * 120, Constants.NR_MS_WAIT_AFTER_ACTION),
 				null);
 			m_aut.execute(mbr.selectMenuEntryByTextpath(menu, Operator.matches), null);
 			Utils.dbg_msg(String.format("openMenu %s done", menu)); //$NON-NLS-1$		
 			return true;
 		} catch (ExecutionException | CommunicationException e) {
-			String msg = String.format("openMenu %s after 5 second failed", menu + //$NON-NLS-1$
+			String msg = String.format("openMenu %s after 120 second failed", menu + //$NON-NLS-1$
 				" " + e.getMessage()); //$NON-NLS-1$
 			Utils.dbg_msg(msg);
 			e.printStackTrace(Utils.getWriter());

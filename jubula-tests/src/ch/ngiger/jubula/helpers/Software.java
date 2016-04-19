@@ -34,19 +34,27 @@ public class Software extends Common {
 	}
 
 	private static String root = "sw_inst/";
+	public static boolean artikelstamm_v4 = false;
 
 	private void handleAboutDetail(String abbrev, String name){
 		@SuppressWarnings("rawtypes")
 		ComponentIdentifier tab_id =
 			OM.AboutElexisOpenSource_ElexisOpenSourceInstallatio0_TabFolder_1_tpn;
 		// Select tab, take screenshot and save
-		Utils.dbg_msg("handleAboutDetail: " + abbrev + " => " + name);
+    Utils.dbg_msg("handleAboutDetail: " + abbrev + " => " + name);
 		AUT_run.m_aut.execute(AUT_run.app.copyTextToClipboard("empty"), null);
 		selectTabByValue(tab_id, name);
 		Utils.sleep1second(); // It takes some time to construct the view
 		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, root + "about_" + abbrev + ".png");
 		String info = getTextFromCompent(tab_id);
 		if (info != null && !info.startsWith("empty")) {
+		  if (info.contains("at.medevit.ch.artikelstamm.elexis.common (3.2"))
+		  {
+        Utils.dbg_msg("handleAboutDetail: found artikelstamm_v4");
+        artikelstamm_v4 = true;
+      } else  {
+        Utils.dbg_msg("handleAboutDetail: NO artikelstamm_v4 found");
+		  }
 			writeStringToResultsFile(info, root + "about_" + abbrev + ".txt");
 		}
 	}

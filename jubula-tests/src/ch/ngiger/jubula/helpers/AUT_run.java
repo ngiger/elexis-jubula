@@ -6,7 +6,10 @@ import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -51,17 +54,28 @@ public class AUT_run {
 		config.put(Constants.AGENT_PORT, "6333");
 		config.put(Constants.WORK_DIR, USER_DIR);
 		Path elexis3 = Paths.get(USER_DIR + "/../work/Elexis3");
-		Path medelexis3 = Paths.get(USER_DIR + "/../work/Medelexis");
-		if (elexis3.toFile().canExecute()) {
-			config.put(Constants.AUT_EXE, elexis3.toAbsolutePath().normalize().toString());
+		Path medelexis3 = null;
+    if (elexis3.toFile().canExecute()) {
+      config.put(Constants.AUT_EXE, elexis3.toAbsolutePath().normalize().toString());
 		} else {
-			if (medelexis3.toFile().canExecute()) {
-				isMedelexis = true;
-				config.put(Constants.AUT_EXE, medelexis3.toAbsolutePath().normalize().toString());
-			} else {
-				Utils.dbg_msg(
-					"Could not find an executable Elexis3  " + elexis3.toAbsolutePath().toString()
-						+ " nor " + medelexis3.toAbsolutePath().toString());
+      String variant = System.getenv("VARIANT");
+			medelexis3 = Paths.get(USER_DIR + "/../work/Medelexis");
+			isMedelexis = true;
+			config.put(Constants.AUT_EXE, medelexis3.toAbsolutePath().normalize().toString());
+			config.put(Constants.AUT_VM_ARGS,
+				"-eclipse.password ~/.medelexis.dummy.password " + config.get(Constants.AUT_VM_ARGS)
+					+ " -Dprovisioning.UpdateRepository=" + variant);
+			Path prefs =
+				Paths.get(USER_DIR + "/../work/configuration/.settings/MedelexisDesk.prefs");
+			if (!prefs.toFile().canRead()) {
+				List<String> lines = Arrays.asList(new String[] {
+					"eclipse.preferences.version=1",
+					"usageConditionAcceptanceDate=" + LocalDateTime.now().toString(),
+					"usageConditionAccepted=true"
+				});
+				try {
+					Files.write(prefs, lines);
+				} catch (IOException e) {}
 			}
 		}
 		config.put(Constants.AUT_LOCALE, "de_DE");
@@ -79,15 +93,6 @@ public class AUT_run {
 				+ config.get(Constants.AGENT_HOST)
 				+ " -Dch.elexis.username=007 -Dch.elexis.password=topsecret "
 				+ " -Delexis-run-mode=RunFromScratch");
-		if (isMedelexis) {
-			String variant = System.getenv("VARIANT");
-			if (variant == null) {
-				variant = "snapshot";
-			}
-			config.put(Constants.AUT_VM_ARGS,
-				"-eclipse.password ~/.medelexis.dummy.password " + config.get(Constants.AUT_VM_ARGS)
-					+ " -Dprovisioning.UpdateRepository=" + variant);
-		}
 		config.put(Constants.AUT_KEYBOARD, "de_DE");
 		overrideConfigWithEnvAndProperties();
 		dumpConfig("After setupConfig");
@@ -232,7 +237,8 @@ public class AUT_run {
 				+ config.get(Constants.AGENT_PORT));
 			m_agent.connect();
 		}
-		if (!(new File(config.get(Constants.AUT_EXE))).canExecute()) {
+		if (config.get(Constants.AGENT_HOST) == null
+			&& !(new File(config.get(Constants.AUT_EXE))).canExecute()) {
 			Assert.fail("EXE File " + config.get(Constants.AUT_EXE)
 				+ " does not exist or cannot be executed");
 		}

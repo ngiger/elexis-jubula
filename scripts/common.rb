@@ -62,7 +62,7 @@ def unzip(zip_file, should_create)
   return if Dir.glob(should_create).size > 0
   puts "Unzipping #{zip_file}"
   return if DRY_RUN
-  system("unzip -o #{zip_file}", MAY_FAIL) # sometimes it returns bogus errors
+  system("unzip -q -o #{zip_file}", MAY_FAIL) # sometimes it returns bogus errors
   puts "Unzipped #{zip_file}"
   fail "unzip did not create #{should_create}" unless Dir.glob(should_create).size > 0
 end

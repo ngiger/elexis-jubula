@@ -70,7 +70,8 @@ public class Eigenleistung extends Common {
 
 		selectEigenleistung(description);
 		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "eigenleistung/3_chars.png"); //$NON-NLS-1$
-		selectTabByValue(OM.Eigenleistung_Table_1_tbl,description);
+//		selectTabByValue(OM.Eigenleistung_Table_1_tbl,description); // got: Operation not supported by the selected toolkit
+		clickComponent(OM.Eigenleistung_Table_1_tbl);
 		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "eigenleistung/show.png"); //$NON-NLS-1$
 	}
 

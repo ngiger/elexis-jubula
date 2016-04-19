@@ -131,14 +131,14 @@ public class Smoketest {
 	}
 
 	private static final boolean install_and_show_sw = true;
-	private static final boolean with_artikelstamm = false;
+	private static final boolean with_artikelstamm = true;
 
 	@Test()
 	public void smoketest() throws Exception{
-		Utils.dbg_msg("smoketest miminized is " + install_and_show_sw + " with_artikelstamm "
+		Utils.dbg_msg("smoketest install_and_show_sw is " + install_and_show_sw + " with_artikelstamm "
 			+ with_artikelstamm + " Medelexis " + AUT_run.isMedelexis);
 		Utils.dbg_msg("Calling importArtikelstamm" + AUT_run.config.get(Constants.AUT_EXE));
-		showVars();
+		// showVars();
 		if (AUT_run.isMedelexis) {
 			Utils.dbg_msg("AUT_EXE is medelexis: " + AUT_run.config.get(Constants.AUT_EXE));
 			c.clickComponent(OM.Medelexis_Abo_perspective_tbi);
@@ -146,8 +146,8 @@ public class Smoketest {
 		}
 
 		if (install_and_show_sw) {
-			showVars();
-			software.showAbout("first");
+			//			showVars();
+			//software.showAbout("first");
 			if (AUT_run.isMedelexis) {
 				Utils.dbg_msg("AUT_EXE is medelexis" + AUT_run.config.get(Constants.AUT_EXE));
 				c.openMenu("Datei/Beenden");
@@ -161,19 +161,18 @@ public class Smoketest {
 			Utils.dbg_msg("Calling importArtikelstamm" + AUT_run.config.get(Constants.AUT_EXE));
 		}
 		if (with_artikelstamm) {
-			String filename = AUT_run.class.getClassLoader()
-				.getResource("rsc/artikelstamm_first_v4.xml").getPath();
-			boolean result_v4 =
-				artikelstamm.importArtikelstamm(System.getProperty("user.dir") + filename);
-			Utils.dbg_msg("result_v4: " + result_v4);
-			if (!result_v4) {
-				filename = AUT_run.class.getClassLoader()
-					.getResource("rsc/artikelstamm_first_v3.xml").getPath();
-				boolean result_v3 =
-					artikelstamm.importArtikelstamm(System.getProperty("user.dir") + filename);
-				Utils.dbg_msg("result_v3: " + result_v3);
-				Assert.assertTrue(result_v3);
-			}
+      String filename = "";
+      if (software.artikelstamm_v4) {
+        filename = AUT_run.class.getClassLoader()
+          .getResource("rsc/artikelstamm_first_v4.xml").getPath();
+      } else {
+        filename = AUT_run.class.getClassLoader()
+          .getResource("rsc/artikelstamm_first_v3.xml").getPath();
+      }
+      boolean result =
+        artikelstamm.importArtikelstamm(System.getProperty("user.dir") + filename);
+      Utils.dbg_msg("result: " + result);
+      Assert.assertTrue(result);
 		}
 
 		String leisungs_name = "Motorfaehigkeit testen";
