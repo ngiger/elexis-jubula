@@ -261,6 +261,11 @@ public class AUT_run {
 	}
 
 	public static void takeScreenshotActiveWindow(AUT aut, Application app, String imageName){
+		if (!aut.isConnected())
+		{
+			Utils.dbg_msg("Request takeScreenshot failed (not connected) for " + imageName);
+			return;
+		}
 		String fullname =
 			new File(config.get(Constants.RESULT_DIR) + "/" + imageName).getAbsolutePath();
 		Utils.dbg_msg("Request takeScreenshotActiveWindow " + fullname + " for " + imageName);
@@ -282,6 +287,11 @@ public class AUT_run {
 	}
 
 	public static void takeScreenshot(AUT aut, Application app, String imageName){
+		if (!aut.isConnected())
+		{
+			Utils.dbg_msg("Request takeScreenshot failed (not connected) for " + imageName);
+			return;
+		}
 		String fullname =
 			new File(config.get(Constants.RESULT_DIR) + "/" + imageName).getAbsolutePath();
 		Utils.dbg_msg("Request takeScreenshot " + fullname + " for " + imageName);

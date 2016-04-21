@@ -18,6 +18,7 @@ import org.eclipse.jubula.toolkit.concrete.components.Application;
 import org.eclipse.jubula.toolkit.concrete.components.TableComponent;
 import org.eclipse.jubula.toolkit.enums.ValueSets;
 import org.eclipse.jubula.toolkit.enums.ValueSets.InteractionMode;
+import org.eclipse.jubula.toolkit.enums.ValueSets.Modifier;
 import org.eclipse.jubula.toolkit.enums.ValueSets.Operator;
 import org.eclipse.jubula.toolkit.enums.ValueSets.Unit;
 import org.eclipse.jubula.toolkit.swt.components.Table;
@@ -170,19 +171,23 @@ public class Perspectives extends Common {
 	}
 
 	public void closeMultipleProblems(){
-		Utils.dbg_msg("closeMultipleProblems");
-		if (isEnabled(OM.SW_Available_Sites_Okay_btn)) {
-			Utils.dbg_msg("Smoketest clicking SW_Available_Sites_Okay_btn");
-			clickComponent(OM.SW_Available_Sites_Okay_btn);
+		int j = 0;
+		int maxTries = 15;
+		while (j < maxTries)
+		{
+			j++;
+			Utils.dbg_msg("closeMultipleProblems. Trying pressEnter " + j + " of "+maxTries + " maxTries");
+			if (j % 2 == 0) {
+				Utils.dbg_msg("press Escape");
+				AUT_run.m_aut.execute(m_app.externalKeyCombination(new Modifier[] {}, "Escape"), null);
+			} else {
+				pressEnter();
+			}
+			if (waitForWindowClose(".*Multiple problems.*", 1000)) {
+				Utils.dbg_msg("closeMultipleProblems succeeded");
+				return;
+			}
 		}
-		if (isEnabled(OM.SW_Edit_Site_Okay)) {
-			clickComponent(OM.SW_Edit_Site_Okay);
-			Utils.dbg_msg("Smoketest clicking SW_Edit_Site_Okay");
-		}
-		waitForWindowClose(".*Multiple problems.*", 1000);
-		AUT_run.takeScreenshotActiveWindow(AUT_run.m_aut, AUT_run.app,
-			"after_closeMultipleProblems.png");
-		Utils.dbg_msg("closeMultipleProblems");
 	}
 
 }

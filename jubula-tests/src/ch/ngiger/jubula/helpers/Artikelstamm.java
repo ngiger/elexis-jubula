@@ -113,9 +113,9 @@ public class Artikelstamm extends Common {
 
 		clickComponent(OM.CreatePatient_OkButton_grc); //$NON-NLS-1$
 		// Importing the artikelstamm may take a long time
-		waitForWindowClose(import_name, 120 * Constants.ONE_SECOND);
-		// runner.waitForWindow("Problem Occurred", 5 * Constants.ONE_SECOND);
-
+		// fails at this
+		Utils.sleep1second(); // Be sure that the window popped up
+		// but it might be too short to be detected!
 		waitForElexisMainWindow(60 * Constants.ONE_SECOND);
 		AUT_run.takeScreenshotActiveWindow(m_aut, m_app,
 			"import_artikelstamm/Artikelstamm_Import_done.png"); //$NON-NLS-1$
