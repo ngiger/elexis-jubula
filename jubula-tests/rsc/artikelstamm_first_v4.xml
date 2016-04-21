@@ -3074,8 +3074,10 @@ En cas de progression, il convient d’interrompre le traitement.</DSCRF>
             <PEXF>6.44</PEXF>
             <PPUB>10.2</PPUB>
             <PKG_SIZE>10</PKG_SIZE>
+            <PKG_SIZE_STRING>10 Tablette(n)</PKG_SIZE_STRING>
             <IKSCAT>D</IKSCAT>
             <PRODNO>3367001</PRODNO>
+            <MEASURE>Tablette(n)</MEASURE>
         </ITEM>
         <ITEM PHARMATYPE="P">
             <GTIN>7680336700367</GTIN>
@@ -3088,8 +3090,10 @@ En cas de progression, il convient d’interrompre le traitement.</DSCRF>
             <PEXF>11.26</PEXF>
             <PPUB>17.35</PPUB>
             <PKG_SIZE>20</PKG_SIZE>
+            <PKG_SIZE_STRING>20 Tablette(n)</PKG_SIZE_STRING>
             <IKSCAT>D</IKSCAT>
             <PRODNO>3367001</PRODNO>
+            <MEASURE>Tablette(n)</MEASURE>
         </ITEM>
         <ITEM PHARMATYPE="P">
             <GTIN>7680337020198</GTIN>
@@ -3102,8 +3106,26 @@ En cas de progression, il convient d’interrompre le traitement.</DSCRF>
             <PEXF>39.78</PEXF>
             <PPUB>58.3</PPUB>
             <PKG_SIZE>100</PKG_SIZE>
+            <PKG_SIZE_STRING>100 Tablette(n)</PKG_SIZE_STRING>
             <IKSCAT>B</IKSCAT>
             <PRODNO>3370201</PRODNO>
+            <MEASURE>Tablette(n)</MEASURE>
+        </ITEM>
+        <ITEM PHARMATYPE="P">
+            <GTIN>7680337670218</GTIN>
+            <PHAR>1245732</PHAR>
+            <DSCR>INHALANT Lös 200 ml</DSCR>
+            <DSCRF>INHALANT sol 200 ml</DSCRF>
+            <COMP>
+                <GLN>7601001000810</GLN>
+            </COMP>
+            <PEXF>27.41</PEXF>
+            <PPUB>42.25</PPUB>
+            <PKG_SIZE>200</PKG_SIZE>
+            <PKG_SIZE_STRING>200 ml</PKG_SIZE_STRING>
+            <IKSCAT>D</IKSCAT>
+            <PRODNO>3376701</PRODNO>
+            <MEASURE>ml</MEASURE>
         </ITEM>
         <ITEM PHARMATYPE="P">
             <GTIN>7680337410494</GTIN>
@@ -3116,10 +3138,12 @@ En cas de progression, il convient d’interrompre le traitement.</DSCRF>
             <PEXF>15.6906</PEXF>
             <PPUB>34.4</PPUB>
             <PKG_SIZE>30</PKG_SIZE>
+            <PKG_SIZE_STRING>30 Tablette(n)</PKG_SIZE_STRING>
             <SL_ENTRY>true</SL_ENTRY>
             <IKSCAT>B</IKSCAT>
             <DEDUCTIBLE>10</DEDUCTIBLE>
             <PRODNO>3374101</PRODNO>
+            <MEASURE>Tablette(n)</MEASURE>
         </ITEM>
         <ITEM PHARMATYPE="P">
             <GTIN>7680337670133</GTIN>
@@ -3132,8 +3156,10 @@ En cas de progression, il convient d’interrompre le traitement.</DSCRF>
             <PEXF>12.5</PEXF>
             <PPUB>19.25</PPUB>
             <PKG_SIZE>30</PKG_SIZE>
+            <PKG_SIZE_STRING>30 ml</PKG_SIZE_STRING>
             <IKSCAT>D</IKSCAT>
             <PRODNO>3376701</PRODNO>
+            <MEASURE>ml</MEASURE>
         </ITEM>
       </ITEMS>
  </ARTIKELSTAMM>
