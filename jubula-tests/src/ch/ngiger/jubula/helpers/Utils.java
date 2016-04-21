@@ -29,12 +29,36 @@ import java.util.Calendar;
 import java.util.Set;
 
 import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
 
 /**
  * @author Niklaus Giger niklaus.giger@member.fsf.org
  */
 public class Utils {
 	public static String SAVE_RESULTS_DIR = null;
+	private static String watchedLog = "Started:\n";
+	@Rule
+	public TestWatcher watchman = new TestWatcher() {
+		@Override
+		protected void failed(Throwable e, Description description){
+			watchedLog += description + "\n";
+			Utils.dbg_msg("xxx: " + description.toString());
+			e.printStackTrace(Utils.getWriter());
+			Utils.dbg_msg("afterPrint");
+
+		}
+
+		@Override
+		protected void succeeded(Description description){
+			System.out.println(description.getDisplayName());
+			Utils.dbg_msg(description.toString());
+			watchedLog += description + " " + "success!\n";
+		}
+	};
+
+	/** test generating a snapshot of the currently active window */
 
 	public static void sleep1second(){
 		sleepMs(Constants.ONE_SECOND);

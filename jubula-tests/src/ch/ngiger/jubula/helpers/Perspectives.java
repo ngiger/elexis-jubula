@@ -27,22 +27,24 @@ import org.junit.Assert;
 import ch.ngiger.jubula.Messages;
 import ch.ngiger.jubula.elexiscore.OM;
 
-/** @author BREDEX GmbH */
+/**
+ * @author BREDEX GmbH
+ */
 public class Perspectives extends Common {
-	
+
 	static boolean first_leistungen = true;
-	
+
 	public Perspectives(AUT aut, Application app){
 		super(aut, app);
 		Utils.dbg_msg("Perspectives init " + m_aut + " app " + m_app);
 	}
-	
+
 	public void resetPerspective(){
 		openMenu("Fenster/Perspektive/Reset.*");
 		waitForWindow("Reset Perspective", Constants.ONE_SECOND);
 		clickComponent(OM.ResetPerspektive_OkButton_grc); //$NON-NLS-1$
 	}
-	
+
 	private void fastOpenPerspectives(@SuppressWarnings("rawtypes") ComponentIdentifier cid,
 		String name){
 		if (componentIsEnabled(cid)) {
@@ -52,25 +54,25 @@ public class Perspectives extends Common {
 			Utils.dbg_msg("fastOpenPerspectives: " + name + " via menu");
 			openPerspectiveByName(name + ".*"); // Match (default) for Patientenübersicht
 		}
-		
+
 	}
-	
+
 	public void openAbrechnungsPerspective(){
 		fastOpenPerspectives(OM.Abrechnungen_tbi, "Abrechnung");
 	}
-	
+
 	public void openAdressenPerspective(){
 		fastOpenPerspectives(OM.Adressen_tbi, "Adressen");
 	}
-	
+
 	public void openArtikelPerspective(){
 		fastOpenPerspectives(OM.Artikel_tbi, "Artikel");
 	}
-	
+
 	public void openBestellungenPerspective(){
 		fastOpenPerspectives(OM.Bestellungen_tbi, "Bestellungen");
 	}
-	
+
 	/*
 	 * openLeistungenPerspective take some time the first time, as we have to
 	 * create all LOINC items
@@ -84,23 +86,24 @@ public class Perspectives extends Common {
 			openPerspectiveByName(name + ".*"); // Match (default) for Patientenübersicht
 			// Comment: Niklaus did see 110 second on his PC with PostgreSQL (2014.05.24)
 			Utils.sleepMs(5 * Constants.ONE_SECOND);
+			Utils.dbg_msg("waitForWindowClose:");
 			waitForWindowClose(".*Progress.*", 120 * Constants.ONE_SECOND);
 			AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "Leistungen_first_time.png"); //$NON-NLS-1$
 			first_leistungen = false;
 		} else {
 			fastOpenPerspectives(OM.Perspective_Leistungen_tbi, name);
 		}
-		
+
 	}
-	
+
 	public void openPatientenPerspective(){
 		fastOpenPerspectives(OM.Patientenübersicht_tbi, "Patienten");
 	}
-	
+
 	public void openReminderPerspective(){
 		fastOpenPerspectives(OM.Reminder_tbi, "Reminder");
 	}
-	
+
 	public void openPerspectiveByName(String name){
 		String localized_name = Messages.getString("VisitAllPerspectives.2");
 		Utils.dbg_msg(String.format("openPerspectiveByName %s via %s", name, localized_name));
@@ -116,7 +119,7 @@ public class Perspectives extends Common {
 			ValueSets.BinaryChoice.no, InteractionMode.primary), null);
 		clickComponent(OM.ShowView_OkButton_grc);
 	}
-	
+
 	/** test visiting all perspectives */
 	public void visit_all_perspectives() throws Exception{
 		int j = 0;
@@ -139,7 +142,7 @@ public class Perspectives extends Common {
 					Unit.percent, ValueSets.BinaryChoice.no, InteractionMode.primary), null);
 				// TODO: We should get the name of the selected perspective
 				clickComponent(OM.ShowView_OkButton_grc);
-				
+
 				waitForWindowClose(window_title);
 				waitForElexisMainWindow(Constants.ONE_SECOND);
 				AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "Perspective_" + j + ".png"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -150,19 +153,36 @@ public class Perspectives extends Common {
 			if (j <= 3) {
 				Assert.fail("We should have more than 3 perspectives to visit!"); //$NON-NLS-1$
 			}
-			
+
 		} catch (CheckFailedException e) {
 			e.printStackTrace();
 		} finally {
 			Assert.assertTrue(true);
 		}
 	}
-	
+
 	public void initialSetup(){
+		closeMultipleProblems();
 		openPatientenPerspective();
 		resetPerspective();
 		// We must open Leistungen first, as this take a lot of time
 		openLeistungenPerspective();
 	}
-	
+
+	public void closeMultipleProblems(){
+		Utils.dbg_msg("closeMultipleProblems");
+		if (isEnabled(OM.SW_Available_Sites_Okay_btn)) {
+			Utils.dbg_msg("Smoketest clicking SW_Available_Sites_Okay_btn");
+			clickComponent(OM.SW_Available_Sites_Okay_btn);
+		}
+		if (isEnabled(OM.SW_Edit_Site_Okay)) {
+			clickComponent(OM.SW_Edit_Site_Okay);
+			Utils.dbg_msg("Smoketest clicking SW_Edit_Site_Okay");
+		}
+		waitForWindowClose(".*Multiple problems.*", 1000);
+		AUT_run.takeScreenshotActiveWindow(AUT_run.m_aut, AUT_run.app,
+			"after_closeMultipleProblems.png");
+		Utils.dbg_msg("closeMultipleProblems");
+	}
+
 }

@@ -17,7 +17,10 @@ import org.eclipse.jubula.tools.ComponentIdentifier;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
 
 import ch.ngiger.jubula.elexiscore.OM;
 import ch.ngiger.jubula.helpers.AUT_run;
@@ -33,7 +36,33 @@ import ch.ngiger.jubula.helpers.Utils;
 import ch.ngiger.jubula.helpers.Views;
 
 public class Smoketest {
-	/** test generating a snapshot of the currently active window */
+	public static String SAVE_RESULTS_DIR = null;
+	private static String watchedLog = "Started:\n";
+	@Rule
+	public TestWatcher watchman = new TestWatcher() {
+		@Override
+		protected void failed(Throwable e, Description description){
+			String msg = description + " failed\n";
+			watchedLog += msg;
+			Utils.dbg_msg("JUnitTest: " + msg);
+			e.printStackTrace(Utils.getWriter());
+
+		}
+
+		@Override
+		protected void succeeded(Description description){
+			String msg = description + " succeeded\n";
+			watchedLog += msg;
+			Utils.dbg_msg("JUnitTest: " + msg);
+		}
+		@Override
+		protected void starting(Description description){
+			String msg = description + " starting\n";
+			watchedLog += msg;
+			Utils.dbg_msg("JUnitTest: " + msg);
+		}
+	};
+
 
 	private static HashMap<String, Common> components = new HashMap<String, Common>() {
 		/**
@@ -68,7 +97,7 @@ public class Smoketest {
 	@BeforeClass
 	public static void setup() throws Exception{
 		AUT_run.setUp();
-		Utils.dbg_msg("setup done"); //$NON-NLS-1$
+		Utils.dbg_msg("AUT_run: setup done"); //$NON-NLS-1$
 		m_aut = AUT_run.startAUT();
 		m_app = AUT_run.app;
 
@@ -158,17 +187,6 @@ public class Smoketest {
 				Utils.dbg_msg("Smoketest restarted");
 				AUT_run.takeScreenshotActiveWindow(AUT_run.m_aut, AUT_run.app, "after_restart.png");
 				Utils.dbg_msg("Smoketest restarted");
-				if (c.isEnabled(OM.SW_Available_Sites_Okay_btn)) {
-					Utils.dbg_msg("Smoketest clicking SW_Available_Sites_Okay_btn");
-					c.clickComponent(OM.SW_Available_Sites_Okay_btn);
-				}
-				if (c.isEnabled(OM.SW_Edit_Site_Okay)) {
-					c.clickComponent(OM.SW_Edit_Site_Okay);
-					Utils.dbg_msg("Smoketest clicking SW_Edit_Site_Okay");
-				}
-				Utils.dbg_msg("Smoketest Multiple problems");
-				c.waitForWindowClose(".*Multiple problems.*", 1000);
-				AUT_run.takeScreenshotActiveWindow(AUT_run.m_aut, AUT_run.app, "after_wait.png");
 				perspectives.initialSetup();
 			}
 			showVars();
@@ -221,6 +239,7 @@ public class Smoketest {
 	@AfterClass
 	public static void teardown() throws Exception{
 		Utils.dbg_msg("Smoketest.teardown"); //$NON-NLS-1$
+		Utils.dbg_msg(watchedLog);
 		AUT_run.stopAut(m_aut);
 		AUT_run.tearDown();
 	}
