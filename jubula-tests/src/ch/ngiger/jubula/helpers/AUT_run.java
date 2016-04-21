@@ -55,10 +55,10 @@ public class AUT_run {
 		config.put(Constants.WORK_DIR, USER_DIR);
 		Path elexis3 = Paths.get(USER_DIR + "/../work/Elexis3");
 		Path medelexis3 = null;
-    if (elexis3.toFile().canExecute()) {
-      config.put(Constants.AUT_EXE, elexis3.toAbsolutePath().normalize().toString());
+		if (elexis3.toFile().canExecute()) {
+			config.put(Constants.AUT_EXE, elexis3.toAbsolutePath().normalize().toString());
 		} else {
-      String variant = System.getenv("VARIANT");
+			String variant = System.getenv("VARIANT");
 			medelexis3 = Paths.get(USER_DIR + "/../work/Medelexis");
 			isMedelexis = true;
 			config.put(Constants.AUT_EXE, medelexis3.toAbsolutePath().normalize().toString());
@@ -144,10 +144,8 @@ public class AUT_run {
 					"autagent " + rPath.toFile().canExecute() + " " + rPath.toAbsolutePath();
 				Utils.dbg_msg(msg);
 				Assert.assertTrue(rPath.toFile().canExecute());
-				Utils.run_system_cmd(new String[] {
-					rPath.toString(), "-vm", "/usr/bin/java", "-l", "-p",
-					config.get(Constants.AGENT_PORT)
-				});
+				Utils.run_system_cmd(rPath.toString() + " -vm /usr/bin/java -l -p "
+					+ config.get(Constants.AGENT_PORT));
 				Utils.dbg_msg("Autagent finished");
 			}
 		}

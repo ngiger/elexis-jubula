@@ -179,7 +179,7 @@ public class Common {
 			org.eclipse.jubula.toolkit.base.AbstractComponents.createGraphicsComponent(cid);
 		try {
 			result = m_aut.execute(comp.click(1, InteractionMode.primary), null);
-		} catch (ActionException e) {
+		} catch (ActionException | ComponentNotFoundException e) {
 			Utils.dbg_msg("isEnabled false as error " + e.getMessage());
 			return false;
 		}
@@ -239,12 +239,13 @@ public class Common {
 	}
 
 	public boolean openMenu(String menu){
+		Utils.dbg_msg(String.format("openMenu: %s %s", menu, mbr.toString())); //$NON-NLS-1$ //$NON-NLS-2$
 		try {
 			m_aut.execute(
 				mbr.waitForComponent(Constants.ONE_SECOND * 120, Constants.NR_MS_WAIT_AFTER_ACTION),
 				null);
 			m_aut.execute(mbr.selectMenuEntryByTextpath(menu, Operator.matches), null);
-			Utils.dbg_msg(String.format("openMenu %s done", menu)); //$NON-NLS-1$		
+			Utils.dbg_msg(String.format("openMenu %s done", menu)); //$NON-NLS-1$
 			return true;
 		} catch (ExecutionException | CommunicationException e) {
 			String msg = String.format("openMenu %s after 120 second failed", menu + //$NON-NLS-1$
@@ -369,19 +370,21 @@ public class Common {
 		waitForWindowClose(window_title, Constants.ONE_SECOND);
 	}
 
-	public void waitForWindowClose(String window_title, int timeoutInMs){
+	public boolean waitForWindowClose(String window_title, int timeoutInMs){
 		try {
+			Utils.dbg_msg("waitForWindowClose: "+ window_title);
 			m_aut.execute(
 				m_app.waitForWindowToClose(window_title, Operator.matches, timeoutInMs, 0), null);
 			m_aut.execute(m_app.checkExistenceOfWindow(window_title, Operator.matches, false),
 				null);
+			return true;
 		} catch (ActionException e) {
 			String msg =
 				"waitForWindowClose " + window_title + " after " + timeoutInMs + " ms failed";
 			Utils.dbg_msg(msg);
 			AUT_run.takeScreenshotActiveWindow(m_aut, m_app,
 				"window/close_failed_" + window_title + ".png");
-			Assert.fail(msg);
+			return false;
 		}
 	}
 

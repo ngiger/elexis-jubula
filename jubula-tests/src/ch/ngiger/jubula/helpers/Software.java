@@ -34,7 +34,11 @@ public class Software extends Common {
 	}
 
 	private static String root = "sw_inst/";
-	public static boolean artikelstamm_v4 = false;
+	private static boolean artikelstamm_v4 = false;
+
+	public boolean isArtikelstamm_v4() {
+		return artikelstamm_v4;
+	}
 
 	private void handleAboutDetail(String abbrev, String name){
 		@SuppressWarnings("rawtypes")

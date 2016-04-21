@@ -11,6 +11,7 @@
 package ch.ngiger.jubula.helpers;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -27,12 +28,14 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
 import org.junit.Assert;
 
-/** @author Niklaus Giger niklaus.giger@member.fsf.org */
+/**
+ * @author Niklaus Giger niklaus.giger@member.fsf.org
+ */
 public class Utils {
 	public static String SAVE_RESULTS_DIR = null;
+
 	public static void sleep1second(){
 		sleepMs(Constants.ONE_SECOND);
 	}
@@ -70,12 +73,24 @@ public class Utils {
 		Utils.writer.flush();
 	}
 
-	public static boolean run_system_cmd(String args[]){
+	/**
+	 * run_system_cmd writes the command into a temporary file to allow useage of pipes and
+	 * redirection. Then makes the file executable and executes it.
+	 *
+	 * @param args
+	 *            Executable and parameters
+	 * @return
+	 */
+	public static boolean run_system_cmd(String cmd){
 		String s = null;
-
+		String cmd_prefix = "#!/bin/bash -v\n";
 		try {
-			dbg_msg("run_system_cmd: " + StringUtils.join(args, " "));
-			Process p = Runtime.getRuntime().exec(args);
+			File script_file = File.createTempFile("script_", ".sh");
+			dbg_msg("run_system_cmd: " + script_file + " with " + cmd);
+			Files.write(script_file.toPath(), (cmd_prefix + cmd).getBytes());
+			script_file.setExecutable(true);
+
+			Process p = Runtime.getRuntime().exec(script_file.getAbsolutePath());
 
 			BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
 
@@ -84,20 +99,22 @@ public class Utils {
 			// read the output from the command
 			// dbg_msg("Here is the standard output of the command:\n");
 			while ((s = stdInput.readLine()) != null) {
+				System.out.println(s);
 				dbg_msg(s);
 			}
 
 			// read any errors from the attempted command
 			// dbg_msg("Here is the standard error of the command (if any):\n");
 			while ((s = stdError.readLine()) != null) {
+				System.out.println(s);
 				dbg_msg(s);
 			}
-			return true;
+			dbg_msg("run_system_cmd: " + script_file + " exitValue " + p.exitValue());
+			return p.exitValue() == 0;
 		} catch (IOException e) {
 			dbg_msg("exception happened - here's what I know: ");
-			e.printStackTrace();
+			e.printStackTrace(writer);
 			return false;
-			// System.exit(-1);
 		}
 	}
 
@@ -125,7 +142,7 @@ public class Utils {
 		}
 		System.out.println("SAVE_RESULTS_DIR is: " + SAVE_RESULTS_DIR);
 	}
-	
+
 	public static PrintWriter getWriter(){
 		return writer;
 	}

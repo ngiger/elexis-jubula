@@ -135,8 +135,8 @@ public class Smoketest {
 
 	@Test()
 	public void smoketest() throws Exception{
-		Utils.dbg_msg("smoketest install_and_show_sw is " + install_and_show_sw + " with_artikelstamm "
-			+ with_artikelstamm + " Medelexis " + AUT_run.isMedelexis);
+		Utils.dbg_msg("smoketest install_and_show_sw is " + install_and_show_sw
+			+ " with_artikelstamm " + with_artikelstamm + " Medelexis " + AUT_run.isMedelexis);
 		Utils.dbg_msg("Calling importArtikelstamm" + AUT_run.config.get(Constants.AUT_EXE));
 		// showVars();
 		if (AUT_run.isMedelexis) {
@@ -153,26 +153,43 @@ public class Smoketest {
 				c.openMenu("Datei/Beenden");
 			} else {
 				software.installAllFeatures();
+				Utils.dbg_msg("Smoketest calling restart");
 				AUT_run.restartApp(m_aut);
+				Utils.dbg_msg("Smoketest restarted");
+				AUT_run.takeScreenshotActiveWindow(AUT_run.m_aut, AUT_run.app, "after_restart.png");
+				Utils.dbg_msg("Smoketest restarted");
+				if (c.isEnabled(OM.SW_Available_Sites_Okay_btn)) {
+					Utils.dbg_msg("Smoketest clicking SW_Available_Sites_Okay_btn");
+					c.clickComponent(OM.SW_Available_Sites_Okay_btn);
+				}
+				if (c.isEnabled(OM.SW_Edit_Site_Okay)) {
+					c.clickComponent(OM.SW_Edit_Site_Okay);
+					Utils.dbg_msg("Smoketest clicking SW_Edit_Site_Okay");
+				}
+				Utils.dbg_msg("Smoketest Multiple problems");
+				c.waitForWindowClose(".*Multiple problems.*", 1000);
+				AUT_run.takeScreenshotActiveWindow(AUT_run.m_aut, AUT_run.app, "after_wait.png");
 				perspectives.initialSetup();
 			}
 			showVars();
 			software.showAbout("second");
 			Utils.dbg_msg("Calling importArtikelstamm" + AUT_run.config.get(Constants.AUT_EXE));
 		}
+		Utils.dbg_msg("Smoketest with_artikelstamm " + with_artikelstamm + " v4 "
+			+ software.isArtikelstamm_v4());
 		if (with_artikelstamm) {
-      String filename = "";
-      if (software.artikelstamm_v4) {
-        filename = AUT_run.class.getClassLoader()
-          .getResource("rsc/artikelstamm_first_v4.xml").getPath();
-      } else {
-        filename = AUT_run.class.getClassLoader()
-          .getResource("rsc/artikelstamm_first_v3.xml").getPath();
-      }
-      boolean result =
-        artikelstamm.importArtikelstamm(System.getProperty("user.dir") + filename);
-      Utils.dbg_msg("result: " + result);
-      Assert.assertTrue(result);
+			String filename = "";
+			if (software.isArtikelstamm_v4()) {
+				filename = AUT_run.class.getClassLoader()
+					.getResource("rsc/artikelstamm_first_v4.xml").getPath();
+			} else {
+				filename = AUT_run.class.getClassLoader()
+					.getResource("rsc/artikelstamm_first_v3.xml").getPath();
+			}
+			boolean result =
+				artikelstamm.importArtikelstamm(System.getProperty("user.dir") + filename);
+			Utils.dbg_msg("result: " + result);
+			Assert.assertTrue(result);
 		}
 
 		String leisungs_name = "Motorfaehigkeit testen";
@@ -198,6 +215,7 @@ public class Smoketest {
 		Utils.dbg_msg("getInvoicesAsString Testing >" + test + "< matches <" + p
 			+ "> returns found " + found);
 		Assert.assertTrue(found);
+		Utils.dbg_msg("Smoketest.finished successfully!"); //$NON-NLS-1$
 	}
 
 	@AfterClass
