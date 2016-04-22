@@ -195,6 +195,9 @@ public class Common {
 			Modifier.none
 		}, "m"), null);
 		*/
+		m_aut.execute(AUT_run.app.externalKeyCombination(new Modifier[] {
+			Modifier.alt
+		}, "F10"), null);
 	}
 
 	@SuppressWarnings("rawtypes")

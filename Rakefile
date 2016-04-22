@@ -34,11 +34,26 @@ else
   VARIANT = 'snapshot'
   desc 'Install latest snapshot of OpenSource Elexis'
 end
+desc "Install Elexis Opensource. Branch default to snapshot, unless overriden via environment variable VARIANT #{ENV['VARIANT']}"
 task :elexis_install_os do
   fail 'elexis_install_os failed!' unless system('scripts/install_open_source_elexis.rb')
 end
 
-desc 'Run Jubula-GUI test (default Screenshot) for Elexis OpenSource via jubularunner'
+x= %(
+-Dagent_host=wheezy
+-Ddb_load_script=scratch.sql
+-Ddb_connection="jdbc:mysql://ng-tr/elexistest
+)
+
+common_options = "\n# to run with a specific database use environment variables, e.g.
+set -x db_load_script scratch.sql
+set -x db_connection jdbc:postgresql://servername:serverport/db_name
+# Note: database user elexisTest with password elexisTest must have all required priviledges to modify the database
+# Note: postgres db users must also set -x PGPASSWORD elexisTest
+"
+
+
+desc 'Run Jubula-GUI test (default Screenshot) for Elexis OpenSource via jubularunner'+ common_options
 task :jubula_test, [:test_to_run] => :elexis_install_os do |_target, args|
   test_to_run = args[:test_to_run]
   test_to_run ||= 'Screenshot'
@@ -47,14 +62,14 @@ task :jubula_test, [:test_to_run] => :elexis_install_os do |_target, args|
   fail 'Running failed' unless system("scripts/jubularunner.rb #{test_to_run}")
 end
 
-desc 'Run Jubula-GUI test (default Screenshot) for Elexis OpenSource via docker'
+desc 'Run Jubula-GUI test (default Screenshot) for Elexis OpenSource via docker'+ common_options
 task :jubula_docker, [:test_to_run] do |_target, args|
   test_to_run = args[:test_to_run]
   test_to_run ||= 'Screenshot'
   fail 'Running failed' unless system("scripts/jubularunner.rb #{test_to_run} run_in_docker")
 end
 
-desc 'Run Jubula-GUI test (default Screenshot) via Maven'
+desc 'Run Jubula-GUI test (default Screenshot) via Maven' + common_options
 task :jubula_mvn, [:test_to_run, :via_xvfb] => :elexis_install_os do |_target, args|
   saved_dir = Dir.pwd
   begin

@@ -126,9 +126,17 @@ The following steps were needed
 ** Open the menu "Run/Debug Configuration..". 
 *** Select the JUnit target Elexis_Jubula. Verify that in the tab
 *** Select the Test class to the test you want to run, e.g. @ch.ngiger.jubula.testsuites.Smoketest@
-*** In the tab "Arguments" set "VM arguments" to @-Dagent_host=wheezy@
+*** In the tab "Arguments" set "VM arguments" to @-Dagent_host=wheez@
 *** Choose Debug. If everything is okay it will connect to the autagent, start Elexis and begin executing the tests, which will quite soon open a menu.
-
+* To use a specific database and a file to be loaded before executing the test you must
+** Have a database to connect
+** The database user elexisTest with password elexisTest must have full privileges for the given database!
+** Add to "Run/Debug Configuration.." in the tab "Arguments" to the vmargs the value @-Ddb_connection="jdbc:postgresql://server:port_nr/db_name"@
+** (optionally)
+***Have a SQL file which loads the whole database, if not given the RunFromScratch parameter will be specified
+*** Add to "Run/Debug Configuration.." in the tab "Arguments" to the vmargs the value @-Ddb_load_script=my_dump.sql@. The file specified must an absolute path or be
+relative to the jubula-tests/rsc/db/<type_of_db> subdirectory.
+** Postgres: A dump file will only be generated if server and client use a matching postgres version.
 
 h2. TODO
 

@@ -2,12 +2,18 @@ package ch.ngiger.jubula.helpers;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Locale;
@@ -48,8 +54,14 @@ public class AUT_run {
 	private static java.nio.file.Path ElexisLog =
 		Paths.get(System.getProperty("user.home") + "/elexis/logs/elexis-3.log");
 	public static boolean isMedelexis = false;
+	private static String dump_command = null;
+	static String dump_to_file;
+	private static String load_command;
+	private static String db_user_pw = " -Dch.elexis.dbUser=elexisTest -Dch.elexis.dbPw=elexisTest ";
 
 	private static void setupConfig(){
+		config.put(Constants.DB_CONNECTION, "h2");
+		config.put(Constants.DB_LOAD_SCRIPT, "");
 		config.put(Constants.AGENT_HOST, "localhost");
 		config.put(Constants.AGENT_PORT, "6333");
 		config.put(Constants.WORK_DIR, USER_DIR);
@@ -92,10 +104,146 @@ public class AUT_run {
 				+ config.get(Constants.AGENT_PORT) + " -Dautagent_host="
 				+ config.get(Constants.AGENT_HOST)
 				+ " -Dch.elexis.username=007 -Dch.elexis.password=topsecret "
-				+ " -Delexis-run-mode=RunFromScratch");
+		);
 		config.put(Constants.AUT_KEYBOARD, "de_DE");
 		overrideConfigWithEnvAndProperties();
+		checkAndLoadDatabase();
 		dumpConfig("After setupConfig");
+	}
+
+	/**
+	 *
+	 * @param db_variant
+	 *            e.g. h2, mysql, postresql
+	 * @param filename
+	 *            either absolute path or basename for directory rsc/db/<db_variant>
+	 * @return absolute path of file or null if not found
+	 */
+
+	static String getDatabaseFile(String db_variant, String filename){
+		String path = AUT_run.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+		Utils.dbg_msg("Find " + filename + " config.get(Constants.WORK_DIR) " +  config.get(Constants.WORK_DIR));
+		if (new File(filename).canRead()) {
+			Utils.dbg_msg("Cannot read the db file: " + filename);
+			return filename;
+		}
+		String decodedPath = null;
+		try {
+			decodedPath = URLDecoder.decode(path, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			Utils.dbg_msg("Cannot decode: " + path);
+			return null;
+		}
+		Utils.dbg_msg("decodedPath is: " + decodedPath);
+		String desired = config.get(Constants.WORK_DIR) + "/rsc/db/" + db_variant + "/" + filename;
+		if (new File(desired).canRead()) {
+			Utils.dbg_msg("desired is readable: " + desired + " -> " + desired.replaceAll("//", "/"));
+			return desired.replaceAll("//", "/");
+		}
+		Utils.dbg_msg("CANNOT read desired: " + desired);
+		return null;
+	}
+
+	/**
+	 * if Constants.DB_LOAD_SCRIPT is set: <br>
+	 * * loads the specified SQL script <br>
+	 * * set variables dump_to_file, load_command, dump_command <br>
+	 * * dump_command will be called in the teardown to create <sql_script>_after.sql file.
+	 */
+	private static void checkAndLoadDatabase(){
+		String db_connection = config.get(Constants.DB_CONNECTION);
+		db_user_pw = " -Dch.elexis.dbUser=elexisTest -Dch.elexis.dbPw=elexisTest ";
+		Utils.dbg_msg("db_connection ist: " + db_connection);
+		String vmargs_db_flavor = null;
+		if (db_connection == null || db_connection.equals("h2")) {
+			config.put(Constants.AUT_VM_ARGS,
+				config.get(Constants.AUT_VM_ARGS) + " -Delexis-run-mode=RunFromScratch");
+			Utils.dbg_msg("AUT_VM_ARGS are: " + config.get(Constants.AUT_VM_ARGS));
+			return;
+		}
+		String cleanURI = db_connection.substring(db_connection.indexOf(":") + 1);
+		URI uri = URI.create(cleanURI);
+		if (uri == null)
+			return;
+		Utils.dbg_msg("uri ist: " + uri);
+		String db_variant =
+			(uri != null && uri.getScheme() != null) ? uri.getScheme().toLowerCase() : "h2";
+		int db_port = uri.getPort();
+		String db_host = uri.getHost();
+		Utils.dbg_msg(db_connection + ": -> " + db_variant + ", " + db_host + ", " + db_port + ", "
+			+ uri.getPath());
+
+		vmargs_db_flavor =
+				" -Dch.elexis.dbFlavor=" + db_variant + " -Dch.elexis.dbSpec=" + db_connection;
+
+		Utils.dbg_msg(config.get(Constants.DB_LOAD_SCRIPT));
+		String file_to_load = getDatabaseFile(db_variant, config.get(Constants.DB_LOAD_SCRIPT));
+		if (file_to_load == null) {
+			Utils.dbg_msg("file_to_load is null. There setting elexis-run-mode RunFromScratch for " + db_variant);
+			config.put(Constants.AUT_VM_ARGS,
+				config.get(Constants.AUT_VM_ARGS)
+					+ " -Delexis-run-mode=RunFromScratch");
+			System.exit(3);
+		} else {
+			dump_to_file = file_to_load + "_after.sql";
+			if (db_variant.equals("h2")) {
+				// Testing using the test-arguments -Ddb_connection="jdbc:h2:~/elexis-jubula" -Ddb_load_script=scratch.sql
+				// This will not work if you run the agent on a different host!
+				java.nio.file.Path j2_jar_file =
+					Paths.get("../work/plugins/org.h2_1.3.170.jar").toAbsolutePath().normalize();
+				String start = "java -cp " + j2_jar_file;
+				String middle = " -url " + db_connection + " -user sa -script ";
+				load_command = start + " org.h2.tools.RunScript " + middle + file_to_load;
+				dump_command = start + " org.h2.tools.Script " + middle + dump_to_file;
+
+			} else if (db_variant.equals("mysql")) {
+				config.put(Constants.AUT_VM_ARGS, config.get(Constants.AUT_VM_ARGS) + db_user_pw);
+				load_command = "/usr/bin/mysql " + " --host=" + db_host
+					+ " --user=elexisTest --password=elexisTest ";
+				if (db_port > 0) {
+					load_command += " --protocol=TCP " + String.format(" --port=%d ", db_port);
+				}
+				String db_name = uri.getPath().replace("/", "");
+				dump_command = load_command.replace("/bin/mysql ", "/bin/mysqldump ");
+				load_command += db_name;
+				load_command = "/bin/cat " + file_to_load + " | " + load_command;
+				dump_command += " --add-drop-table " + db_name + " > " + dump_to_file;
+				Utils.dbg_msg(dump_command);
+			} else if (db_variant.equals("postgresql")) {
+				String set_pw = "export PGPASSWORD=elexisTest\n";
+				// PG user elexisTest must be downcased to allow login! Niklaus Giger, 22.04.2016
+				// but the password remains mixed case.
+				db_user_pw = " -Dch.elexis.dbUser=elexistest -Dch.elexis.dbPw=elexisTest ";
+				vmargs_db_flavor =
+						" -Dch.elexis.dbFlavor=" + db_variant + " -Dch.elexis.dbSpec=" + db_connection.toLowerCase();
+
+				String connect_cmd = " --host=" + db_host + " --user=elexisTest ".toLowerCase();
+				if (db_port > 0) {
+					connect_cmd += String.format(" --port=%d ", db_port);
+				}
+				String db_name = uri.getPath().replace("/", "").toLowerCase();
+				connect_cmd += db_name;
+				load_command =
+					set_pw + "/bin/cat " + file_to_load + " | /usr/bin/psql " + connect_cmd;
+				dump_command = set_pw + "pg_dump --clean " + connect_cmd + " > " + dump_to_file;
+
+			} else {
+				Assert.fail(Constants.DB_CONNECTION + " unsupported type " + db_variant
+					+ " from config " + config.get(Constants.DB_CONNECTION));
+			}
+			Utils.run_system_cmd(load_command);
+			dump_command = "rm -f " + dump_to_file + "; " + dump_command;
+			Utils.dbg_msg("dump_command: " + dump_command);
+		}
+		Utils.dbg_msg("checkAndLoadDatabase vmargs_db_flavor: " + vmargs_db_flavor);
+		Utils.dbg_msg("checkAndLoadDatabase db_user_pw: " + db_user_pw);
+		config.put(Constants.AUT_VM_ARGS, config.get(Constants.AUT_VM_ARGS) + vmargs_db_flavor + " " + db_user_pw);
+	}
+
+	private static void dumpDatabase(){
+		if (dump_command != null) {
+			Utils.run_system_cmd(dump_command);
+		}
 	}
 
 	private static void overrideConfigWithEnvAndProperties(){
@@ -108,8 +256,8 @@ public class AUT_run {
 			}
 			String value = System.getProperty(entry.getKey());
 			if (value != null) {
-				Utils.dbg_msg("Config : override from property " + value + " for " + entry.getKey()
-					+ " was: " + entry.getValue());
+				Utils.dbg_msg("Config : override from property for " + entry.getKey() + " was: "
+					+ entry.getValue() + " set now to " + value);
 				config.put(entry.getKey(), value);
 			}
 		}
@@ -145,7 +293,7 @@ public class AUT_run {
 				Utils.dbg_msg(msg);
 				Assert.assertTrue(rPath.toFile().canExecute());
 				Utils.run_system_cmd(rPath.toString() + " -vm /usr/bin/java -l -p "
-					+ config.get(Constants.AGENT_PORT));
+					+ config.get(Constants.AGENT_PORT) + " &");
 				Utils.dbg_msg("Autagent finished");
 			}
 		}
@@ -169,7 +317,7 @@ public class AUT_run {
 		Utils.dbg_msg("Calling startAUT: aut_config" + aut_config);
 		try {
 			int j = 0;
-			while (j < 10 && !m_agent.isConnected()) {
+			while (j < 60 && !m_agent.isConnected()) {
 				Utils.dbg_msg("Calling startAUT " + j + " isConnected " + m_agent.isConnected());
 				Utils.sleep1second();
 			}
@@ -287,7 +435,7 @@ public class AUT_run {
 	}
 
 	public static void takeScreenshot(AUT aut, Application app, String imageName){
-		if (!aut.isConnected())
+		if (aut == null || !aut.isConnected())
 		{
 			Utils.dbg_msg("Request takeScreenshot failed (not connected) for " + imageName);
 			return;
@@ -325,7 +473,9 @@ public class AUT_run {
 	/** cleanup */
 	@AfterClass
 	public static void tearDown() throws Exception{
-		Utils.dbg_msg("AUT_run.tearDown " + m_aut + " isCon " + m_aut.isConnected());
+		if (m_aut != null) {
+			Utils.dbg_msg("AUT_run.tearDown " + m_aut + " isCon " + m_aut.isConnected());
+		}
 		if (m_aut != null && m_aut.isConnected()) {
 			m_aut.disconnect();
 			m_agent.stopAUT(m_aut.getIdentifier());
@@ -339,14 +489,21 @@ public class AUT_run {
 			// agent_thread.stop();
 			Utils.dbg_msg("Stopped agent_thread");
 		}
+		dumpDatabase();
 		Utils.getWriter().close();
-		saveLogs();
+		saveLogsAndDump();
 	}
 
-	private static void saveLogs(){
-		java.nio.file.Path newdir = Paths.get(SAVE_RESULTS_DIR, "elexis-3.log");
+	private static void saveLogsAndDump(){
+		java.nio.file.Path save_to = Paths.get(AUT_run.config.get(Constants.RESULT_DIR));
 		try {
-			java.nio.file.Files.copy(ElexisLog, newdir);
+			if (dump_to_file != null && new File(dump_to_file).canRead()) {
+				DateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd_HH.mm");
+				Date date = new Date();
+				java.nio.file.Files.copy(Paths.get(dump_to_file), Paths.get(save_to.toString(),
+					"after_" + dateFormat.format(date).toString() + ".sql"));
+			}
+			java.nio.file.Files.copy(ElexisLog, save_to);
 		} catch (IOException e) {
 			// Just ignore this error, probably we had no elexis log
 		}

@@ -80,6 +80,11 @@ class JubulaRunner
   START_META_CMD = "export DISPLAY=#{DISPLAY}
     /usr/bin/metacity --replace --sm-disable &
     sleep 1
+    echo ls -la $HOME/elexis
+    ls -la $HOME/elexis
+    rm -rf $HOME/elexis
+    # mkdir -p $HOME/elexis/GlobalInbox
+    ls -la $HOME/elexis
     /usr/bin/metacity-message disable-keybindings
     /usr/bin/xclock &
   "

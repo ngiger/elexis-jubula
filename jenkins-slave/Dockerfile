@@ -37,11 +37,19 @@ RUN useradd --uid 1200 --user-group --create-home --shell /bin/bash elexis && \
        http://repo.jenkins-ci.org/public/org/jenkins-ci/main/remoting/$JENKINS_REMOTING_VERSION/remoting-$JENKINS_REMOTING_VERSION.jar &&\
     chmod 755 /usr/share/jenkins
 
+RUN apt-get install -y mysql-server-5.5 mysql-client-5.5 postgresql-9.1 postgresql-client-9.1
+
+RUN /etc/init.d/mysql start && sudo mysql elexis -c "show databases"
+
+# RUN /etc/init.d/postgresql start && sudo -u postgres psql -c "create database elexis_jubula encoding 'utf8' template template0;" && \
+#   sudo -u postgres psql -c "create user elexis with UNENCRYPTED password 'elexisTest';" && \
+#   sudo -u postgres psql -c "grant all privileges  on database elexis_jubula to elexis ;"
+
+# RUN /etc/init.d/postgresql start && sleep 30 && set -x PGPASSWORD elexisTest && psql --user elexis elexis -c "\l"
 # cleanup (minimizes size of generated image)
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y git bundler
-# RUN apt-get clean && \
+# RUN df -h  && apt-get clean && \
 #     rm -rf /var/lib/apt/lists/* && \
-#     rm -rf /tmp/*
+#     rm -rf /tmp/* && df -h
 
 COPY jenkins-slave.sh /usr/local/bin/jenkins-slave.sh
 USER jenkins
