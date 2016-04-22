@@ -9,6 +9,7 @@ target/
 jetty.log
 workspace/
 results/
+results-*/
 profile.tmp
 work
 private

@@ -14,7 +14,7 @@ public class Screenshot {
 	/** test generating a snapshot of the currently active window */
 
 	private static AUT m_aut;
-	
+
 	@BeforeClass
 	public static void setup() throws Exception {
 		AUT_run.setUp();

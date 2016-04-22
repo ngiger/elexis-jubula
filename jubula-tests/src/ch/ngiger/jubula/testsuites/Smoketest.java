@@ -160,7 +160,7 @@ public class Smoketest {
 	}
 
 	private static final boolean install_and_show_sw = true;
-	private static final boolean with_artikelstamm = true;
+	private static final boolean with_artikelstamm = false;
 
 	@Test()
 	public void smoketest() throws Exception{
