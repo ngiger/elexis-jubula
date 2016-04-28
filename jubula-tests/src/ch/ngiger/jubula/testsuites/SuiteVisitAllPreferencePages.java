@@ -11,7 +11,7 @@ import ch.ngiger.jubula.helpers.PreferencePages;
 
 public class SuiteVisitAllPreferencePages {
 	/** test generating a snapshot of the currently active window */
-	
+
 	@BeforeClass
 	public static void setup() throws Exception{
 		AUT_run.setUp();
@@ -23,7 +23,7 @@ public class SuiteVisitAllPreferencePages {
 		PreferencePages pp = new PreferencePages(AUT_run.m_aut, AUT_run.app);
 		Perspectives p = null;
 		p = new Perspectives(AUT_run.m_aut, AUT_run.app);
-		// p.initialSetup();
+		p.initialSetup();
 		pp.visit_all_preferencePages();
 		AUT_run.stopAut(m_aut);
 	}

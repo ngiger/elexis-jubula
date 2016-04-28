@@ -15,7 +15,7 @@ public class SuiteVisitAllViews {
 	private static Perspectives p = null;
 	private static Views v = null;
 	private static AUTIdentifier aut_id = null;
-	
+
 	@BeforeClass
 	public static void setup() throws Exception{
 		AUT_run.setUp();
@@ -25,7 +25,7 @@ public class SuiteVisitAllViews {
 	public void suite_visit_all_views() throws Exception{
 		AUT m_aut = AUT_run.startAUT();
 		p = new Perspectives(AUT_run.m_aut, AUT_run.app);
-		// p.initialSetup();
+		p.initialSetup();
 		v = new Views(AUT_run.m_aut, AUT_run.app);
 		v.visit_all_views();
 		AUT_run.stopAut(m_aut);
