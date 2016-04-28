@@ -321,13 +321,18 @@ public class AUT_run {
 				Utils.dbg_msg("Calling startAUT " + j + " isConnected " + m_agent.isConnected());
 				Utils.sleep1second();
 			}
-			try {
-				aut_id = m_agent.startAUT(aut_config);
-			} catch (ActionException | CommunicationException e) {
-				Utils.dbg_msg("startAUT failed: aut_id " + aut_id + " " + e.getMessage()); //$NON-NLS-1$
-				takeScreenshot(m_aut, app, "try_start_.png");
-				aut_id = m_agent.startAUT(aut_config);
-
+			Utils.sleep1second();
+			j = 0;
+			while (j < 3) {
+				try {
+					j ++;
+					Utils.dbg_msg("try " + j + ": startAUT"); //$NON-NLS-1$
+					aut_id = m_agent.startAUT(aut_config);
+					Utils.dbg_msg("try " + j + ": startAUT. Got aut_id " + aut_id); //$NON-NLS-1$
+					break;
+				} catch (ActionException | CommunicationException e) {
+					Utils.dbg_msg("startAUT failed: " + e.getMessage()); //$NON-NLS-1$
+				}
 			}
 			Utils.dbg_msg("Calling startAUT returned " + aut_id);
 			if (aut_id != null) {
