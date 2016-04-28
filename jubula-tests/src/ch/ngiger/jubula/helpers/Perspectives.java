@@ -163,11 +163,12 @@ public class Perspectives extends Common {
 	}
 
 	public void initialSetup(){
+		first_leistungen = true;
 		closeMultipleProblems();
-		openPatientenPerspective();
-		resetPerspective();
 		// We must open Leistungen first, as this take a lot of time
 		openLeistungenPerspective();
+		openPatientenPerspective();
+		resetPerspective();
 	}
 
 	public void closeMultipleProblems(){
