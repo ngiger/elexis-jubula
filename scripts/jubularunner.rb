@@ -164,9 +164,11 @@ exit $status
       puts "res of testexec.sh is #{res}"
       sleep(0.5)
       FileUtils.rm_f(cmd_name)
-      if res == 0 && /smoketest/i.match(@test_params[:test_to_run])
-        # Copy newly installed plugins for further tests back
+      if res && /smoketest/i.match(@test_params[:test_to_run])
+        puts "smoketest: Copy newly installed plugins for further tests back"
         FileUtils.cp_r(File.join(@docker.container_home, 'work'), WorkDir, verbose: true)
+      else
+        puts "Skip copying plugins as testsuit #{@test_params[:test_to_run]} != smoketest"
       end
     ensure
       # this is needed that copying  the results and log files will not fail
