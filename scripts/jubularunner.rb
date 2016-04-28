@@ -37,7 +37,12 @@ class DockerRunner
     cmd += ' ' + cmd_in_docker
     puts cmd
     system(cmd)
-    # system("docker inspect #{@docker_name}") # Only for debugging!
+    0.upto(10).each do |idx|
+      sleep 0.1
+      res = system("/usr/bin/docker inspect -f {{.State.Running}} #{@docker_name}")
+      puts "#{idx}/10: docker #{@docker_name} started? #{res}"
+      break if res
+    end
   end
 
   def exec_in_docker(command, options = {})
@@ -53,7 +58,7 @@ class DockerRunner
   def stop_docker
     result = Kernel.system("docker ps  | grep #{@docker_name}")
     return unless result
-    exec_in_docker(@cleanup_in_container)
+    Kernel.system(@cleanup_in_container)
     Kernel.system("docker kill #{@docker_name}")
     Kernel.system("docker rm #{@docker_name}")
   end
