@@ -150,6 +150,7 @@ cp $0 /home/elexis/results
 status=$?
 echo run_test_in_docker done
 sleep 1
+# this is needed that copying  the results and log files will not fail
 #{@docker.cleanup_in_container}
 rm -rf ~/.jubula
 ls -lR /home/elexis/results
@@ -171,8 +172,6 @@ exit $status
         puts "Skip copying plugins as testsuit #{@test_params[:test_to_run]} != smoketest"
       end
     ensure
-      # this is needed that copying  the results and log files will not fail
-      @docker.exec_in_docker(@docker.cleanup_in_container)
       # stop container if we were unable to copy the result and/or log files
       @docker.stop_docker
     end
