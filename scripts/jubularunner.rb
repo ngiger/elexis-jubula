@@ -128,10 +128,12 @@ class JubulaRunner
   def prepare_docker
     @docker.stop_docker
     at_exit { @docker.stop_docker }
-    FileUtils.rm_rf(@docker.container_home, verbose: true)
-    fail "Must be possible to remove container_home #{@docker.container_home}" if File.exist?(@docker.container_home)
-    ['.git', 'pom.xml', 'jubula-target', 'jubula-tests', 'org.eclipse.jubula.product.autagent.start'].each do |item|
-      FileUtils.cp_r(File.join(RootDir, item), @docker.container_home, verbose: true, preserve: true)
+    if File.exists?(@docker.container_home)
+      FileUtils.mv(@docker.container_home, "/tmp/#{Time.now.strftime('%Y%m%d%H%M%s')}", verbose: true)
+      fail "Must be possible to remove container_home #{@docker.container_home}" if File.exist?(@docker.container_home)
+      ['.git', 'pom.xml', 'jubula-target', 'jubula-tests', 'org.eclipse.jubula.product.autagent.start'].each do |item|
+        FileUtils.cp_r(File.join(RootDir, item), @docker.container_home, verbose: true, preserve: true)
+      end
     end
     FileUtils.makedirs(@docker.container_home)
     FileUtils.cp_r(WorkDir, File.join(@docker.container_home, 'work'), verbose: true, preserve: true)
