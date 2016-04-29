@@ -34,6 +34,8 @@ import org.eclipse.jubula.toolkit.concrete.components.MenuBarComponent;
 import org.eclipse.jubula.toolkit.concrete.components.TabComponent;
 import org.eclipse.jubula.toolkit.concrete.components.TableComponent;
 import org.eclipse.jubula.toolkit.concrete.components.TextInputComponent;
+import org.eclipse.jubula.toolkit.concrete.components.TreeComponent;
+import org.eclipse.jubula.toolkit.enums.ValueSets;
 import org.eclipse.jubula.toolkit.enums.ValueSets.BinaryChoice;
 import org.eclipse.jubula.toolkit.enums.ValueSets.InteractionMode;
 import org.eclipse.jubula.toolkit.enums.ValueSets.Modifier;
@@ -284,13 +286,38 @@ public class Common {
 		}
 	}
 
-	public void selectTopLeftCell(@SuppressWarnings("rawtypes") ComponentIdentifier cid){
+	public boolean selectTopLeftCell(@SuppressWarnings("rawtypes") ComponentIdentifier cid){
 		@SuppressWarnings("unchecked")
 		TableComponent tbl = ConcreteComponents.createTableComponent(cid);
 		// m_aut.execute(comp.click(1, InteractionMode.primary), null);
+		try {
 		m_aut.execute(tbl.selectCell("1", Operator.equals, "1", Operator.equals, new Integer(1),
 			new Integer(50), Unit.percent, new Integer(50), Unit.percent, BinaryChoice.no,
 			InteractionMode.primary), null);
+		} catch (ActionException | CheckFailedException
+				| IllegalArgumentException e) {
+			String msg = String.format("selectTopLeftCell:error %s", e.getMessage());
+			Utils.dbg_msg(msg);
+			e.printStackTrace(Utils.getWriter());
+			return false;
+		}
+		return true;
+	}
+
+	public boolean selectTreeItem(@SuppressWarnings("rawtypes") ComponentIdentifier cid, String textpath){
+		@SuppressWarnings("unchecked")
+		TreeComponent tbl = ConcreteComponents.createTreeComponent(cid);
+		// m_aut.execute(comp.click(1, InteractionMode.primary), null);
+		try {
+		m_aut.execute(tbl.selectNodeByTextpath(ValueSets.SearchType.absolute, new Integer(0), textpath, Operator.matches, new Integer(1), InteractionMode.primary, BinaryChoice.no), null);
+		} catch (ActionException | CheckFailedException
+				| IllegalArgumentException e) {
+			String msg = String.format("selectTreeItem: error %s", e.getMessage());
+			Utils.dbg_msg(msg);
+			e.printStackTrace(Utils.getWriter());
+			return false;
+		}
+		return true;
 	}
 
 	public void synchronizedTextReplace(@SuppressWarnings("rawtypes") ComponentIdentifier cid,
@@ -343,29 +370,30 @@ public class Common {
 		return false;
 	}
 
-	public void waitForElexisMainWindow(){
-		waitForWindow("Elexis.*", Constants.ONE_SECOND);
+	public boolean waitForElexisMainWindow(){
+		return waitForWindow("Elexis.*", Constants.ONE_SECOND);
 	}
 
-	public void waitForElexisMainWindow(int timeoutInMs){
-		waitForWindow("Elexis.*", timeoutInMs);
+	public boolean waitForElexisMainWindow(int timeoutInMs){
+		return waitForWindow("Elexis.*", timeoutInMs);
 	}
 
-	public void waitForWindow(String window_title){
-		waitForWindow(window_title, Constants.ONE_SECOND);
+	public boolean waitForWindow(String window_title){
+		return waitForWindow(window_title, Constants.ONE_SECOND);
 	}
 
-	public void waitForWindow(String window_title, int timeoutInMs){
+	public boolean waitForWindow(String window_title, int timeoutInMs){
 		try {
 			m_aut.execute(
 				m_app.waitForWindowActivation(window_title, Operator.matches, timeoutInMs, 0),
 				null);
+			return true;
 		} catch (ActionException e) {
 			String msg = "waitForWindow " + window_title + " after " + timeoutInMs + " ms failed";
 			Utils.dbg_msg(msg);
 			AUT_run.takeScreenshotActiveWindow(m_aut, m_app,
 				"window/wait_failed_" + window_title + ".png");
-			Assert.fail(msg);
+			return false;
 		}
 	}
 

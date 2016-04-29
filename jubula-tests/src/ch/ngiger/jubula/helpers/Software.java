@@ -22,10 +22,13 @@ import org.eclipse.jubula.toolkit.enums.ValueSets.SearchType;
 import org.eclipse.jubula.toolkit.swt.SwtComponents;
 import org.eclipse.jubula.toolkit.swt.components.TreeTable;
 import org.eclipse.jubula.tools.ComponentIdentifier;
+import org.junit.Assert;
 
 import ch.ngiger.jubula.elexiscore.OM;
 
-/** @author BREDEX GmbH */
+/**
+ * @author BREDEX GmbH
+ */
 public class Software extends Common {
 
 	public Software(AUT aut, Application app){
@@ -36,7 +39,7 @@ public class Software extends Common {
 	private static String root = "sw_inst/";
 	private static boolean artikelstamm_v4 = false;
 
-	public boolean isArtikelstamm_v4() {
+	public boolean isArtikelstamm_v4(){
 		return artikelstamm_v4;
 	}
 
@@ -45,25 +48,24 @@ public class Software extends Common {
 		ComponentIdentifier tab_id =
 			OM.AboutElexisOpenSource_ElexisOpenSourceInstallatio0_TabFolder_1_tpn;
 		// Select tab, take screenshot and save
-    Utils.dbg_msg("handleAboutDetail: " + abbrev + " => " + name);
+		Utils.dbg_msg("handleAboutDetail: " + abbrev + " => " + name);
 		AUT_run.m_aut.execute(AUT_run.app.copyTextToClipboard("empty"), null);
 		selectTabByValue(tab_id, name);
 		Utils.sleep1second(); // It takes some time to construct the view
 		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, root + "about_" + abbrev + ".png");
 		String info = getTextFromCompent(tab_id);
 		if (info != null && !info.startsWith("empty")) {
-		  if (info.contains("at.medevit.ch.artikelstamm.elexis.common (3.2"))
-		  {
-        Utils.dbg_msg("handleAboutDetail: found artikelstamm_v4");
-        artikelstamm_v4 = true;
-      } else  {
-        Utils.dbg_msg("handleAboutDetail: NO artikelstamm_v4 found");
-		  }
+			if (info.contains("at.medevit.ch.artikelstamm.elexis.common (3.2")) {
+				Utils.dbg_msg("handleAboutDetail: found artikelstamm_v4");
+				artikelstamm_v4 = true;
+			} else {
+				Utils.dbg_msg("handleAboutDetail: NO artikelstamm_v4 found");
+			}
 			writeStringToResultsFile(info, root + "about_" + abbrev + ".txt");
 		}
 	}
 
-	public void showAbout(String add){
+	public void showAbout(String add, boolean minimal){
 		String menu_about = "Hilfe/.*Elexis.*";
 		String about_title = "About.*"; // only OpenSource Elexis has Elexis
 		String details_title = ".*Installation Details.*";
@@ -81,9 +83,11 @@ public class Software extends Common {
 
 		HashMap<String, String> map = new HashMap<String, String>();
 		map.put("configuration", "Configuration"); //$NON-NLS-1$
-		map.put("history", "Update Chronik"); //$NON-NLS-1$
-		map.put("installed", "Installierte Software"); //$NON-NLS-1$
-		map.put("plugins", "Plug.*"); //$NON-NLS-1$
+		if (!minimal) {
+			map.put("history", "Update Chronik"); //$NON-NLS-1$
+			map.put("installed", "Installierte Software"); //$NON-NLS-1$
+			map.put("plugins", "Plug.*"); //$NON-NLS-1$
+		}
 		map.forEach((abbrev, name) -> handleAboutDetail(abbrev, name));
 
 		pressEnter();
@@ -109,11 +113,23 @@ public class Software extends Common {
 		AUT_run.m_aut.execute(
 			combo.selectEntryByValue(select_base, Operator.matches, SearchType.absolute), null);
 		// Three seconds were not enough when running from the command line
-		Utils.sleepMs(Constants.ONE_SECOND * 10);
+		int j = 0;
+		while (j < 10) {
+			j++;
+			Utils.sleep1second();
+			if (selectTreeItem(OM.SW_Install_Feature_Tree, "Basispakete")) {
+				break;
+			}
+		}
 
 	}
 
-	private void finishInstallSelectedSW(){
+	/**
+	 *
+	 * @return true if restart required, else already everything installed
+	 */
+
+	private boolean finishInstallSelectedSW(){
 		String install_title = "Install";
 		String installing_title = "Installing Software";
 		String updates_title = "Software Updates";
@@ -140,21 +156,29 @@ public class Software extends Common {
 			Utils.dbg_msg("SW_Install_Finish_btn is NOT enabled. Already updated?");
 			clickComponent(cancel_button);//$NON-NLS-1$
 			waitForWindowClose("Install", 5 * Constants.ONE_SECOND);
-			return;
+			return false;
 		}
-		waitForWindowClose(install_title, 5 * Constants.ONE_SECOND);
+		if (!waitForWindowClose(install_title, 5 * Constants.ONE_SECOND))
+		{
+			Assert.fail("finishInstallSelectedSW: Unable to close" + install_title);
+		}
 
 		waitForWindow(installing_title, 15 * Constants.ONE_SECOND);
 		// Comment: We assume -Declipse.p2.unsignedPolicy=allow passed as vmarg to the application
 		// Else we would have to activate "SW_SecurityWarning_OK_btn"
-		waitForWindowClose(installing_title, 180 * Constants.ONE_SECOND);
+		if (!waitForWindowClose(installing_title, 180 * Constants.ONE_SECOND))
+		{
+			Assert.fail("finishInstallSelectedSW: Unable to open" + installing_title);
+		}
 
-		waitForWindow(updates_title, 5 * Constants.ONE_SECOND);
+		if (!waitForWindow(updates_title, 5 * Constants.ONE_SECOND)) {
+			Assert.fail("finishInstallSelectedSW: Unable to open" + updates_title);
+		}
 
 		// Click on "No". If we clicked "now", we could not detect restart of application
 		clickComponent(OM.SW_Update_Dialog_no);
 		waitForWindowClose(updates_title, 15 * Constants.ONE_SECOND);
-
+		return true;
 	}
 
 	public void installFeature(String feature_name){
@@ -185,22 +209,28 @@ public class Software extends Common {
 	}
 
 	class CallExitViaMenu extends Thread {
-		public CallExitViaMenu(String dummy) {
+		public CallExitViaMenu(String dummy){
 			super(dummy);
 			Utils.dbg_msg("dummy is: " + dummy);
 		}
 
 		@Override
-		public void run() {
-		}
+		public void run(){}
 	}
-	public void installAllFeatures(){
+
+	/**
+	 * OpenSource: installs all possible features<br>
+	 * Medelexis: installs all licensed features
+	 *
+	 * @return true if restart required, else already everything installed
+	 */
+	public boolean installAllFeatures(){
 		if (AUT_run.config.get(Constants.AUT_EXE) != null
 			&& AUT_run.config.get(Constants.AUT_EXE).toLowerCase().contains("medelexis")) {
 			Utils.sleep1second();
 			Runnable r = new Runnable() {
 				@Override
-				public void run() {
+				public void run(){
 					Utils.dbg_msg("Calling Datei Beenden");
 					openMenu("Datei/Beenden");
 					Utils.dbg_msg("Wait for end");
@@ -212,18 +242,42 @@ public class Software extends Common {
 			t.run();
 			Utils.dbg_msg("after run");
 			int j = 0;
-			while (j < 30 && AUT_run.m_aut.isConnected())
-			{
+			while (j < 30 && AUT_run.m_aut.isConnected()) {
 				j++;
 				Utils.dbg_msg("Wait for installation ended " + j);
 				Utils.sleep1second();
 			}
-			return;
+			return false;
 		}
 		Utils.dbg_msg("installAllFeatures finished");
 		swInitAll();
 		clickComponent(OM.SW_Install_SelectAll_btn);
-		finishInstallSelectedSW();
-		Utils.dbg_msg("installAllFeatures finished");
+		return finishInstallSelectedSW();
+	}
+
+	public void installAllAndShowSW(){
+		if (AUT_run.isMedelexis) {
+			Utils.dbg_msg("AUT_EXE is medelexis: " + AUT_run.config.get(Constants.AUT_EXE));
+			clickComponent(OM.Medelexis_Abo_perspective_tbi);
+			Utils.sleepMs(5 * 1000); // wait 5 seconds: TODO: should wait till populated
+		}
+
+		if (AUT_run.isMedelexis) {
+			Utils.dbg_msg("AUT_EXE is medelexis" + AUT_run.config.get(Constants.AUT_EXE));
+			openMenu("Datei/Beenden");
+		} else {
+			if (installAllFeatures()) {
+				// needs restart
+				Utils.dbg_msg("installAllAndShowSW calling restart");
+				AUT_run.restartApp(m_aut);
+				Utils.dbg_msg("installAllAndShowSW restarted");
+				AUT_run.takeScreenshotActiveWindow(AUT_run.m_aut, AUT_run.app, "after_restart.png");
+				Utils.dbg_msg("installAllAndShowSW restarted");
+				Perspectives perspectives = new Perspectives(AUT_run.m_aut, AUT_run.app);
+				perspectives.initialSetup();
+			}
+		}
+		showAbout("installed", true);
+
 	}
 }

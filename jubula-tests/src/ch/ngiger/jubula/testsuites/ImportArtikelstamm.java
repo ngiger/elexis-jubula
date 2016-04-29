@@ -81,6 +81,7 @@ public class ImportArtikelstamm {
 
 	private static AUT m_aut = null;
 	private static Application m_app = null;
+	private static boolean install_and_show_sw = true;
 
 	@BeforeClass
 	public static void setup() throws Exception{
@@ -116,7 +117,9 @@ public class ImportArtikelstamm {
 	@Test()
 	public void importArtikelstamm() throws Exception{
 		Utils.dbg_msg("importArtikelstamm Medelexis " + AUT_run.isMedelexis);
-		software.showAbout("importArtikelstamm");
+		if (install_and_show_sw) {
+			software.installAllAndShowSW();
+		}
 		Utils.dbg_msg("importArtikelstamm v4 " + software.isArtikelstamm_v4());
 		String filename = "";
 		if (software.isArtikelstamm_v4()) {

@@ -36,16 +36,18 @@ import ch.ngiger.jubula.elexiscore.OM;
 
 /** @author BREDEX GmbH */
 public class Views extends Common {
-	
+
 	public Views(AUT aut, Application app){
 		super(aut, app);
 		Utils.dbg_msg("Views init " + m_aut + " app " + m_app);
 	}
-	
+
 	void openViewByName(String name){
 		openMenu("Fenster.*/Ansicht.*/Other.*");
-		waitForWindow("Show View", Constants.ONE_SECOND);
-		
+		if (!waitForWindow("Show View", 5 * Constants.ONE_SECOND)) {
+			Assert.fail("finishInstallSelectedSW: Unable to open Show View");
+		}
+
 		@SuppressWarnings("unchecked")
 		org.eclipse.jubula.toolkit.concrete.components.TextInputComponent viewTxt =
 			ConcreteComponents.createTextInputComponent(OM.ShowView_SelView_cti);
@@ -59,17 +61,17 @@ public class Views extends Common {
 		AUT_run.m_aut.execute(tableComp.click(new Integer(1), InteractionMode.primary), null);
 		AUT_run.m_aut.execute(tbl2.selectNodeByTextpath(SearchType.absolute, new Integer(0), name,
 			Operator.matches, 1, InteractionMode.primary, BinaryChoice.no), null);
-			
+
 		clickComponent(OM.ShowView_OkButton_grc);
 		Utils.sleep1second();
 		waitForElexisMainWindow(Constants.ONE_SECOND);
 	}
-	
+
 	private void closeAndReturnToElexis(){
 		clickComponent(OM.ShowView_OkButton_grc); //$NON-NLS-1$
 		waitForElexisMainWindow();
 	}
-	
+
 	/** test visiting all views */
 	@Test
 	@SuppressWarnings("unchecked")
@@ -151,14 +153,14 @@ public class Views extends Common {
 			if (nr_views == 0)
 				e.printStackTrace();
 			e.printStackTrace();
-			
+
 		} catch (CheckFailedException e) {
 			Utils.dbg_msg("visit_all_views: error was " + e.getMessage());
 			e.printStackTrace(Utils.getWriter());
 			AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "window/CheckFailedException.png"); //$NON-NLS-1$
 			e.printStackTrace();
 		} finally
-		
+
 		{
 			Utils.dbg_msg("my m-aut" + AUT_run.m_aut + " AUT_runs is " + AUT_run.m_aut);
 			Utils.dbg_msg("visit_all_views: done. Found views: " + nr_views);

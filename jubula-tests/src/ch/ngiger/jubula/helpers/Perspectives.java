@@ -42,7 +42,10 @@ public class Perspectives extends Common {
 
 	public void resetPerspective(){
 		openMenu("Fenster/Perspektive/Reset.*");
-		waitForWindow("Reset Perspective", Constants.ONE_SECOND);
+		if ( !waitForWindow("Reset Perspective", Constants.ONE_SECOND))
+		{
+			Assert.fail("resetPerspective: Unable to open Reset Perspective");
+		}
 		clickComponent(OM.ResetPerspektive_OkButton_grc); //$NON-NLS-1$
 	}
 
@@ -109,7 +112,10 @@ public class Perspectives extends Common {
 		String localized_name = Messages.getString("VisitAllPerspectives.2");
 		Utils.dbg_msg(String.format("openPerspectiveByName %s via %s", name, localized_name));
 		openMenu(localized_name);
-		waitForWindow("Open Perspective", Constants.ONE_SECOND);
+		if (!waitForWindow("Open Perspective", Constants.ONE_SECOND))
+		{
+			Assert.fail("openPerspectiveByName: Unable to open " + name);
+		}
 		@SuppressWarnings("unchecked")
 		TableComponent tbl =
 			ConcreteComponents.createTableComponent(OM.OpenPerspective_ViewTree_grc);

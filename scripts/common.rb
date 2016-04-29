@@ -198,7 +198,7 @@ def system(cmd, may_fail = false)
   res = Kernel.system(full_cmd)
   return true if res
   puts Dir.pwd
-  puts "Dir.cmd and #{res} may fail #{may_fail}"
+  puts "Dir.cmd #{Dir.pwd} and #{res} may fail #{may_fail}"
   fail(cmd) unless may_fail
 end
 

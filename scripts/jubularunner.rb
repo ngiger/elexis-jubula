@@ -66,7 +66,7 @@ class DockerRunner
   def initialize(test_name, result_dir)
     @test_name = test_name
     @result_dir = result_dir
-    @docker_name = "jubula-#{@test_name}"
+    @docker_name = "jubula-#{@test_name}-#{ENV['VARIANT']}"
     @container_home = File.join(RootDir, 'container_home')
     @m2_repo = File.join(RootDir, 'container_home_m2')
     @cleanup_in_container = 'chmod --silent --recursive o+rwX /home/elexis; rm -rf /home/elexis/.jubula'

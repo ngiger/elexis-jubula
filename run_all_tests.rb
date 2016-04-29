@@ -2,6 +2,7 @@
 
 tests = ['Screenshot',
 'Smoketest',
+'ImportArtikelstamm',
 'SuiteVisitAllPerspectives',
 'SuiteVisitAllViews',
 'SuiteVisitAllPreferencePages',]

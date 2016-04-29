@@ -109,7 +109,6 @@ public class Smoketest {
 		pat = new Patients(AUT_run.m_aut, AUT_run.app);
 		invoice = new Invoice(AUT_run.m_aut, AUT_run.app);
 		artikelstamm = new Artikelstamm(AUT_run.m_aut, AUT_run.app, perspectives);
-
 		perspectives.initialSetup();
 	}
 
@@ -168,30 +167,9 @@ public class Smoketest {
 			+ " with_artikelstamm " + with_artikelstamm + " Medelexis " + AUT_run.isMedelexis);
 		Utils.dbg_msg("Calling importArtikelstamm" + AUT_run.config.get(Constants.AUT_EXE));
 		// showVars();
-		if (AUT_run.isMedelexis) {
-			Utils.dbg_msg("AUT_EXE is medelexis: " + AUT_run.config.get(Constants.AUT_EXE));
-			c.clickComponent(OM.Medelexis_Abo_perspective_tbi);
-			Utils.sleepMs(5 * 1000); // wait 5 seconds: TODO: should wait till populated
-		}
-
+		software.showAbout("first", false);
 		if (install_and_show_sw) {
-			//			showVars();
-			//software.showAbout("first");
-			if (AUT_run.isMedelexis) {
-				Utils.dbg_msg("AUT_EXE is medelexis" + AUT_run.config.get(Constants.AUT_EXE));
-				c.openMenu("Datei/Beenden");
-			} else {
-				software.installAllFeatures();
-				Utils.dbg_msg("Smoketest calling restart");
-				AUT_run.restartApp(m_aut);
-				Utils.dbg_msg("Smoketest restarted");
-				AUT_run.takeScreenshotActiveWindow(AUT_run.m_aut, AUT_run.app, "after_restart.png");
-				Utils.dbg_msg("Smoketest restarted");
-				perspectives.initialSetup();
-			}
-			showVars();
-			software.showAbout("second");
-			Utils.dbg_msg("Calling importArtikelstamm" + AUT_run.config.get(Constants.AUT_EXE));
+			software.installAllAndShowSW();
 		}
 		Utils.dbg_msg("Smoketest with_artikelstamm " + with_artikelstamm + " v4 "
 			+ software.isArtikelstamm_v4());

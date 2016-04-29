@@ -20,6 +20,7 @@ import org.eclipse.jubula.toolkit.enums.ValueSets.InteractionMode;
 import org.eclipse.jubula.toolkit.enums.ValueSets.Modifier;
 import org.eclipse.jubula.toolkit.enums.ValueSets.Operator;
 import org.eclipse.jubula.toolkit.enums.ValueSets.Unit;
+import org.junit.Assert;
 
 import ch.ngiger.jubula.elexiscore.OM;
 
@@ -96,7 +97,10 @@ public class Artikelstamm extends Common {
 		contextMenuByText(OM.Artikelstamm_ToolbarMenu, "Import.*", false);
 
 		String import_name = "Datenimport";
-		waitForWindow(import_name, Constants.ONE_SECOND);
+		if (!waitForWindow(import_name, Constants.ONE_SECOND))
+		{
+			Assert.fail("importArtikelstamm: Unable to open " + import_name);
+		}
 
 		// runner.synchronizedTextReplace(OM.Artikelstamm_import_file, stamm.getAbsolutePath()); //$NON-NLS-1$
 		// synchronizedTextReplace has problems with /
@@ -116,7 +120,10 @@ public class Artikelstamm extends Common {
 		// fails at this
 		Utils.sleep1second(); // Be sure that the window popped up
 		// but it might be too short to be detected!
-		waitForElexisMainWindow(60 * Constants.ONE_SECOND);
+		if (!waitForElexisMainWindow(60 * Constants.ONE_SECOND))
+		{
+			Assert.fail("importArtikelstamm: failed");
+		}
 		AUT_run.takeScreenshotActiveWindow(m_aut, m_app,
 			"import_artikelstamm/Artikelstamm_Import_done.png"); //$NON-NLS-1$
 
