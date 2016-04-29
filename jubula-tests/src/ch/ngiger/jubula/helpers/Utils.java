@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-import java.lang.management.ManagementFactory;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Paths;
@@ -80,8 +79,9 @@ public class Utils {
 		if (Utils.writer == null) {
 			String log_name = null;
 			if (SAVE_RESULTS_DIR != null) {
-				log_name = SAVE_RESULTS_DIR + "/AUT_run_"
-					+ ManagementFactory.getRuntimeMXBean().getName() + ".log";
+				String log_timestamp = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss")
+					.format(Calendar.getInstance().getTime());
+				log_name = SAVE_RESULTS_DIR + "/AUT_run_" + log_timestamp + ".log";
 			} else {
 				log_name = AUT_run.USER_DIR + "/AUT_run.log";
 			}
