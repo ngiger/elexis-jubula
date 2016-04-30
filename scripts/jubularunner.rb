@@ -4,6 +4,8 @@ require 'common'
 require 'socket'
 require 'tmpdir'
 
+USE_X11 = !!ENV['USE_X11']
+
 # Helper class to use docker for the Jubula AUT
 class DockerRunner
   attr_reader :container_home, :cleanup_in_container
@@ -27,22 +29,30 @@ class DockerRunner
     # Remove old docker images if present
     cmd = "docker inspect #{@docker_name} 2>/dev/null && docker rm #{@docker_name}"
     system(cmd, MAY_FAIL)
-    cmd = 'docker run --detach'
+    cmd = 'docker run'
     cmd += " --env=#{env}" if env
     cmd += " --workdir=#{workdir}" if workdir
+    if USE_X11 # Thanks to jess Fraznelle https://blog.jessfraz.com/post/docker-containers-on-the-desktop/
+      cmd +=  " -v /tmp/.X11-unix:/tmp/.X11-unix " # mount the X11 socket
+      cmd +=  " -e DISPLAY=unix$DISPLAY" # pass the display
+      cmd +=  " --device /dev/snd" # sound
+      cmd += ' --rm'
+    else
+      cmd += ' --detach'
+    end
     cmd += " -v #{@container_home}:/home/elexis"
     cmd += " -v #{@result_dir}:/home/elexis/results"
     cmd += " -v #{@m2_repo}:/home/elexis/.m2"
     cmd += " --name=#{@docker_name} #{ElexisJubula::NAME}"
     cmd += ' ' + cmd_in_docker
     puts cmd
-    system(cmd)
+    res = system(cmd)
     0.upto(10).each do |idx|
       sleep 0.1
-      res = system("/usr/bin/docker inspect -f {{.State.Running}} #{@docker_name}")
+      system("/usr/bin/docker inspect -f {{.State.Running}} #{@docker_name}")
       puts "#{idx}/10: docker #{@docker_name} started? #{res}"
       break if res
-    end
+    end unless USE_X11
   end
 
   def exec_in_docker(command, options = {})
@@ -82,7 +92,8 @@ class JubulaRunner
   attr_reader :start_time, :jubula_test_db_params, :jubula_test_data_dir, :rcp_support, :test_params
   DISPLAY= ':1.5' # must match with values in START_XVFB_CMD and START_META_CMD
   START_XVFB_CMD = 'Xvfb :1 -screen 5 1280x1024x24 -nolisten tcp'
-  START_META_CMD = "export DISPLAY=#{DISPLAY}
+  START_META_CMD = "export DISPLAY=#{DISPLAY}" unless USE_X11
+  START_META_CMD = "
     /usr/bin/metacity --replace --sm-disable &
     sleep 1
     echo ls -la $HOME/elexis
@@ -116,13 +127,17 @@ class JubulaRunner
     return unless @docker
     puts 'Starting start_xvfb in docker'
 
-    store_cmd('start_xvfb_cmd.sh', START_XVFB_CMD)
-    @docker.start_docker('./start_xvfb_cmd.sh', 'DISPLAY=' +DISPLAY)
-    sleep(0.5)
-    store_cmd('start_meta.sh', START_META_CMD)
-    @docker.exec_in_docker('./start_meta.sh', detach: true)
-    sleep(0.5)
-    system('docker ps')
+    if USE_X11
+      system('xhost local:root')
+    else
+      store_cmd('start_xvfb_cmd.sh', START_XVFB_CMD)
+      @docker.start_docker('./start_xvfb_cmd.sh', 'DISPLAY=' +DISPLAY)
+      sleep(0.5)
+      store_cmd('start_meta.sh', START_META_CMD)
+      @docker.exec_in_docker('./start_meta.sh', detach: true)
+      sleep(0.5)
+      system('docker ps')
+    end
   end
 
   def prepare_docker
@@ -141,37 +156,48 @@ class JubulaRunner
 
   def run_test_in_docker
     prepare_docker
+    res = false
     Dir.chdir(WorkDir)
     FileUtils.rm_f('jubula-tests/AUT_run.log', verbose: true) if File.exist?('jubula-tests/AUT_run.log')
     start_xvfb
     sleep 0.5
-    cmd = "status=99
-mkdir -p /home/elexis/results
+    cmd = "status=99\n"
+    @test_params[:environment].each do |v,k| cmd += "export #{v}=#{k}\n" end if @test_params[:environment]
+cmd +="mkdir -p /home/elexis/results
 cp $0 /home/elexis/results
-#{@mvn_cmd} -DDISPLAY=#{DISPLAY}
+/usr/bin/xclock -digital -twentyfour &
+#{@mvn_cmd} #{USE_X11 ? '' : '-DDISPLAY=' + DISPLAY}
 status=$?
-echo run_test_in_docker done
+echo run_test_in_docker done. Status $status
+echo $status > /home/elexis/results/result_of_test_run
 sleep 1
 # this is needed that copying  the results and log files will not fail
 #{@docker.cleanup_in_container}
 rm -rf ~/.jubula
 ls -lR /home/elexis/results
 sleep 1
+killall /usr/bin/xclock
 exit $status
 "
-    puts "Starting testexec in docker: #{cmd}"
+    puts "Starting testexec.sh in docker: #{cmd}"
     store_cmd('testexec.sh', cmd)
     begin
       cmd_name = './testexec.sh'
-      res = @docker.exec_in_docker(cmd_name)
-      puts "res of testexec.sh is #{res}"
-      sleep(0.5)
-      FileUtils.rm_f(cmd_name)
+      if USE_X11
+        @docker.start_docker(cmd_name)
+        res = IO.readlines(File.join(@result_dir, 'result_of_test_run')).first.to_i
+        puts "res of start_docker #{cmd_name} is #{res.inspect}"
+      else
+        res = @docker.exec_in_docker(cmd_name)
+        puts "res of testexec.sh is #{res}"
+        sleep(0.5)
+        FileUtils.rm_f(cmd_name)
+      end
       if res && /smoketest/i.match(@test_params[:test_to_run])
         puts "smoketest: Copy newly installed plugins for further tests back"
         FileUtils.cp_r(File.join(@docker.container_home, 'work'), WorkDir, verbose: true)
       else
-        puts "Skip copying plugins as testsuit #{@test_params[:test_to_run]} != smoketest"
+        puts "Skip copying plugins as testsuite #{@test_params[:test_to_run]} != smoketest"
       end
     ensure
       # stop container if we were unable to copy the result and/or log files
@@ -183,6 +209,7 @@ exit $status
   def run_test_exec
     File.join(RootDir, 'results')
     Dir.chdir RootDir
+    @test_params[:environment].each do |v,k| ENV[v]=k end if @test_params[:environment]
     puts "Will run #{@mvn_cmd}"
     system(@mvn_cmd) # + ' --offline')
   ensure

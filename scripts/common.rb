@@ -7,6 +7,7 @@ require 'byebug' if Gem::Specification.find_all_by_name('byebug').any?
 
 $LOAD_PATH.unshift File.dirname(__FILE__)
 require 'version'
+VARIANT = ENV['VARIANT'] ? ENV['VARIANT'] : 'snapshot'
 
 if ARGV.index('-n')
   DRY_RUN = true

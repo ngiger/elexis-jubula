@@ -39,17 +39,14 @@ task :elexis_install_os do
   fail 'elexis_install_os failed!' unless system('scripts/install_open_source_elexis.rb')
 end
 
-x= %(
--Dagent_host=wheezy
--Ddb_load_script=scratch.sql
--Ddb_connection="jdbc:mysql://ng-tr/elexistest
-)
-
 common_options = "\n# to run with a specific database use environment variables, e.g.
-set -x db_load_script scratch.sql
-set -x db_connection jdbc:postgresql://servername:serverport/db_name
+export db_load_script=scratch.sql
+export db_connection=jdbc:postgresql://servername:serverport/db_name
 # Note: database user elexisTest with password elexisTest must have all required priviledges to modify the database
-# Note: postgres db users must also set -x PGPASSWORD elexisTest
+# Note: postgres db users must also export PGPASSWORD=elexisTest
+Alternatively you may set them for a given test in its definitions/<name>.yaml
+
+export USE_X11=1 # to see the Elexis running during the tests
 "
 
 

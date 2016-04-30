@@ -4,7 +4,6 @@ require 'common'
 
 director_zip = Config[:director_latest]
 
-VARIANT = ENV['VARIANT'] ? ENV['VARIANT'] : 'snapshot'
 elexis_zip = Config[:elexis_fsf][VARIANT][:full_zip_url]
 
 if macos?
