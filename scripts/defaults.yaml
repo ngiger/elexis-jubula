@@ -1,7 +1,7 @@
 ---
 :workdir:  work
-:jubula_root: /opt/jubula_8.2.2.050
-:jubula_version: 8.2.2
+:jubula_root: /opt/jubula_8.3.0.122
+:jubula_version: 8.3.0
 :agent_port: 6333  # keep this in sync with ALL your Dockerfiles
 :director_latest: http://mirror.switch.ch/eclipse/tools/buckminster/products/director_latest.zip
 :elexis_fsf:
