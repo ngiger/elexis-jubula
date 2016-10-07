@@ -11,6 +11,7 @@
 package ch.ngiger.jubula.helpers;
 
 import org.eclipse.jubula.client.AUT;
+import org.eclipse.jubula.client.Result;
 import org.eclipse.jubula.client.exceptions.ActionException;
 import org.eclipse.jubula.client.exceptions.CheckFailedException;
 import org.eclipse.jubula.toolkit.concrete.ConcreteComponents;
@@ -147,12 +148,14 @@ public class Perspectives extends Common {
 					"1", //$NON-NLS-1$
 					Operator.equals, new Integer(1), new Integer(50), Unit.percent, new Integer(50),
 					Unit.percent, ValueSets.BinaryChoice.no, InteractionMode.primary), null);
-				// TODO: We should get the name of the selected perspective
+				Result<Object> txt = m_aut.execute(tableComp.readValue(), null);
+				String name = txt.getReturnValue();
+
 				clickComponent(OM.ShowView_OkButton_grc);
 
 				waitForWindowClose(window_title);
 				waitForElexisMainWindow(Constants.ONE_SECOND);
-				AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "Perspective_" + j + ".png"); //$NON-NLS-1$ //$NON-NLS-2$
+				AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "Perspective_" + name + ".png"); //$NON-NLS-1$ //$NON-NLS-2$
 			}
 		} catch (ActionException e) {
 			clickComponent(OM.ShowView_OkButton_grc);
@@ -172,7 +175,7 @@ public class Perspectives extends Common {
 		first_leistungen = true;
 		closeMultipleProblems();
 		// We must open Leistungen first, as this take a lot of time
-		openLeistungenPerspective();
+		openLeistungenPerspective(); // First patient gets selected. Don't know wha
 		openPatientenPerspective();
 		resetPerspective();
 	}
