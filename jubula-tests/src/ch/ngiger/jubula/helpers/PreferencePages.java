@@ -45,8 +45,8 @@ public class PreferencePages extends Common {
 
 	boolean gotoPreferencPage(String position){
 		String window_title = Messages.getString("VisitAllPreferencePages.4"); //$NON-NLS-1$
-		Assert.assertTrue("gotoPreferencPage: waitForWindowClose " + window_title, waitForWindowClose(window_title));
-		Assert.assertTrue("gotoPreferencPage: Elexis-MainWindow", waitForElexisMainWindow(Constants.ONE_SECOND));
+		Assert.assertTrue(waitForWindowClose(window_title));
+		Assert.assertTrue(waitForElexisMainWindow(Constants.ONE_SECOND));
 		openMenu(Messages.getString("VisitAllPreferencePages.7")); //$NON-NLS-1$
 		try {
 			@SuppressWarnings("unchecked")
