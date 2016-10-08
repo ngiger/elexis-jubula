@@ -131,6 +131,10 @@ public class Views extends Common {
 						nr_views++;
 						closeAndReturnToElexis();
 						maximixeView();
+						// TODO: get name of selected view
+						// Result<Object> txt = m_aut.execute(treeComp.readValue(), null);
+						// String name = txt.getReturnValue();
+
 						Utils.sleep1second();
 						AUT_run.takeScreenshotActiveWindow(m_aut, m_app,
 							"window/view_" + new_pos2 + ".png"); //$NON-NLS-1$ //$NON-NLS-2$
