@@ -33,6 +33,7 @@ import org.eclipse.jubula.toolkit.concrete.components.Application;
 import org.eclipse.jubula.toolkit.concrete.components.MenuBarComponent;
 import org.eclipse.jubula.toolkit.concrete.components.TabComponent;
 import org.eclipse.jubula.toolkit.concrete.components.TableComponent;
+import org.eclipse.jubula.toolkit.concrete.components.TextComponent;
 import org.eclipse.jubula.toolkit.concrete.components.TextInputComponent;
 import org.eclipse.jubula.toolkit.concrete.components.TreeComponent;
 import org.eclipse.jubula.toolkit.enums.ValueSets;
@@ -58,11 +59,17 @@ public class Common {
 	public Common(AUT aut, Application app){
 		m_aut = aut;
 		m_app = app;
-		Utils.dbg_msg("Common init " + m_aut + " app " + m_app);
+		Utils.dbg_msg("Common init " + m_aut + " app " + m_app + " logging");
+		m_aut.setCAPtoConsoleLogging(true);
 	}
 
-	public void clickComponent(@SuppressWarnings("rawtypes") ComponentIdentifier cid){
-		// Click Okay
+	/**
+	 * Waits max 1 second for component to be present. Then clicks in the component
+	 *
+	 * @param: cid	a ComponentIdentifier
+	 */
+	@SuppressWarnings("rawtypes")
+	public void clickComponent(ComponentIdentifier cid){
 		Assert.assertNotNull(cid + " may not be null", cid); //$NON-NLS-1$
 		waitForComponent(cid);
 		@SuppressWarnings("unchecked")
@@ -71,6 +78,11 @@ public class Common {
 		m_aut.execute(comp.click(1, InteractionMode.primary), null);
 	}
 
+	/**
+	 * Waits max 1 second for component to be present. Then clicks in the component
+	 *
+	 * @param: cid	a ComponentIdentifier
+	 */
 	public void clickInMiddleOfComponent(@SuppressWarnings("rawtypes") ComponentIdentifier cid){
 		@SuppressWarnings("unchecked")
 		GraphicsComponent comp =
@@ -265,12 +277,14 @@ public class Common {
 
 	public void pressEnter(){
 		Utils.dbg_msg("pressEnter");
-		/*
-		 * Allows to send special character like "Enter"
-		 */
 		m_aut.execute(m_app.externalKeyCombination(new Modifier[] {}, "Enter"), null);
 	}
 
+	/**
+	 * Select a given tab, by passing the tabName as a match, e.g. Bl.cke will match Blöcke
+	 * @param cid
+	 * @param tabName
+	 */
 	public void selectTabByValue(@SuppressWarnings("rawtypes") ComponentIdentifier cid,
 		String tabName){
 		@SuppressWarnings("unchecked")
@@ -397,8 +411,8 @@ public class Common {
 		}
 	}
 
-	public void waitForWindowClose(String window_title){
-		waitForWindowClose(window_title, Constants.ONE_SECOND);
+	public boolean waitForWindowClose(String window_title){
+		return waitForWindowClose(window_title, Constants.ONE_SECOND);
 	}
 
 	public boolean waitForWindowClose(String window_title, int timeoutInMs){
@@ -429,6 +443,29 @@ public class Common {
 			writer.flush();
 			writer.close();
 		} catch (FileNotFoundException | UnsupportedEncodingException e) {}
+	}
+
+	public boolean labelTextMatches(@SuppressWarnings("rawtypes") ComponentIdentifier cid,
+		String value){
+		Assert.assertNotNull(cid + " may not be null", cid); //$NON-NLS-1$
+		@SuppressWarnings("unchecked")
+		TextComponent lbl = SwtComponents.createLabel(cid);
+		m_aut.execute(lbl.waitForComponent(Constants.ONE_SECOND, 0), null);
+		try {
+			Result<Object> txt = m_aut.execute(lbl.readValue(), null);
+			System.out.println(txt.getReturnValue());
+		Result<Object> res = m_aut.execute(lbl.checkText(value, Operator.equals), null);
+			String msg = String.format("labelTextMatches: value: %s is okay. res is " + res, value);
+			Utils.dbg_msg(msg);
+			return true;
+		} catch (ActionException | CheckFailedException
+				| IllegalArgumentException e) {
+			String msg = String.format("labelTextMatches: value: %s  error %s", value,
+				e.getMessage());
+			Utils.dbg_msg(msg);
+			return false;
+		}
+
 	}
 
 }
