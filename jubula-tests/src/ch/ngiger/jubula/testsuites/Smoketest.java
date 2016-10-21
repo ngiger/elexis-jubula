@@ -158,7 +158,7 @@ public class Smoketest {
 		// myList.forEach(element -> synchronizedTextReplace(text_intput_to_use, element));
 	}
 
-	private static final boolean install_and_show_sw = true;
+	private static final boolean install_and_show_sw = false;
 	private static final boolean with_artikelstamm = false;
 
 	@Test()
@@ -167,8 +167,8 @@ public class Smoketest {
 			+ " with_artikelstamm " + with_artikelstamm + " Medelexis " + AUT_run.isMedelexis);
 		Utils.dbg_msg("Calling importArtikelstamm" + AUT_run.config.get(Constants.AUT_EXE));
 		// showVars();
-		software.showAbout("first", false);
 		if (install_and_show_sw) {
+			software.showAbout("first", false);
 			software.installAllAndShowSW();
 		}
 		Utils.dbg_msg("Smoketest with_artikelstamm " + with_artikelstamm + " v4 "
@@ -188,8 +188,9 @@ public class Smoketest {
 			Assert.assertTrue(result);
 		}
 
-		String leisungs_name = "Motorfaehigkeit testen";
-		eigenleistung.createEigenleistung("mfk", leisungs_name, 5000, 8000, 10);
+		String leistungs_name = "Motorfaehigkeit testen";
+		String leistung_short = "mfk";
+		eigenleistung.createEigenleistung(leistung_short, leistungs_name, 5000, 8000, 10);
 
 		pat.createPatient("Testperson", "ArmesWesen", "31.01.1990");
 		perspectives.openPatientenPerspective();
@@ -201,7 +202,8 @@ public class Smoketest {
 		if (with_artikelstamm) {
 			pat.artikelstammItemVerrechnen(artikelstamm, "CYKLOKAPRON");
 		}
-		pat.eigenleistungVerrechnen(eigenleistung, leisungs_name.substring(0, 4));
+		// Hier gibt es Probleme
+		pat.eigenleistungVerrechnen(eigenleistung, leistung_short, leistungs_name);
 
 		pat.invoiceActiveConsultation();
 		String test = invoice.getInvoicesAsString("invoice/after_first_invoice.png");

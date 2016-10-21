@@ -57,7 +57,8 @@ public class AUT_run {
 	private static String dump_command = null;
 	static String dump_to_file;
 	private static String load_command;
-	private static String db_user_pw = " -Dch.elexis.dbUser=elexisTest -Dch.elexis.dbPw=elexisTest ";
+	private static String db_user_pw =
+		" -Dch.elexis.dbUser=elexisTest -Dch.elexis.dbPw=elexisTest ";
 
 	private static void setupConfig(){
 		config.put(Constants.DB_CONNECTION, "h2");
@@ -100,11 +101,10 @@ public class AUT_run {
 		// -Dch.elexis.username=007 -Dch.elexis.password=topsecret
 		config.put(Constants.AUT_VM_ARGS,
 			"-nl " + config.get(Constants.AUT_LOCALE)
-				+ " -clean -vmargs -Declipse.p2.unsignedPolicy=allow" + " -Dautagent_port="
+				+ " --clean -vmargs -Declipse.p2.unsignedPolicy=allow" + " -Dautagent_port="
 				+ config.get(Constants.AGENT_PORT) + " -Dautagent_host="
 				+ config.get(Constants.AGENT_HOST)
-				+ " -Dch.elexis.username=007 -Dch.elexis.password=topsecret "
-		);
+				+ " -Dch.elexis.username=007 -Dch.elexis.password=topsecret "); //  osgi.locking=none
 		config.put(Constants.AUT_KEYBOARD, "de_DE");
 		overrideConfigWithEnvAndProperties();
 		checkAndLoadDatabase();
@@ -122,7 +122,8 @@ public class AUT_run {
 
 	static String getDatabaseFile(String db_variant, String filename){
 		String path = AUT_run.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-		Utils.dbg_msg("Find " + filename + " config.get(Constants.WORK_DIR) " +  config.get(Constants.WORK_DIR));
+		Utils.dbg_msg("Find " + filename + " config.get(Constants.WORK_DIR) "
+			+ config.get(Constants.WORK_DIR));
 		if (new File(filename).canRead()) {
 			Utils.dbg_msg("Cannot read the db file: " + filename);
 			return filename;
@@ -137,7 +138,8 @@ public class AUT_run {
 		Utils.dbg_msg("decodedPath is: " + decodedPath);
 		String desired = config.get(Constants.WORK_DIR) + "/rsc/db/" + db_variant + "/" + filename;
 		if (new File(desired).canRead()) {
-			Utils.dbg_msg("desired is readable: " + desired + " -> " + desired.replaceAll("//", "/"));
+			Utils.dbg_msg(
+				"desired is readable: " + desired + " -> " + desired.replaceAll("//", "/"));
 			return desired.replaceAll("//", "/");
 		}
 		Utils.dbg_msg("CANNOT read desired: " + desired);
@@ -174,15 +176,15 @@ public class AUT_run {
 			+ uri.getPath());
 
 		vmargs_db_flavor =
-				" -Dch.elexis.dbFlavor=" + db_variant + " -Dch.elexis.dbSpec=" + db_connection;
+			" -Dch.elexis.dbFlavor=" + db_variant + " -Dch.elexis.dbSpec=" + db_connection;
 
 		Utils.dbg_msg(config.get(Constants.DB_LOAD_SCRIPT));
 		String file_to_load = getDatabaseFile(db_variant, config.get(Constants.DB_LOAD_SCRIPT));
 		if (file_to_load == null) {
-			Utils.dbg_msg("file_to_load is null. There setting elexis-run-mode RunFromScratch for " + db_variant);
+			Utils.dbg_msg("file_to_load is null. There setting elexis-run-mode RunFromScratch for "
+				+ db_variant);
 			config.put(Constants.AUT_VM_ARGS,
-				config.get(Constants.AUT_VM_ARGS)
-					+ " -Delexis-run-mode=RunFromScratch");
+				config.get(Constants.AUT_VM_ARGS) + " -Delexis-run-mode=RunFromScratch");
 			System.exit(3);
 		} else {
 			dump_to_file = file_to_load + "_after.sql";
@@ -214,8 +216,8 @@ public class AUT_run {
 				// PG user elexisTest must be downcased to allow login! Niklaus Giger, 22.04.2016
 				// but the password remains mixed case.
 				db_user_pw = " -Dch.elexis.dbUser=elexistest -Dch.elexis.dbPw=elexisTest ";
-				vmargs_db_flavor =
-						" -Dch.elexis.dbFlavor=" + db_variant + " -Dch.elexis.dbSpec=" + db_connection.toLowerCase();
+				vmargs_db_flavor = " -Dch.elexis.dbFlavor=" + db_variant + " -Dch.elexis.dbSpec="
+					+ db_connection.toLowerCase();
 
 				String connect_cmd = " --host=" + db_host + " --user=elexisTest ".toLowerCase();
 				if (db_port > 0) {
@@ -231,13 +233,18 @@ public class AUT_run {
 				Assert.fail(Constants.DB_CONNECTION + " unsupported type " + db_variant
 					+ " from config " + config.get(Constants.DB_CONNECTION));
 			}
-			Utils.run_system_cmd(load_command);
+			if (!Utils.run_system_cmd(load_command)) {
+				String error = "loading database failed: " + dump_command;
+				Utils.dbg_msg(error);
+				Assert.fail(error);
+			}
 			dump_command = "rm -f " + dump_to_file + "; " + dump_command;
 			Utils.dbg_msg("dump_command: " + dump_command);
 		}
 		Utils.dbg_msg("checkAndLoadDatabase vmargs_db_flavor: " + vmargs_db_flavor);
 		Utils.dbg_msg("checkAndLoadDatabase db_user_pw: " + db_user_pw);
-		config.put(Constants.AUT_VM_ARGS, config.get(Constants.AUT_VM_ARGS) + vmargs_db_flavor + " " + db_user_pw);
+		config.put(Constants.AUT_VM_ARGS,
+			config.get(Constants.AUT_VM_ARGS) + vmargs_db_flavor + " " + db_user_pw);
 	}
 
 	private static void dumpDatabase(){
@@ -325,7 +332,7 @@ public class AUT_run {
 			j = 0;
 			while (j < 3) {
 				try {
-					j ++;
+					j++;
 					Utils.dbg_msg("try " + j + ": startAUT"); //$NON-NLS-1$
 					aut_id = m_agent.startAUT(aut_config);
 					Utils.dbg_msg("try " + j + ": startAUT. Got aut_id " + aut_id); //$NON-NLS-1$
@@ -414,8 +421,7 @@ public class AUT_run {
 	}
 
 	public static void takeScreenshotActiveWindow(AUT aut, Application app, String imageName){
-		if (!aut.isConnected())
-		{
+		if (!aut.isConnected()) {
 			Utils.dbg_msg("Request takeScreenshot failed (not connected) for " + imageName);
 			return;
 		}
@@ -440,8 +446,7 @@ public class AUT_run {
 	}
 
 	public static void takeScreenshot(AUT aut, Application app, String imageName){
-		if (aut == null || !aut.isConnected())
-		{
+		if (aut == null || !aut.isConnected()) {
 			Utils.dbg_msg("Request takeScreenshot failed (not connected) for " + imageName);
 			return;
 		}

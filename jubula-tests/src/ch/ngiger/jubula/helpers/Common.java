@@ -346,7 +346,6 @@ public class Common {
 		TextInputComponent tic = SwtComponents.createTextInputComponent(cid);
 		m_aut.execute(tic.waitForComponent(Constants.ONE_SECOND, 0), null);
 		try {
-			m_aut.execute(tic.checkEnablement(true), null);
 			Utils.dbg_msg("synchronizedTextReplace: is enabled");
 			m_aut.execute(tic.checkEditability(true), null);
 			Utils.dbg_msg("synchronizedTextReplace: is editable");

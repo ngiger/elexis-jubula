@@ -335,8 +335,8 @@ public class Patients extends Common {
 	/*
 	 * We assume an open consultation
 	 */
-	public void eigenleistungVerrechnen(Eigenleistung eigenleistung, String item){
-		Utils.dbg_msg("eigenleistungVerrechnen: " + item); //$NON-NLS-1$
+	public void eigenleistungVerrechnen(Eigenleistung eigenleistung, String abbrev, String name){
+		Utils.dbg_msg("eigenleistungVerrechnen: " + name); //$NON-NLS-1$
 		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "cons/eigenleistung/start.png"); //$NON-NLS-1$
 		perspectives.openPatientenPerspective();
 		perspectives.resetPerspective();
@@ -349,7 +349,7 @@ public class Patients extends Common {
 		Utils.sleep1second();
 		// clickComponent(OM.Patientenübersicht_tbi);
 		// openMenu("Fenster/Ansicht/Leistungen");
-		eigenleistung.selectEigenleistung(item);
+		eigenleistung.selectEigenleistung(abbrev, name);
 		Utils.sleep1second();
 		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "cons/eigenleistung/item.png"); //$NON-NLS-1$
 		selectTopLeftCell(OM.Eigenleistung_Alle_Table_1_tbl);
@@ -395,4 +395,21 @@ public class Patients extends Common {
 		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "cons/artikel/done.png"); //$NON-NLS-1$
 		Utils.dbg_msg("artikelstammItemVerrechnen done: " + item); //$NON-NLS-1$
 	}
+
+	public void selectFirstPatient(){
+		synchronizedTextReplace(OM.Patienten_SelectName_grc, "D'A");//$NON-NLS-1$
+		synchronizedTextReplace(OM.Patienten_SelectName_grc, "");//$NON-NLS-1$
+		// clickInMiddleOfComponent(OM.Patients_Filter_Name);
+		clickInMiddleOfComponent(OM.Pat_List_tbl);
+		@SuppressWarnings("unchecked")
+		TableComponent tbl = ConcreteComponents.createTableComponent(OM.Pat_List_tbl);
+		tbl.click(1, InteractionMode.primary);
+		tbl.selectCell("1", Operator.equals, "1", Operator.equals, new Integer(1), new Integer(50),
+			Unit.percent, new Integer(50), Unit.percent, BinaryChoice.no, InteractionMode.primary);
+		tbl.click(1, InteractionMode.primary);
+		tbl.selectCell("2", Operator.equals, "1", Operator.equals, new Integer(1), new Integer(50),
+			Unit.percent, new Integer(50), Unit.percent, BinaryChoice.no, InteractionMode.primary);
+		tbl.click(1, InteractionMode.primary);
+;	}
+
 }

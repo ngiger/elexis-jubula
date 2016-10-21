@@ -81,7 +81,7 @@ public class Software extends Common {
 		clickComponent(OM.SW_About_Detail_btn); //$NON-NLS-1$
 		waitForWindow(details_title);
 
-		HashMap<String, String> map = new HashMap<String, String>();
+		HashMap<String, String> map = new HashMap<>();
 		map.put("configuration", "Configuration"); //$NON-NLS-1$
 		if (!minimal) {
 			map.put("history", "Update Chronik"); //$NON-NLS-1$
@@ -108,6 +108,7 @@ public class Software extends Common {
 		// Select all SW from all sites
 		@SuppressWarnings("unchecked")
 		ComboComponent combo = SwtComponents.createComboComponent(OM.SW_update_select_site_combo);
+		clickComponent(OM.SW_update_select_site_combo);
 
 		// Select all SW from all sites
 		AUT_run.m_aut.execute(

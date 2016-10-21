@@ -92,7 +92,7 @@ public class Utils {
 			}
 			System.out.println("log_name writer is: " + log_name);
 		}
-		// System.out.println(timeStamp + ": dbg_msg " + msg);
+		System.out.println(timeStamp + ": dbg_msg " + msg);
 		Utils.writer.println(timeStamp + ": " + msg);
 		Utils.writer.flush();
 	}
