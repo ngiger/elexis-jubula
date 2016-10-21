@@ -1,0 +1,56 @@
+# Copyright (c) 2015 by Niklaus Giger niklaus.giger@member.fsf.org
+#
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the Eclipse Public License v1.0
+# which accompanies this distribution, and is available at
+# http:#www.eclipse.org/legal/epl-v10.html
+#
+# This is a setup for running tests
+# Security is not really a concern!
+#
+# FROM postgres:9.4
+# RUN localedef -i de_DE -c -f UTF-8 -A /usr/share/locale/locale.alias de_DE.UTF-8
+# ENV LANG de_DE.utf8
+
+pgdata:
+  image: postgres:9.1
+  entrypoint: /bin/bash
+
+postgres:
+  image: postgres:9.1
+  volumes_from:
+    - pgdata
+  environment:
+    POSTGRES_USER: elexistest
+    POSTGRES_PASSWORD: elexisTest
+    POSTGRES_DB: elexistest
+
+jenkinstest:
+  build: .
+  # Elexis user uid is 1200
+  user: '1000'
+  ports:
+    - "8081:8080"
+  working_dir: ${workdir}
+  entrypoint:
+    - /usr/local/bin/testexec.sh
+  volumes:
+    - ${container_home}:/home/elexis
+    - ${result_dir}:/home/elexis/results
+    - ${m2_repo}:/home/elexis/.m2
+  links:
+    - postgres
+  environment:
+    DOCKER_OPTS: "-H tcp://0.0.0.0:4243 -H unix:///var/run/docker.sock"
+    PGHOST: postgresTest
+    PGUSER: elexistest
+    PGHOST: postgres
+    PGPASSWORD: elexisTest
+    PGDATABASE: elexistest
+    MYSQL_HOST: mysqlTest
+    MYSQL_PWD: elexisTest
+    MYSQL_DATABASE: unittests
+    MYSQL_USER: elexis
+    MYSQL_PASSWORD: elexisTest
+    MYSQL_ROOT_PASSWORD: elexisTest
+

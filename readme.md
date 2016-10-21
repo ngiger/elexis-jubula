@@ -154,7 +154,7 @@ The following improvements are planned. Order may be varied depending whether we
 
 ### Catch up with previous capabilities
 
-* -Move to current Jubula-Version 8.2.-
+* -Move to current Jubula-Version 8.3.-
 * Simplify vastly the ruby scripts. Ideas are:
 ** -Move all config-variables in one (or more) YAML-files- "see":defaults.yaml. They may be overriden be putting your changes into config.yaml
 ** -Add simple script to download Elexis-Opensource from Jenkin-CI- "see":scripts/install_open_source_elexis.rb
