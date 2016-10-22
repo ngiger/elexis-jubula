@@ -47,7 +47,7 @@ public class AUT_run {
 	/** the logger */
 	// private static Logger log = LoggerFactory.getLogger(AUT_run.class);
 	public static final String AUT_ID = "elexis_3_1"; //$NON-NLS-1$
-	public static Map<String, String> config = new Hashtable<String, String>();
+	public static Map<String, String> config = new Hashtable<>();
 	public static final String USER_DIR = System.getProperty("user.dir");
 	public static final Locale Keyboard_Locale = Locale.GERMANY;// Locale.US;
 	private static AUTConfiguration aut_config = null;
@@ -432,14 +432,6 @@ public class AUT_run {
 			aut.execute(
 				app.takeScreenshotOfActiveWindow(fullname, 0, "rename", 100, true, 0, 0, 0, 0),
 				null);
-			String agent_host = config.get(Constants.AGENT_HOST);
-			if (agent_host.toLowerCase().equals("localhost")) {
-				boolean foundFile = Files.exists(
-					new File(config.get(Constants.RESULT_DIR) + "/" + imageName).toPath(),
-					LinkOption.NOFOLLOW_LINKS);
-				Utils.dbg_msg("Created " + fullname + " exists " + foundFile);
-				Assert.assertTrue(foundFile);
-			}
 		} catch (ActionException e) {
 			Utils.dbg_msg("Action Exception " + fullname + " reason: " + e.getMessage());
 		}

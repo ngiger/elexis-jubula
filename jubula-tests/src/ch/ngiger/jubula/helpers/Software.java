@@ -256,7 +256,7 @@ public class Software extends Common {
 		return finishInstallSelectedSW();
 	}
 
-	public void installAllAndShowSW(){
+	public void installAllSW(){
 		if (AUT_run.isMedelexis) {
 			Utils.dbg_msg("AUT_EXE is medelexis: " + AUT_run.config.get(Constants.AUT_EXE));
 			clickComponent(OM.Medelexis_Abo_perspective_tbi);
@@ -278,7 +278,5 @@ public class Software extends Common {
 				perspectives.initialSetup();
 			}
 		}
-		showAbout("installed", true);
-
 	}
 }

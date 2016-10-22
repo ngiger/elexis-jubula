@@ -36,6 +36,10 @@ import ch.ngiger.jubula.helpers.Utils;
 import ch.ngiger.jubula.helpers.Views;
 
 public class Smoketest {
+	private static final boolean show_sw = true;
+	private static final boolean install_sw = true;
+	private static final boolean with_artikelstamm = true;
+
 	public static String SAVE_RESULTS_DIR = null;
 	private static String watchedLog = "Started:\n";
 	@Rule
@@ -158,18 +162,21 @@ public class Smoketest {
 		// myList.forEach(element -> synchronizedTextReplace(text_intput_to_use, element));
 	}
 
-	private static final boolean install_and_show_sw = false;
-	private static final boolean with_artikelstamm = false;
-
 	@Test()
 	public void smoketest() throws Exception{
-		Utils.dbg_msg("smoketest install_and_show_sw is " + install_and_show_sw
+		Utils.dbg_msg("smoketest install_sw is " + install_sw
 			+ " with_artikelstamm " + with_artikelstamm + " Medelexis " + AUT_run.isMedelexis);
 		Utils.dbg_msg("Calling importArtikelstamm" + AUT_run.config.get(Constants.AUT_EXE));
 		// showVars();
-		if (install_and_show_sw) {
+		if (show_sw) {
 			software.showAbout("first", false);
-			software.installAllAndShowSW();
+		}
+		if (install_sw) {
+			software.installAllSW();
+		}
+		if (show_sw || with_artikelstamm) {
+			 // need to distinguis between v3 and v4 for Artikelstamm
+			software.showAbout("second", true);
 		}
 		Utils.dbg_msg("Smoketest with_artikelstamm " + with_artikelstamm + " v4 "
 			+ software.isArtikelstamm_v4());

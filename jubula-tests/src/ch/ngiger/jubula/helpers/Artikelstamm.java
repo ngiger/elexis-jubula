@@ -55,7 +55,14 @@ public class Artikelstamm extends Common {
 		synchronizedTextReplace(OM.Artikelstamm_Bezeichung_txt, item); //$NON-NLS-1$
 
 		// Refresh Artikelstamm
-		clickComponent(OM.Artikelstamm_refresh_btn); //$NON-NLS-1$
+		if (componentIsEnabled(OM.Artikelstamm_ret_unknown_2_tbi))
+		{
+			clickComponent(OM.Artikelstamm_ret_unknown_2_tbi); //$NON-NLS-1$
+		}
+		if (componentIsEnabled(OM.Artikelstamm_refresh_btn))
+		{
+			clickComponent(OM.Artikelstamm_refresh_btn); //$NON-NLS-1$
+		}
 
 		// Give Elexis some time to show the drug
 		Utils.sleep1second();
@@ -84,7 +91,7 @@ public class Artikelstamm extends Common {
 			return false;
 		}
 
-		m_perspectives.openPerspectiveByName("Artikel");
+		m_perspectives.openArtikelPerspective();
 		waitForElexisMainWindow(Constants.ONE_SECOND);
 		m_perspectives.resetPerspective();
 

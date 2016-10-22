@@ -88,7 +88,7 @@ public class Perspectives extends Common {
 			"openLeistungenPerspective: " + name + " first_leistungen is " + first_leistungen);
 		if (first_leistungen) {
 			Utils.dbg_msg("fastOpenPerspectives: " + name + " via menu");
-			openPerspectiveByName(name + ".*"); // Match (default) for Patientenübersicht
+			fastOpenPerspectives(OM.Perspective_Leistungen_tbi, name);
 			// Comment: Niklaus did see 110 second on his PC with PostgreSQL (2014.05.24)
 			Utils.sleepMs(5 * Constants.ONE_SECOND);
 			Utils.dbg_msg("waitForWindowClose:");

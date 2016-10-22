@@ -118,8 +118,9 @@ public class ImportArtikelstamm {
 	public void importArtikelstamm() throws Exception{
 		Utils.dbg_msg("importArtikelstamm Medelexis " + AUT_run.isMedelexis);
 		if (install_and_show_sw) {
-			software.installAllAndShowSW();
+			software.installAllSW();
 		}
+		software.showAbout("artikel", true); // needed to get info whether
 		Utils.dbg_msg("importArtikelstamm v4 " + software.isArtikelstamm_v4());
 		String filename = "";
 		if (software.isArtikelstamm_v4()) {

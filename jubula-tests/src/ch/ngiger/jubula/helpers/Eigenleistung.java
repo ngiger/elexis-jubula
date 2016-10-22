@@ -72,7 +72,7 @@ public class Eigenleistung extends Common {
 		waitForWindowClose(window_title);
 
 		selectEigenleistung(abbrev, description);
-		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "eigenleistung/3_chars.png"); //$NON-NLS-1$
+		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "eigenleistung/"+ abbrev+".png"); //$NON-NLS-1$ //$NON-NLS-2$
 		//		selectTabByValue(OM.Eigenleistung_Table_1_tbl,description); // got: Operation not supported by the selected toolkit
 		if (isEnabled(OM.Eigenleistung_Table_1_tbl)) {
 			clickComponent(OM.Eigenleistung_Table_1_tbl);
@@ -84,17 +84,13 @@ public class Eigenleistung extends Common {
 		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "eigenleistung/select_" + abbrev + ".png"); //$NON-NLS-1$
 		selectTabByValue(OM.CTabFolder_1_tpn, "Eigenleistung");
 		Utils.dbg_msg("selectEigenleistung: " + abbrev + " desc: " + description);
-		System.out.println(isEnabled(OM.Eigenleistung_Code_txf));
 		if (isEnabled(OM.Eigenleistung_Code_txf)) {
 			Utils.dbg_msg("selectEigenleistung: OM.Eigenleistung_Code_txf ");
 			clickComponent(OM.Eigenleistung_Code_txf);
-			synchronizedTextReplace(OM.Eigenleistung_Code_txf, description.substring(0, 3));
-		} else if (isEnabled(OM.Eigenleistung_Code_Search_txt)) {
-			Utils.dbg_msg("selectEigenleistung: OM.Eigenleistung_Code_Search_txt ");
-			clickComponent(OM.Eigenleistung_Code_Search_txt);
-			synchronizedTextReplace(OM.Eigenleistung_Code_Search_txt, abbrev);
+			synchronizedTextReplace(OM.Eigenleistung_Code_txf, abbrev.substring(0, 3));
+			Utils.sleep1second();
 		} else {
-			Assert.fail("Eigenleistung_Code_Search_txt and Eigenleistung_Code_txf not found");
+			Assert.fail("Eigenleistung_Code_txf not found");
 		}
 	}
 
