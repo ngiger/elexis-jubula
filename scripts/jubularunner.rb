@@ -79,7 +79,7 @@ class DockerRunner
     @docker_name = "jubula-#{@test_name}-#{ENV['VARIANT']}"
     @container_home = File.join(RootDir, 'container_home')
     @m2_repo = File.join(RootDir, 'container_home_m2')
-    @cleanup_in_container = 'chmod --silent --recursive o+rwX /home/elexis; rm -rf /home/elexis/.jubula'
+    @cleanup_in_container = 'chmod --silent --recursive o+rwX /home/elexis; rm -rf /home/elexis/.jubula /home/elexis/.cache /home/elexis/.fontconfig /home/elexis/.dbus'
   end
 end
 
@@ -143,9 +143,14 @@ class JubulaRunner
   def prepare_docker
     @docker.stop_docker
     at_exit { @docker.stop_docker }
+    tmp_dest_dir = File.join(RootDir, 'tmp.to_be_deleted')
+    puts "tmp_dest_dir is #{tmp_dest_dir}"
+    FileUtils.rm_rf(tmp_dest_dir)
+    FileUtils.makedirs(tmp_dest_dir)
     if File.exists?(@docker.container_home)
-      FileUtils.mv(@docker.container_home, "/tmp/#{Time.now.strftime('%Y%m%d%H%M%s')}", verbose: true)
+      FileUtils.mv(@docker.container_home, "#{tmp_dest_dir}/#{Time.now.strftime('%Y%m%d%H%M%s')}", verbose: true)
       fail "Must be possible to remove container_home #{@docker.container_home}" if File.exist?(@docker.container_home)
+      FileUtils.rm_rf(tmp_dest_dir)
     end
     FileUtils.makedirs(@docker.container_home)
     ['.git', 'pom.xml', 'jubula-target', 'jubula-tests', 'org.eclipse.jubula.product.autagent.start'].each do |item|
@@ -166,6 +171,8 @@ class JubulaRunner
 cmd +="mkdir -p /home/elexis/results
 cp $0 /home/elexis/results
 /usr/bin/xclock -digital -twentyfour &
+export LANG=de_CH.UTF-8
+export LANGUAGE=de_CH
 #{@mvn_cmd} #{USE_X11 ? '' : '-DDISPLAY=' + DISPLAY}
 status=$?
 echo run_test_in_docker done. Status $status
