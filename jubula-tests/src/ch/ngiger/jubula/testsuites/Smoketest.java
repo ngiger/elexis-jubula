@@ -26,7 +26,6 @@ import ch.ngiger.jubula.elexiscore.OM;
 import ch.ngiger.jubula.helpers.AUT_run;
 import ch.ngiger.jubula.helpers.Artikelstamm;
 import ch.ngiger.jubula.helpers.Common;
-import ch.ngiger.jubula.helpers.Constants;
 import ch.ngiger.jubula.helpers.Eigenleistung;
 import ch.ngiger.jubula.helpers.Invoice;
 import ch.ngiger.jubula.helpers.Patients;
@@ -37,7 +36,7 @@ import ch.ngiger.jubula.helpers.Views;
 
 public class Smoketest {
 	private static final boolean show_sw = true;
-	private static final boolean install_sw = false;
+	private static final boolean install_sw = true;
 	private static final boolean with_artikelstamm = true;
 
 	public static String SAVE_RESULTS_DIR = null;
@@ -166,7 +165,6 @@ public class Smoketest {
 	public void smoketest() throws Exception{
 		Utils.dbg_msg("smoketest install_sw is " + install_sw
 			+ " with_artikelstamm " + with_artikelstamm + " Medelexis " + AUT_run.isMedelexis);
-		Utils.dbg_msg("Calling importArtikelstamm" + AUT_run.config.get(Constants.AUT_EXE));
 		// showVars();
 		if (show_sw) {
 			software.showAbout("first", false);
