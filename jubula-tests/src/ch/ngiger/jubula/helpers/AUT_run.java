@@ -54,6 +54,7 @@ public class AUT_run {
 	private static java.nio.file.Path ElexisLog =
 		Paths.get(System.getProperty("user.home") + "/elexis/logs/elexis-3.log");
 	public static boolean isMedelexis = false;
+	private static boolean stopping_autagent = false;
 	private static String dump_command = null;
 	static String dump_to_file;
 	private static String load_command;
@@ -78,19 +79,45 @@ public class AUT_run {
 			config.put(Constants.AUT_VM_ARGS,
 				"-eclipse.password ~/.medelexis.dummy.password " + config.get(Constants.AUT_VM_ARGS)
 					+ " -Dprovisioning.UpdateRepository=" + variant);
-			Path prefs =
-				Paths.get(USER_DIR + "/../work/configuration/.settings/MedelexisDesk.prefs");
-			if (!prefs.toFile().canRead()) {
+	    	Path prefs_dir = Paths.get(USER_DIR + "/../work/configuration/.settings");
+	    	Path prefs = Paths.get(prefs_dir + "/MedelexisDesk.prefs");
+			try {
+				Utils.dbg_msg("setupConfig: prefs are " +prefs);
+				if (!Files.isDirectory(prefs_dir, LinkOption.NOFOLLOW_LINKS))
+		    	{
+		    		Files.createDirectory(prefs_dir);
+		    	}
 				List<String> lines = Arrays.asList(new String[] {
 					"eclipse.preferences.version=1",
 					"usageConditionAcceptanceDate=" + LocalDateTime.now().toString(),
 					"usageConditionAccepted=true"
 				});
-				try {
-					Files.write(prefs, lines);
-				} catch (IOException e) {}
+				Files.write(prefs, lines);
+				Utils.dbg_msg("setupConfig created " + prefs.toAbsolutePath());
+			} catch (IOException e) {
+				Utils.dbg_msg("setupConfig: failed to create " + prefs);
+			}
+
+	    	Path source  = Paths.get(System.getProperty("user.home") + "/medelexis_jubula_license.xml");
+		    try {
+		    	Path elexis_dir = Paths.get(System.getProperty("user.home") + "/elexis");
+		    	Path license = Paths.get(elexis_dir + "/license.xml");
+		    	if (!Files.isDirectory(elexis_dir, LinkOption.NOFOLLOW_LINKS))
+		    	{
+		    		Files.createDirectory(elexis_dir);
+		    	}
+		    	if (!Files.isReadable(license))
+		    	{
+		    		Files.copy(source, license);
+		    	}
+				Utils.dbg_msg("setupConfig: "+license + " file is present");
+			} catch (IOException e) {
+				String msg = "setupConfig: Could not create elexis/license.xml. Missing? " + source;
+				Utils.dbg_msg(msg);
+				Assert.fail(msg);
 			}
 		}
+
 		config.put(Constants.AUT_LOCALE, "de_DE");
 		config.put(Constants.AUT_ID, "elexis");
 		config.put(Constants.AUT_PROGRAM_ARGS,
@@ -108,7 +135,7 @@ public class AUT_run {
 		config.put(Constants.AUT_KEYBOARD, "de_DE");
 		overrideConfigWithEnvAndProperties();
 		checkAndLoadDatabase();
-		dumpConfig("After setupConfig");
+		dumpConfig("setupConfig finished");
 	}
 
 	/**
@@ -301,6 +328,10 @@ public class AUT_run {
 				Assert.assertTrue(rPath.toFile().canExecute());
 				Utils.run_system_cmd(rPath.toString() + " -vm /usr/bin/java -l -p "
 					+ config.get(Constants.AGENT_PORT) + " &");
+				if (!stopping_autagent) {
+					Utils.dbg_msg("Premature stop of autagent. Why?");
+					Assert.fail("Premature stop of autagent");
+				}
 				Utils.dbg_msg("Autagent finished");
 			}
 		}
@@ -319,6 +350,9 @@ public class AUT_run {
 	}
 
 	public static AUT startAUT(){
+		if (m_aut != null && m_aut.isConnected()) {
+			stopAut(m_aut);
+		}
 		AUTIdentifier aut_id = null;
 		AUT new_aut = null;
 		Utils.dbg_msg("Calling startAUT: aut_config" + aut_config);
@@ -368,13 +402,13 @@ public class AUT_run {
 	@BeforeClass
 	public static void setUp() throws Exception{
 		Utils.setupResultDir();
-		setupConfig();
 		try {
 			java.nio.file.Files.delete(ElexisLog);
-			Utils.dbg_msg("Deleted old " + ElexisLog.toAbsolutePath());
+			Utils.dbg_msg("setUp: deleted old " + ElexisLog.toAbsolutePath());
 		} catch (IOException e) {
-			Utils.dbg_msg("Did not delete " + ElexisLog.toAbsolutePath());
+			Utils.dbg_msg("setup: did not delete " + ElexisLog.toAbsolutePath());
 		}
+		setupConfig();
 
 		/*
 		 * Connecting to external Jubula AUT Agent which must be started
@@ -414,9 +448,9 @@ public class AUT_run {
 		aut_config = new RCPAUTConfiguration("ch.elexis.core.application", //$NON-NLS-1$
 			config.get(Constants.AUT_ID), config.get(Constants.AUT_EXE),
 			config.get(Constants.WORK_DIR), args, Locale.US);
-		Utils.dbg_msg("Got aut_config as " + aut_config.getLaunchInformation());
+		Utils.dbg_msg("setup: Got aut_config as " + aut_config.getLaunchInformation());
 		Thread.sleep(1000);
-		Utils.dbg_msg("AUT createApplication");
+		Utils.dbg_msg("setup: createApplication");
 		app = SwtComponents.createApplication();
 	}
 
@@ -464,6 +498,7 @@ public class AUT_run {
 	}
 
 	public static void stopAut(AUT aut){
+		stopping_autagent = true;
 		Utils.dbg_msg("stopAut " + aut + " isCon " + aut.isConnected());
 		if (aut != null && aut.isConnected()) {
 			aut.disconnect();
@@ -475,6 +510,7 @@ public class AUT_run {
 	/** cleanup */
 	@AfterClass
 	public static void tearDown() throws Exception{
+		stopping_autagent = true;
 		if (m_aut != null) {
 			Utils.dbg_msg("AUT_run.tearDown " + m_aut + " isCon " + m_aut.isConnected());
 		}

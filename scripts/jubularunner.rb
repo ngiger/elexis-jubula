@@ -163,6 +163,9 @@ class JubulaRunner
     prepare_docker
     res = false
     Dir.chdir(WorkDir)
+    source = File.join(ENV['HOME'], 'medelexis_jubula_license.xml')
+    dest = File.join(@docker.container_home, 'medelexis_jubula_license.xml')
+    FileUtils.cp(source, dest, :verbose => true) if File.exist?(source)
     FileUtils.rm_f('jubula-tests/AUT_run.log', verbose: true) if File.exist?('jubula-tests/AUT_run.log')
     start_xvfb
     sleep 0.5
@@ -196,7 +199,7 @@ exit $status
         puts "res of start_docker #{cmd_name} is #{res.inspect}"
       else
         res = @docker.exec_in_docker(cmd_name)
-        puts "res of testexec.sh is #{res}"
+        puts "res of #{cmd_name} is #{res}"
         sleep(0.5)
         FileUtils.rm_f(cmd_name)
       end

@@ -72,7 +72,7 @@ public class Software extends Common {
 				beginIndex += searchString.length();
 				ElexisCoreVersion = info.substring(beginIndex, beginIndex + 3);
 			}
-			writeStringToResultsFile(info, root + "about_elexis_" + ElexisCoreVersion + abbrev + ".txt");
+			writeStringToResultsFile(info, "about_elexis_" + ElexisCoreVersion + "_" + abbrev + ".txt");
 		}
 	}
 
@@ -270,13 +270,13 @@ public class Software extends Common {
 	public void installAllSW(){
 		if (AUT_run.isMedelexis) {
 			Utils.dbg_msg("AUT_EXE is medelexis: " + AUT_run.config.get(Constants.AUT_EXE));
-			clickComponent(OM.Medelexis_Abo_perspective_tbi);
-			Utils.sleepMs(5 * 1000); // wait 5 seconds: TODO: should wait till populated
-		}
-
-		if (AUT_run.isMedelexis) {
-			Utils.dbg_msg("AUT_EXE is medelexis" + AUT_run.config.get(Constants.AUT_EXE));
 			openMenu("Datei/Beenden");
+			while (m_aut.isConnected()) {
+				Utils.sleep1second();
+				Utils.dbg_msg("AUT_EXE is medelexis waiting");
+			}
+			Utils.sleep1second();
+			AUT_run.restartApp(m_aut);
 		} else {
 			if (installAllFeatures()) {
 				// needs restart
