@@ -37,7 +37,7 @@ import ch.ngiger.jubula.helpers.Views;
 
 public class Smoketest {
 	private static final boolean show_sw = true;
-	private static final boolean install_sw = true;
+	private static final boolean install_sw = false;
 	private static final boolean with_artikelstamm = true;
 
 	public static String SAVE_RESULTS_DIR = null;
@@ -209,9 +209,8 @@ public class Smoketest {
 		if (with_artikelstamm) {
 			pat.artikelstammItemVerrechnen(artikelstamm, "CYKLOKAPRON");
 		}
-		// Hier gibt es Probleme
-		pat.eigenleistungVerrechnen(eigenleistung, leistung_short, leistungs_name);
 
+		pat.eigenleistungVerrechnen(eigenleistung, leistung_short, leistungs_name);
 		pat.invoiceActiveConsultation();
 		String test = invoice.getInvoicesAsString("invoice/after_first_invoice.png");
 		Pattern p = Pattern.compile("[0-9]{4}.*Testperson.*ArmesWesen.*1990");

@@ -41,25 +41,28 @@ public class Eigenleistung extends Common {
 	public void createEigenleistung(String abbrev, String description, int cost, int selling,
 		int time_needed){
 		String window_title = "Eigenleistung";
-		String tab_name = "Eigenleistung";
-		// TODO Auto-generated method stub
-		//testLoadFromStream();
 		perspectives.openLeistungenPerspective();
-		// perspectives.resetPerspective();
 		waitForComponent(OM.CTabFolder_1_tpn);
 		boolean tab_enabled = isEnabled(OM.CTabFolder_1_tpn);
 		if (!tab_enabled) {
 			AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "eigenleistung/ctab_not_enabled.png"); //$NON-NLS-1$
-			Assert.assertTrue("Eigentleistung CTB must be enabled", tab_enabled);
+			Assert.assertTrue("Eigenleistung CTB must be enabled", tab_enabled);
 		}
-		// Blöcke has an umlaut
-		AUT_run.takeScreenshotActiveWindow(m_aut, m_app,
-			"eigenleistung/before_selectin_bloecke.png"); //$NON-NLS-1$
 		selectTabByValue(OM.CTabFolder_1_tpn, "Eigenleistung");
-		clickComponent(OM.cv_ret_Eigenleistung_3_tbi);
-		// clickComponent(OM.cv_ret_Block_3_tbi);
+		if (!componentIsEnabled(OM.cv_ret_Eigenleistung_3_tbi)) { // Elexis 3.1 and previous
+			// Blöcke has an umlaut
+			AUT_run.takeScreenshotActiveWindow(m_aut, m_app,
+				"eigenleistung/before_selecting_bloecke.png"); //$NON-NLS-1$
+			selectTabByValue(OM.CTabFolder_1_tpn, "Bl.cke"); // Blöcke
+			clickComponent(OM.cv_ret_Block_3_tbi);
+			window_title = "Blöcke";
+			waitForWindow(window_title);
+			clickComponent(OM.blkd_createPredefinedServices_Btn);
+		} else { // Elexis 3.2
+			clickComponent(OM.cv_ret_Eigenleistung_3_tbi);
+			waitForWindow(window_title);
+		}
 
-		waitForWindow(window_title);
 		Utils.dbg_msg(String.format("createEigenleistung: a: %s d: %s cost %d/%d/%d", abbrev,
 			description, cost, selling, time_needed));
 		synchronizedTextReplace(OM.EigenleistungDialog_tKurz, abbrev);
@@ -84,14 +87,15 @@ public class Eigenleistung extends Common {
 		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "eigenleistung/select_" + abbrev + ".png"); //$NON-NLS-1$
 		selectTabByValue(OM.CTabFolder_1_tpn, "Eigenleistung");
 		Utils.dbg_msg("selectEigenleistung: " + abbrev + " desc: " + description);
+
 		if (isEnabled(OM.Eigenleistung_Code_txf)) {
 			Utils.dbg_msg("selectEigenleistung: OM.Eigenleistung_Code_txf ");
 			clickComponent(OM.Eigenleistung_Code_txf);
 			synchronizedTextReplace(OM.Eigenleistung_Code_txf, abbrev.substring(0, 3));
-			Utils.sleep1second();
 		} else {
-			Assert.fail("Eigenleistung_Code_txf not found");
+			Utils.dbg_msg("selectEigenleistung: OM.Eigenleistung_Code_txf not available. Cannot select");
 		}
+		Utils.sleep1second();
 	}
 
 }

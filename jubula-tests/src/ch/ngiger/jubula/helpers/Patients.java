@@ -25,6 +25,7 @@ import org.eclipse.jubula.toolkit.enums.ValueSets.SearchType;
 import org.eclipse.jubula.toolkit.enums.ValueSets.Unit;
 import org.eclipse.jubula.toolkit.swt.SwtComponents;
 import org.eclipse.jubula.toolkit.swt.components.ToolItem;
+import org.junit.Assert;
 
 import ch.ngiger.jubula.elexiscore.OM;
 
@@ -337,28 +338,30 @@ public class Patients extends Common {
 	 */
 	public void eigenleistungVerrechnen(Eigenleistung eigenleistung, String abbrev, String name){
 		Utils.dbg_msg("eigenleistungVerrechnen: " + name); //$NON-NLS-1$
-		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "cons/eigenleistung/start.png"); //$NON-NLS-1$
-		perspectives.openPatientenPerspective();
-		perspectives.resetPerspective();
-		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "cons/eigenleistung/resetted.png"); //$NON-NLS-1$
-		selectAndClickInKonsView();
-		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "cons/eigenleistung/in_cons_view.png"); //$NON-NLS-1$
+		if (!componentIsEnabled(OM.Kons_Verrechnung_grc))  {
+			AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "cons/eigenleistung/start.png"); //$NON-NLS-1$
+			perspectives.openPatientenPerspective();
+			perspectives.resetPerspective();
+			AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "cons/eigenleistung/resetted.png"); //$NON-NLS-1$
+			selectAndClickInKonsView();
+			AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "cons/eigenleistung/in_cons_view.png"); //$NON-NLS-1$
+		}
 
 		// Clicking on Kons_Verrechnung_grc opens the perspective full
 		clickComponent(OM.Kons_Verrechnung_grc);
 		Utils.sleep1second();
-		// clickComponent(OM.Patientenübersicht_tbi);
-		// openMenu("Fenster/Ansicht/Leistungen");
 		eigenleistung.selectEigenleistung(abbrev, name);
-		Utils.sleep1second();
 		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "cons/eigenleistung/item.png"); //$NON-NLS-1$
-		selectTopLeftCell(OM.Eigenleistung_Alle_Table_1_tbl);
+		if (isEnabled(OM.Eigenleistung_Alle_Table_1_tbl)) {
+			selectTopLeftCell(OM.Eigenleistung_Alle_Table_1_tbl);
+		} else {
+			Assert.fail("Eigenleistung_Alle_Table_1_tbl not found");
+
+		}
 		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "cons/eigenleistung/item_selected.png"); //$NON-NLS-1$
-		Utils.sleep1second();
 		dragTopLeftCell(OM.Eigenleistung_Alle_Table_1_tbl);
 		dropIntoMiddleOfComponent(OM.Kons_Verrechnung_table);
 		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "cons/eigenleistung/dropped.png"); //$NON-NLS-1$
-		Utils.sleep1second();
 		clickComponent(OM.Kons_Texteingabe_txf);
 		Utils.sleep1second();
 		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "cons/eigenleistung/done.png"); //$NON-NLS-1$
@@ -378,12 +381,12 @@ public class Patients extends Common {
 
 	public void artikelstammItemVerrechnen(Artikelstamm artikelstamm, String item){
 		Utils.dbg_msg("artikelstammItemVerrechnen: " + item); //$NON-NLS-1$
+		if (!componentIsEnabled(OM.Kons_Verrechnung_grc))  {
+			perspectives.openPatientenPerspective();
+			perspectives.resetPerspective();
+			selectAndClickInKonsView();
+		}
 		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "cons/artikel/start.png"); //$NON-NLS-1$
-		perspectives.openPatientenPerspective();
-		perspectives.resetPerspective();
-		selectAndClickInKonsView();
-		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "cons/artikel/in_cons_view.png"); //$NON-NLS-1$
-		// Clicking on Kons_Verrechnung_grc opens the perspective full
 		clickComponent(OM.Kons_Verrechnung_grc);
 		Utils.sleep1second();
 		selectTabByValue(OM.CTabFolder_1_tpn, "Artikelstamm");

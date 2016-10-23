@@ -35,6 +35,5 @@ RUN useradd --uid 1200 --user-group --create-home --shell /bin/bash elexis && \
     chmod 0440 /etc/sudoers.d/elexis && \
     mkdir -p elexis /home/elexis/work /home/elexis/results
 
-COPY testexec.sh /usr/local/bin/testexec.sh
 USER elexis
 WORKDIR /home/elexis

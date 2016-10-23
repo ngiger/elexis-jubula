@@ -146,7 +146,7 @@ public class Utils {
 
 	private static String RESULT_DIR = null;
 
-	static void setupResultDir(){
+	static String setupResultDir(){
 		java.nio.file.Path rPath = Paths.get("../results").toAbsolutePath().normalize();
 		AUT_run.config.put(Constants.RESULT_DIR, rPath.toString());
 		boolean foundFile = Files.exists(rPath, LinkOption.NOFOLLOW_LINKS);
@@ -165,6 +165,7 @@ public class Utils {
 			}
 		}
 		System.out.println("SAVE_RESULTS_DIR is: " + SAVE_RESULTS_DIR);
+		return SAVE_RESULTS_DIR;
 	}
 
 	public static PrintWriter getWriter(){
