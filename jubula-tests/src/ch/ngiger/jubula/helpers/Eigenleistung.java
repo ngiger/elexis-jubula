@@ -53,9 +53,9 @@ public class Eigenleistung extends Common {
 			// Blöcke has an umlaut
 			AUT_run.takeScreenshotActiveWindow(m_aut, m_app,
 				"eigenleistung/before_selecting_bloecke.png"); //$NON-NLS-1$
-			selectTabByValue(OM.CTabFolder_1_tpn, "Bl.cke"); // Blöcke
+			window_title = "Bl.cke";
+			selectTabByValue(OM.CTabFolder_1_tpn, window_title); // Blöcke
 			clickComponent(OM.cv_ret_Block_3_tbi);
-			window_title = "Blöcke";
 			waitForWindow(window_title);
 			clickComponent(OM.blkd_createPredefinedServices_Btn);
 		} else { // Elexis 3.2
