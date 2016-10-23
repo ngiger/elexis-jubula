@@ -37,10 +37,15 @@ public class Software extends Common {
 	}
 
 	private static String root = "sw_inst/";
+	private static String ElexisCoreVersion = "unknown";
 	private static boolean artikelstamm_v4 = false;
 
 	public boolean isArtikelstamm_v4(){
 		return artikelstamm_v4;
+	}
+
+	public String getElexisCoreVersion() {
+		return ElexisCoreVersion;
 	}
 
 	private void handleAboutDetail(String abbrev, String name){
@@ -61,7 +66,13 @@ public class Software extends Common {
 			} else {
 				Utils.dbg_msg("handleAboutDetail: NO artikelstamm_v4 found");
 			}
-			writeStringToResultsFile(info, root + "about_" + abbrev + ".txt");
+			final String searchString = "ch.elexis.core (";
+			int beginIndex = info.indexOf(searchString, 0);
+			if (beginIndex >= 0) {
+				beginIndex += searchString.length();
+				ElexisCoreVersion = info.substring(beginIndex, beginIndex + 3);
+			}
+			writeStringToResultsFile(info, root + "about_elexis_" + ElexisCoreVersion + abbrev + ".txt");
 		}
 	}
 
