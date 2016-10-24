@@ -246,6 +246,8 @@ exit $status
     @docker ? run_test_in_docker : run_test_exec
   ensure
     FileUtils.cp_r(@result_dir, @result_dir + '-' + @test_params[:test_to_run], verbose: true, preserve: true)
+    dirs = Dir.glob(File.join(@docker.container_home, '*/*/surefire-reports'))
+    FileUtils.cp_r(dirs, @result_dir + '-' + @test_params[:test_to_run], verbose: true, preserve: true)
     diff_time = (Time.now - @start_time).to_i
     puts "Running took #{diff_time} seconds"
     Dir.chdir(saved_dir)
