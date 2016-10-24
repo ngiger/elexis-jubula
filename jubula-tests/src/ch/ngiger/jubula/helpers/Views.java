@@ -77,7 +77,8 @@ public class Views extends Common {
 	@SuppressWarnings("unchecked")
 	public void visit_all_views() throws Exception{
 		int major = 0, minor = 0, nr_views = 0;
-		int restart_after = 35; // On my wheezy with a relatively small window I could open 37 view
+		int restart_after = 25; // On my wheezy with a relatively small window I could open 37 view
+		// With the Medelexis I had problems after 26 windows
 		String new_pos = "first_time", new_pos2 = ""; //$NON-NLS-1$ //$NON-NLS-2$
 		ComponentIdentifier<Tree> tree = OM.ShowView_ViewTree_grc; //$NON-NLS-1$
 		Assert.assertNotNull("ShowView_ViewTree_grc may not be null", tree);

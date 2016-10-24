@@ -4,9 +4,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.eclipse.jubula.client.AUT;
-import org.eclipse.jubula.toolkit.concrete.components.Application;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
@@ -15,7 +16,6 @@ import org.junit.runner.Description;
 
 import ch.ngiger.jubula.helpers.AUT_run;
 import ch.ngiger.jubula.helpers.Artikelstamm;
-import ch.ngiger.jubula.helpers.Common;
 import ch.ngiger.jubula.helpers.Eigenleistung;
 import ch.ngiger.jubula.helpers.Invoice;
 import ch.ngiger.jubula.helpers.Patients;
@@ -27,53 +27,46 @@ import ch.ngiger.jubula.helpers.Views;
 
 public class Medelexis {
 	public static String SAVE_RESULTS_DIR = null;
-	private static String watchedLog = "Started:\n";
 	@Rule
 	public TestWatcher watchman = new TestWatcher() {
 		@Override
 		protected void failed(Throwable e, Description description){
 			String msg = description + " failed\n";
-			watchedLog += msg;
 			Utils.dbg_msg("JUnitTest: " + msg);
 			e.printStackTrace(Utils.getWriter());
-
+			if (m_aut != null && m_aut.isConnected()) {
+				AUT_run.stopAut(m_aut);
+			}
 		}
 
 		@Override
 		protected void succeeded(Description description){
 			String msg = description + " succeeded\n";
-			watchedLog += msg;
 			Utils.dbg_msg("JUnitTest: " + msg);
 		}
 		@Override
 		protected void starting(Description description){
 			String msg = description + " starting\n";
-			watchedLog += msg;
 			Utils.dbg_msg("JUnitTest: " + msg);
 		}
 	};
-	private static Common c = null;
-	private static Views views = null;
 	private static Eigenleistung eigenleistung = null;
 	private static Artikelstamm artikelstamm = null;
 	private static Perspectives perspectives = null;
 	private static Software software = null;
 	private static Patients pat = null;
 	private static Invoice invoice = null;
-
+	private static boolean is_first = true;
 	private static AUT m_aut = null;
-	private static Application m_app = null;
 
 	@BeforeClass
-	public static void setup() throws Exception{
+	public static void setupClass() throws Exception{
 		AUT_run.setUp();
 		Utils.dbg_msg("AUT_run: setup done"); //$NON-NLS-1$
 		m_aut = AUT_run.startAUT();
-		m_app = AUT_run.app;
+		is_first = true;
 
-		c = new Common(AUT_run.m_aut, AUT_run.app);
 		perspectives = new Perspectives(AUT_run.m_aut, AUT_run.app);
-		views = new Views(AUT_run.m_aut, AUT_run.app);
 		software = new Software(AUT_run.m_aut, AUT_run.app);
 		eigenleistung = new Eigenleistung(AUT_run.m_aut, AUT_run.app);
 		pat = new Patients(AUT_run.m_aut, AUT_run.app);
@@ -81,6 +74,22 @@ public class Medelexis {
 		artikelstamm = new Artikelstamm(AUT_run.m_aut, AUT_run.app, perspectives);
 		perspectives.initialSetup();
 	}
+	@Before
+	public void setup() throws Exception{
+		Utils.dbg_msg("AUT_run: m_aut.isConnected() " + m_aut.isConnected()); //$NON-NLS-1$
+		if (!m_aut.isConnected()) {
+			m_aut = AUT_run.startAUT();
+		}
+
+		perspectives = new Perspectives(AUT_run.m_aut, AUT_run.app);
+		software = new Software(AUT_run.m_aut, AUT_run.app);
+		eigenleistung = new Eigenleistung(AUT_run.m_aut, AUT_run.app);
+		pat = new Patients(AUT_run.m_aut, AUT_run.app);
+		invoice = new Invoice(AUT_run.m_aut, AUT_run.app);
+		artikelstamm = new Artikelstamm(AUT_run.m_aut, AUT_run.app, perspectives);
+		perspectives.initialSetup();
+	}
+
 	@Test()
 	public void suite_visit_all_perspectives() throws Exception{
 		Perspectives p = new Perspectives(AUT_run.m_aut, AUT_run.app);
@@ -94,7 +103,7 @@ public class Medelexis {
 		pp.visit_all_preferencePages();
 	}
 
-	@Test()
+	// TODO: @Test()
 	public void suite_visit_all_views() throws Exception{
 		Views v = new Views(AUT_run.m_aut, AUT_run.app);
 		v.visit_all_views();
@@ -146,10 +155,15 @@ public class Medelexis {
 		Utils.dbg_msg("medelexis_smoketest.finished successfully!"); //$NON-NLS-1$
 	}
 
-	@AfterClass
-	public static void teardown() throws Exception{
+	@After
+	public void teardown() throws Exception{
 		Utils.dbg_msg("Smoketest.teardown"); //$NON-NLS-1$
-		Utils.dbg_msg(watchedLog);
+		// AUT_run.stopAut(m_aut);
+		// AUT_run.tearDown();
+	}
+	@AfterClass
+	public static void teardownFinal() throws Exception{
+		Utils.dbg_msg("Smoketest.teardownFinal"); //$NON-NLS-1$
 		AUT_run.stopAut(m_aut);
 		AUT_run.tearDown();
 	}

@@ -359,7 +359,7 @@ public class AUT_run {
 		try {
 			int j = 0;
 			while (j < 60 && !m_agent.isConnected()) {
-				Utils.dbg_msg("Calling startAUT " + j + " isConnected " + m_agent.isConnected());
+				Utils.dbg_msg("Calling startAUT " + j + " m_agent.isConnected " + m_agent.isConnected());
 				Utils.sleep1second();
 			}
 			Utils.sleep1second();
