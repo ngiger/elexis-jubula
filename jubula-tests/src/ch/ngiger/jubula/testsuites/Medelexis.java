@@ -163,7 +163,10 @@ public class Medelexis {
 	}
 	@AfterClass
 	public static void teardownFinal() throws Exception{
-		Utils.dbg_msg("Smoketest.teardownFinal"); //$NON-NLS-1$
+		Utils.dbg_msg("Smoketest.teardownFinal Resettting patient"); //$NON-NLS-1$
+		Perspectives p = new Perspectives(AUT_run.m_aut, AUT_run.app);
+		p.openPatientenPerspective();
+		p.resetPerspective();
 		AUT_run.stopAut(m_aut);
 		AUT_run.tearDown();
 	}

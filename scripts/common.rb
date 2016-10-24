@@ -155,15 +155,33 @@ def patch_ini_file_for_jubula_rc(inst_dir)
   jubula_jar = Dir.glob(jar_path).first
   fail "Could not find Jubula RCP support jar using #{jar_path}" unless jubula_jar && File.exist?(jubula_jar)
   jubula_jar.sub!(WorkDir + '/', '') if jubula_jar
-  config_ini = IO.readlines(ini_name)
-  FileUtils.cp(ini_name, ini_name + '.bak', verbose: true) unless
-  config_ini.each do |line|
-    next unless /^osgi.bundles=/.match(line)
-    line.sub!(/osgi.bundles=/, 'osgi.bundles=reference\:file\:' + File.basename(jubula_jar) + '@3\:start,')
-    File.open(ini_name, 'w') { |file| file.write config_ini.join('') }
-    return true
+  bundles_info = File.join(WorkDir, 'configuration/org.eclipse.equinox.simpleconfigurator/bundles.info')
+  if File.exist?(bundles_info)
+    puts "Patching #{bundles_info}"
+    info = IO.read(bundles_info)
+    File.open(bundles_info, 'w') do |file|
+      file.write info;
+      parts = File.basename(jubula_jar, '.jar').split('_')
+      # uk.org.lidalia.sysout-over-slf4j,1.0.2,plugins/uk.org.lidalia.sysout-over-slf4j_1.0.2.jar,4,false
+      line = "#{parts[0]},#{parts[1]},plugins/#{ File.basename(jubula_jar)},3,true"
+      puts line
+      file.puts line
+      # org.eclipse.jubula.rc.rcp_4.0.0.201607281404.jar
+      file.puts "# patched by #{__FILE__} at #{Time.now}"
+      file.close
+      system("tail #{bundles_info}")
+    end
+  else
+    config_ini = IO.readlines(ini_name)
+    FileUtils.cp(ini_name, ini_name + '.bak', verbose: true) unless
+    config_ini.each do |line|
+      next unless /^osgi.bundles=/.match(line)
+      line.sub!(/osgi.bundles=/, 'osgi.bundles=reference\:file\:' + File.basename(jubula_jar) + '@3\:start,')
+      File.open(ini_name, 'w') { |file| file.write config_ini.join(''); file.puts "# patched by #{__FILE__} at #{Time.now}" }
+      return true
+    end
+    fail "Could not find line osgi.bundle in #{File.expand_path(ini_name)}"
   end
-  fail "Could not find line osgi.bundle in #{File.expand_path(ini_name)}"
 end
 
 def docker_build(docker_dir = File.join(RootDir, 'wheezy'))

@@ -260,6 +260,16 @@ exit $status
     @start_time = Time.now
     @test_params = YAML.load_file(File.join(RootDir, 'definitions', "#{@test_name}.yaml"))
     show_configuration if $VERBOSE || DRY_RUN
+    if (medelexis = Dir.glob("*medelexis*application*.zip")) && medelexis.size > 0
+      zip_file = File.expand_path(medelexis.first)
+      puts "Unpacking Medelexs zip file #{medelexis}"
+      FileUtils.rm_rf(WorkDir, :verbose => true)
+      FileUtils.makedirs(WorkDir, :verbose => true)
+      saved = Dir.pwd
+      Dir.chdir(WorkDir)
+      unzip(zip_file, File.join(WorkDir, 'Medelexis.ini'))
+      Dir.chdir(saved)
+    end
     require 'install_open_source_elexis.rb' unless File.directory?(File.join(WorkDir, 'plugins'))
     @jubula_test_db_params = get_h2_db_params(File.join(WorkDir, 'database/embedded'))
     @jubula_test_data_dir  = File.join(WorkDir, 'database/data')
