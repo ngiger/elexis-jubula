@@ -155,7 +155,7 @@ public class Perspectives extends Common {
 
 				waitForWindowClose(window_title);
 				waitForElexisMainWindow(Constants.ONE_SECOND);
-				AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "Perspective_" + name + ".png"); //$NON-NLS-1$ //$NON-NLS-2$
+				AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "perspectives/Perspective_" + name + ".png"); //$NON-NLS-1$ //$NON-NLS-2$
 			}
 		} catch (ActionException e) {
 			clickComponent(OM.ShowView_OkButton_grc);
