@@ -35,5 +35,13 @@ RUN useradd --uid 1200 --user-group --create-home --shell /bin/bash elexis && \
     chmod 0440 /etc/sudoers.d/elexis && \
     mkdir -p elexis /home/elexis/work /home/elexis/results
 
+# ENTRYPOINT Xvfb :1 -screen 5 1280x1024x24 -nolisten tcp && /bin/bash
+# Configure the main working directory. This is the base
+# directory used in any further RUN, COPY, and ENTRYPOINT
+# commands.
+RUN mkdir -p /app /tmp/.X11-unix/ && chmod 1777 /tmp/.X11-unix/
+WORKDIR /app
+COPY assets/* /app/
 USER elexis
-WORKDIR /home/elexis
+ENTRYPOINT  ['./start_xvfb.sh']
+CMD ['/bin/bash']

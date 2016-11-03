@@ -21,48 +21,38 @@ class DockerRunner
   end
 
   def start_docker(cmd_in_docker, env = nil, workdir = nil)
+    puts "cmd_in_docker #{cmd_in_docker}"
     # First cleanup possible remnants of old runs
     [@m2_repo, @container_home, @result_dir].each do |dir|
       FileUtils.makedirs(dir, verbose: true) unless File.exist?(dir)
       FileUtils.chmod(0777, dir)
     end
-    # Remove old docker images if present
-    cmd = "docker inspect #{@docker_name} 2>/dev/null && docker rm #{@docker_name}"
-    system(cmd, MAY_FAIL)
-    cmd = 'docker run'
-    cmd += " --env=#{env}" if env
-    cmd += " --workdir=#{workdir}" if workdir
     if USE_X11 # Thanks to jess Fraznelle https://blog.jessfraz.com/post/docker-containers-on-the-desktop/
+      puts "USE_X11: Don't know on howto handle this"
+      exit 3
       cmd +=  " -v /tmp/.X11-unix:/tmp/.X11-unix " # mount the X11 socket
       cmd +=  " -e DISPLAY=unix$DISPLAY" # pass the display
       cmd +=  " --device /dev/snd" # sound
       cmd += ' --rm'
-    else
-      cmd += ' --detach'
     end
-    cmd += " -v #{@container_home}:/home/elexis"
-    cmd += " -v #{@result_dir}:/home/elexis/results"
-    cmd += " -v #{@m2_repo}:/home/elexis/.m2"
-    cmd += " --name=#{@docker_name} #{ElexisJubula::NAME}"
-    cmd += ' ' + cmd_in_docker
-    puts cmd
-    res = system(cmd)
+    start_with = "docker-compose -f #{RootDir}/wheezy/docker-compose.yml "
+    [ start_with + 'rm --all --force', # Remove old docker images if present
+      start_with + 'build', # as we might have added a new test_exec.sh
+      start_with + 'create',
+      start_with + 'start',
+      start_with + 'exec --user elexis jenkinstest ' +cmd_in_docker,
+    ].each do |cmd|
+      puts system("Will run docker")
+      sleep 1
+      binding.pry
+      res = system(cmd, MAY_FAIL)
+    end
     0.upto(10).each do |idx|
       sleep 0.1
       system("/usr/bin/docker inspect -f {{.State.Running}} #{@docker_name}")
       puts "#{idx}/10: docker #{@docker_name} started? #{res}"
       break if res
     end unless USE_X11
-  end
-
-  def exec_in_docker(command, options = {})
-    cmd = "docker exec #{options[:detach] ? '--detach' : ''}" # do it in the background
-    cmd += " --env=#{options[:env]} " if options[:env]
-    cmd += " --workdir=#{options[:workdir]}" if options[:workdir]
-    cmd += " #{@docker_name} "
-    cmd += command
-    puts cmd
-    Kernel.system(cmd)
   end
 
   def stop_docker
@@ -91,32 +81,30 @@ end
 class JubulaRunner
   attr_reader :start_time, :jubula_test_db_params, :jubula_test_data_dir, :rcp_support, :test_params
   DISPLAY= ':1.5' # must match with values in START_XVFB_CMD and START_META_CMD
-  START_XVFB_CMD = 'Xvfb :1 -screen 5 1280x1024x24 -nolisten tcp'
-  START_META_CMD = "export DISPLAY=#{DISPLAY}" unless USE_X11
-  START_META_CMD = "
-    /usr/bin/metacity --replace --sm-disable &
-    sleep 1
-    echo ls -la $HOME/elexis
-    ls -la $HOME/elexis
-    rm -rf $HOME/elexis
-    # mkdir -p $HOME/elexis/GlobalInbox
-    ls -la $HOME/elexis
-    /usr/bin/metacity-message disable-keybindings
-    /usr/bin/xclock &
-  "
+  START_XVFB_CMD = 'Xvfb :1 -screen 5 1280x1024x24 -nolisten tcp &'
+  START_META_CMD = "#{USE_X11 ?  '' : "export DISPLAY=#{DISPLAY}" }
+/usr/bin/metacity --replace --sm-disable &
+sleep 1
+/usr/bin/metacity-message disable-keybindings
+/usr/bin/xclock &
+"
 
   def get_h2_db_params(full_path)
     "-dburl 'jdbc:h2:#{full_path};MVCC=TRUE;AUTO_SERVER=TRUE;DB_CLOSE_ON_EXIT=FALSE' -dbuser 'sa' -dbpw ''"
   end
 
-  def store_cmd(name, doc)
+  def store_cmd(name, cmd)
     path = File.join(@docker ? @docker.container_home : RootDir, File.basename(name))
     FileUtils.makedirs(File.dirname(path))
     File.open(path, 'w') do |f|
       f.puts '#!/bin/sh -v'
-      f.puts(doc)
+      f.puts(cmd)
     end
     FileUtils.chmod(0755, path)
+    FileUtils.cp(path, RootDir, :preserve => true)
+    puts "Wrote #{path}"
+    system("ls -la #{path}")
+    binding.pry
   end
 
   def start_xvfb
@@ -125,19 +113,7 @@ class JubulaRunner
     # Had window activation problem with Xvfb with or without awesome
     # with startx this did not gow
     return unless @docker
-    puts 'Starting start_xvfb in docker'
-
-    if USE_X11
-      system('xhost local:root')
-    else
-      store_cmd('start_xvfb_cmd.sh', START_XVFB_CMD)
-      @docker.start_docker('./start_xvfb_cmd.sh', 'DISPLAY=' +DISPLAY)
-      sleep(0.5)
-      store_cmd('start_meta.sh', START_META_CMD)
-      @docker.exec_in_docker('./start_meta.sh', detach: true)
-      sleep(0.5)
-      system('docker ps')
-    end
+    system('xhost local:root') if USE_X11
   end
 
   def prepare_docker
@@ -145,7 +121,6 @@ class JubulaRunner
     at_exit { @docker.stop_docker }
     tmp_dest_dir = File.join(RootDir, 'tmp.to_be_deleted')
     puts "tmp_dest_dir is #{tmp_dest_dir}"
-    FileUtils.rm_rf(tmp_dest_dir)
     FileUtils.makedirs(tmp_dest_dir)
     if File.exists?(@docker.container_home)
       FileUtils.mv(@docker.container_home, "#{tmp_dest_dir}/#{Time.now.strftime('%Y%m%d%H%M%s')}", verbose: true)
@@ -167,11 +142,22 @@ class JubulaRunner
     dest = File.join(@docker.container_home, 'medelexis_jubula_license.xml')
     FileUtils.cp(source, dest, :verbose => true) if File.exist?(source)
     FileUtils.rm_f('jubula-tests/AUT_run.log', verbose: true) if File.exist?('jubula-tests/AUT_run.log')
-    start_xvfb
-    sleep 0.5
     cmd = "status=99\n"
+    cmd_name = '/home/elexis/testexec.sh'
     @test_params[:environment].each do |v,k| cmd += "export #{v}=#{k}\n" end if @test_params[:environment]
+    cmd += %(
+#{START_XVFB_CMD}
+#{START_META_CMD}
+Xvfb :1 -screen 5 1280x1024x24 -nolisten tcp &
+sleep 1
+/usr/bin/metacity --replace --sm-disable &
+sleep 1
+/usr/bin/metacity-message disable-keybindings
+/usr/bin/xclock &
+)
 cmd +="mkdir -p /home/elexis/results
+mkdir -p /home/elexis/elexis/GlobalInbox
+ls -la /home/elexis/elexis
 cp $0 /home/elexis/results
 /usr/bin/xclock -digital -twentyfour &
 export LANG=de_CH.UTF-8
@@ -189,16 +175,15 @@ sleep 1
 killall /usr/bin/xclock
 exit $status
 "
+    store_cmd(cmd_name, cmd)
     puts "Starting testexec.sh in docker: #{cmd}"
-    store_cmd('testexec.sh', cmd)
+    start_xvfb
     begin
-      cmd_name = './testexec.sh'
+      @docker.start_docker(cmd_name)
       if USE_X11
-        @docker.start_docker(cmd_name)
         res = IO.readlines(File.join(@result_dir, 'result_of_test_run')).first.to_i
         puts "res of start_docker #{cmd_name} is #{res.inspect}"
       else
-        res = @docker.exec_in_docker(cmd_name)
         puts "res of #{cmd_name} is #{res}"
         sleep(0.5)
         FileUtils.rm_f(cmd_name)

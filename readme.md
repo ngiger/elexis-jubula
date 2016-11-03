@@ -81,15 +81,11 @@ useradd --uid 1200 --gid 1200 elexis
 apt-get install -y docker-engine bundler maven xvfb
 git clone https://github.com/ngiger/elexis-jubula.git /opt/ci/some_dir
 cd /opt/ci/some_dir
+setfacl -R --mask -m  u:jenkins_slave:rwx,u:elexis:rwx,m:rwx,o:rw .
 export LANG=de_CH.UTF-8
 export LANGUAGE=de_CH
 export VARIANT=prerelease
 bundle install --without debugger --path=./cache
-setfacl -R --mask -dm u:jenkins_slave:rwx,u:elexis:rwx,m:rwx .
-setfacl -R --mask -m  u:jenkins_slave:rwx,u:elexis:rwx,m:rwx .
-setfacl -R -dm u:jenkins_slave:rwx,u:elexis:rwx,m:rwx .
-setfacl -R -m u:jenkins_slave:rwX,u:elexis:rwx,m:rwX .
-
 
 ### Object mapping
 

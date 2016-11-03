@@ -2,3 +2,6 @@
 :exe_name:    Elexis3
 :test_to_run: Smoketest
 :agent_port:  6300
+:environment:
+  db_connection: 'jdbc:postgresql://localhost/elexistest'
+  db_load_script: simpel.sql

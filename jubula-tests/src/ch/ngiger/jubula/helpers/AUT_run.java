@@ -188,7 +188,6 @@ public class AUT_run {
 			config.put(Constants.AUT_VM_ARGS,
 				config.get(Constants.AUT_VM_ARGS) + " -Delexis-run-mode=RunFromScratch");
 			Utils.dbg_msg("AUT_VM_ARGS are: " + config.get(Constants.AUT_VM_ARGS));
-			return;
 		}
 		String cleanURI = db_connection.substring(db_connection.indexOf(":") + 1);
 		URI uri = URI.create(cleanURI);
@@ -205,69 +204,85 @@ public class AUT_run {
 		vmargs_db_flavor =
 			" -Dch.elexis.dbFlavor=" + db_variant + " -Dch.elexis.dbSpec=" + db_connection;
 
-		Utils.dbg_msg(config.get(Constants.DB_LOAD_SCRIPT));
+		Utils.dbg_msg("load demanded?" + config.get(Constants.DB_LOAD_SCRIPT));
+		String load_configured = config.get(Constants.DB_LOAD_SCRIPT);
 		String file_to_load = getDatabaseFile(db_variant, config.get(Constants.DB_LOAD_SCRIPT));
-		if (file_to_load == null) {
-			Utils.dbg_msg("file_to_load is null. There setting elexis-run-mode RunFromScratch for "
-				+ db_variant);
-			config.put(Constants.AUT_VM_ARGS,
-				config.get(Constants.AUT_VM_ARGS) + " -Delexis-run-mode=RunFromScratch");
+		if (!load_configured.equals("") && (file_to_load == null ||
+				! Files.isReadable(Paths.get(file_to_load)))
+				) {
+			Utils.dbg_msg("file_to_load is either null or not readable. There we exit with an error");
 			System.exit(3);
-		} else {
-			dump_to_file = file_to_load + "_after.sql";
-			if (db_variant.equals("h2")) {
-				// Testing using the test-arguments -Ddb_connection="jdbc:h2:~/elexis-jubula" -Ddb_load_script=scratch.sql
-				// This will not work if you run the agent on a different host!
-				java.nio.file.Path j2_jar_file =
-					Paths.get("../work/plugins/org.h2_1.3.170.jar").toAbsolutePath().normalize();
-				String start = "java -cp " + j2_jar_file;
-				String middle = " -url " + db_connection + " -user sa -script ";
-				load_command = start + " org.h2.tools.RunScript " + middle + file_to_load;
-				dump_command = start + " org.h2.tools.Script " + middle + dump_to_file;
-
-			} else if (db_variant.equals("mysql")) {
-				config.put(Constants.AUT_VM_ARGS, config.get(Constants.AUT_VM_ARGS) + db_user_pw);
-				load_command = "/usr/bin/mysql " + " --host=" + db_host
-					+ " --user=elexisTest --password=elexisTest ";
-				if (db_port > 0) {
-					load_command += " --protocol=TCP " + String.format(" --port=%d ", db_port);
-				}
-				String db_name = uri.getPath().replace("/", "");
-				dump_command = load_command.replace("/bin/mysql ", "/bin/mysqldump ");
-				load_command += db_name;
-				load_command = "/bin/cat " + file_to_load + " | " + load_command;
-				dump_command += " --add-drop-table " + db_name + " > " + dump_to_file;
-				Utils.dbg_msg(dump_command);
-			} else if (db_variant.equals("postgresql")) {
-				String set_pw = "export PGPASSWORD=elexisTest\n";
-				// PG user elexisTest must be downcased to allow login! Niklaus Giger, 22.04.2016
-				// but the password remains mixed case.
-				db_user_pw = " -Dch.elexis.dbUser=elexistest -Dch.elexis.dbPw=elexisTest ";
-				vmargs_db_flavor = " -Dch.elexis.dbFlavor=" + db_variant + " -Dch.elexis.dbSpec="
-					+ db_connection.toLowerCase();
-
-				String connect_cmd = " --host=" + db_host + " --user=elexisTest ".toLowerCase();
-				if (db_port > 0) {
-					connect_cmd += String.format(" --port=%d ", db_port);
-				}
-				String db_name = uri.getPath().replace("/", "").toLowerCase();
-				connect_cmd += db_name;
-				load_command =
-					set_pw + "/bin/cat " + file_to_load + " | /usr/bin/psql " + connect_cmd;
-				dump_command = set_pw + "pg_dump --clean " + connect_cmd + " > " + dump_to_file;
-
-			} else {
-				Assert.fail(Constants.DB_CONNECTION + " unsupported type " + db_variant
-					+ " from config " + config.get(Constants.DB_CONNECTION));
-			}
-			if (!Utils.run_system_cmd(load_command)) {
-				String error = "loading database failed: " + dump_command;
-				Utils.dbg_msg(error);
-				Assert.fail(error);
-			}
-			dump_command = "rm -f " + dump_to_file + "; " + dump_command;
-			Utils.dbg_msg("dump_command: " + dump_command);
 		}
+
+		if (load_configured.equals("")) {
+			dump_to_file = System.getenv("test_to_run") + "_after.sql";
+			}
+		else {
+			dump_to_file = file_to_load + "_after.sql";
+		}
+		if (db_variant.equals("h2")) {
+			// This will not work if you run the agent on a different host!
+			java.nio.file.Path j2_jar_file =
+				Paths.get("../work/plugins/org.h2_1.3.170.jar").toAbsolutePath().normalize();
+			String start = "java -cp " + j2_jar_file;
+			String jdbc_connection = "jdbc:h2:" + Paths.get("h2-for-aut");
+			String middle = " -url " + jdbc_connection + " -user sa -script ";
+			load_command = start + " org.h2.tools.RunScript " + middle + file_to_load;
+			String get_db_name =
+			dump_command = "export DB_NAME=`/bin/grep -i RunFromScratch ~/elexis/logs/elexis-3.log |" +
+					"/usr/bin/tail -n1 | "+ // get last occurence of it
+					"/usr/bin/cut -d' ' -f12 |" + // get full pathname
+					"/usr/bin/cut -d. -f1`;" +  // but ignore .h2.db at the end of the file
+					"/bin/echo temp_db was ${DB_NAME}; "
+					;
+			dump_command = get_db_name + start + " org.h2.tools.Script " + " -url jdbc:h2:${DB_NAME}" + " -script " + dump_to_file;
+
+		} else if (db_variant.equals("mysql")) {
+			config.put(Constants.AUT_VM_ARGS, config.get(Constants.AUT_VM_ARGS) + db_user_pw);
+			load_command = "/usr/bin/mysql " + " --host=" + db_host
+				+ " --user=elexisTest --password=elexisTest ";
+			if (db_port > 0) {
+				load_command += " --protocol=TCP " + String.format(" --port=%d ", db_port);
+			}
+			String db_name = uri.getPath().replace("/", "");
+			dump_command = load_command.replace("/bin/mysql ", "/bin/mysqldump ");
+			load_command += db_name;
+			load_command = "/bin/cat " + file_to_load + " | " + load_command;
+			dump_command += " --add-drop-table " + db_name + " > " + dump_to_file;
+		} else if (db_variant.equals("postgresql")) {
+			String set_pw = "export PGPASSWORD=elexisTest\n";
+			// PG user elexisTest must be downcased to allow login! Niklaus Giger, 22.04.2016
+			// but the password remains mixed case.
+			db_user_pw = " -Dch.elexis.dbUser=elexistest -Dch.elexis.dbPw=elexisTest ";
+			vmargs_db_flavor = " -Dch.elexis.dbFlavor=" + db_variant + " -Dch.elexis.dbSpec="
+				+ db_connection.toLowerCase();
+
+			String connect_cmd = " --host=" + db_host + " --user=elexisTest ".toLowerCase();
+			if (db_port > 0) {
+				connect_cmd += String.format(" --port=%d ", db_port);
+			}
+			String db_name = uri.getPath().replace("/", "").toLowerCase();
+			connect_cmd += db_name;
+			load_command =
+				set_pw + "/bin/cat " + file_to_load + " | /usr/bin/psql " + connect_cmd;
+			dump_command = set_pw + "pg_dump --clean " + connect_cmd + " > " + dump_to_file;
+
+		} else {
+			Assert.fail(Constants.DB_CONNECTION + " unsupported type " + db_variant
+				+ " from config " + config.get(Constants.DB_CONNECTION));
+		}
+		if (load_configured.length() > 0 && !Utils.run_system_cmd(load_command)) {
+			String error = "loading database failed: " + dump_command;
+			Utils.dbg_msg(error);
+			Assert.fail(error);
+		}
+		// find name of generate temporary database
+		Utils.dbg_msg("dump_command for jdbc: " + dump_command);
+
+		dump_command = "/bin/rm -f " + dump_to_file + "; " + // remove old dump
+				dump_command + // run cmd
+				"; ls -lh " + dump_to_file; // list file
+		Utils.dbg_msg("dump_command full: " + dump_command);
 		Utils.dbg_msg("checkAndLoadDatabase vmargs_db_flavor: " + vmargs_db_flavor);
 		Utils.dbg_msg("checkAndLoadDatabase db_user_pw: " + db_user_pw);
 		config.put(Constants.AUT_VM_ARGS,

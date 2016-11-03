@@ -11,7 +11,6 @@
 package ch.ngiger.jubula.helpers;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -19,6 +18,7 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.PosixFilePermission;
@@ -109,12 +109,15 @@ public class Utils {
 		String s = null;
 		String cmd_prefix = "#!/bin/bash -v\n";
 		try {
-			File script_file = File.createTempFile("script_", ".sh");
+			Utils.sleepMs(100); // Without this delay dumpin the DB failed!!
+			Path script_file = Files.createTempFile("script_", ".sh");
 			dbg_msg("run_system_cmd: " + script_file + " with " + cmd);
-			Files.write(script_file.toPath(), (cmd_prefix + cmd).getBytes());
-			script_file.setExecutable(true);
+			Files.write(script_file, (cmd_prefix + cmd).getBytes());
+			// Utils.sleep1second();
+			script_file.toFile().setExecutable(true);
+			// Utils.sleep1second();
 
-			Process p = Runtime.getRuntime().exec(script_file.getAbsolutePath());
+			Process p = Runtime.getRuntime().exec(script_file.toString());
 
 			BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
 
@@ -136,7 +139,8 @@ public class Utils {
 			dbg_msg("run_system_cmd: " + script_file + " exitValue " + p.exitValue());
 			return p.exitValue() == 0;
 		} catch (IOException e) {
-			dbg_msg("exception happened - here's what I know: ");
+			dbg_msg("exception happened - here's what I know: "+ e.toString());
+			System.out.println("exception happened - here's what I know: "+ e.toString());
 			e.printStackTrace(writer);
 			return false;
 		}

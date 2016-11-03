@@ -1,11 +1,13 @@
 #!/usr/bin/env ruby
 
-tests = ['Screenshot',
-'Smoketest',
-'ImportArtikelstamm',
-'SuiteVisitAllPerspectives',
-'SuiteVisitAllViews',
-'SuiteVisitAllPreferencePages',]
+tests = [
+  'Screenshot',
+  'Smoketest',
+  'ImportArtikelstamm',
+  'SuiteVisitAllPerspectives',
+  'SuiteVisitAllViews',
+  'SuiteVisitAllPreferencePages',
+]
 
 tests.each do |test|
   puts test

@@ -24,6 +24,7 @@
         <configuration>
           <environmentVariables>
             <DISPLAY>${DISPLAY}</DISPLAY>
+            <test_to_run>${test_to_run}</test_to_run>
           </environmentVariables>
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
           <skipTests>false</skipTests>
