@@ -103,15 +103,15 @@ class JubulaRunner
   end
 
   def run_test_in_docker
+    checks = [ '/tmp/.X11-unix', '/dev/snd' ]
     if USE_X11 # needs also changes in docker-compose.yml!
       # Thanks to jess Fraznelle https://blog.jessfraz.com/post/docker-containers-on-the-desktop/
       @display = ENV['DISPLAY']
-      checks = [ '/tmp/.X11-unix', '/dev/snd' ]
       checks.each do |needed_for_x|
         cmd = "#{@docker.start_with} config | /bin/grep #{needed_for_x}"
         unless system(cmd, MAY_FAIL)
           puts "\n\n-----------\n\n"
-          puts "If you want to make USE_X11 work correctly, you must add defintions"
+          puts "If you want to make USE_X11 work correctly, you must add definitions"
           puts "for #{checks} into docker-compose.yaml"
           puts "\n\n-----------\n\n"
           exit 4
@@ -119,6 +119,17 @@ class JubulaRunner
       end
       puts "Activating USE_X11 for DISPLAY #{@display}"
     else
+      checks.each do |needed_for_x|
+        cmd = "#{@docker.start_with} config | /bin/grep #{needed_for_x}"
+
+        if (res = `#{cmd}`) && res.length > 0
+          puts "\n\n-----------\n\n"
+          puts "If must remove the definitions for #{checks} in docker-compose.yaml"
+          puts "   or Xvfb will not work correctly!"
+          puts "\n\n-----------\n\n"
+          exit 4
+        end
+      end
       @display = '1:5' # as defined below for Xvfb
     end
     prepare_docker
