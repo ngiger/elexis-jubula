@@ -4,6 +4,8 @@
 
 Here Niklaus tries to make a new, better environment for running the Jubula GUI-tests.
 
+![Overview of running a test in a container](overview.png)
+
 ## Requirements
 
 * docker-compose

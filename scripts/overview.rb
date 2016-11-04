@@ -55,6 +55,7 @@ def gen_overview
 
   # Generate output image
   g.output( :svg => "#{File.basename(__FILE__, '.rb')}.svg" )
+  g.output( :png => "#{File.basename(__FILE__, '.rb')}.png" )
 end
 
 gen_overview

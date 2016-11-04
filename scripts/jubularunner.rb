@@ -171,6 +171,7 @@ cp $0 /home/elexis/results
 #{@mvn_cmd} -DDISPLAY=#{@display}
 export status=$?
 echo $status | tee /home/elexis/results/result_of_test_run
+sync # ensure that everything is written to the disk
 sleep 1
 # this is needed that copying  the results and log files will not fail
 #{@docker.cleanup_in_container}
@@ -188,8 +189,8 @@ exit $status
       res = @docker.start_docker(cmd_name)
       sleep(0.5)
       result = File.join(@result_dir, 'result_of_test_run')
-      res = File.exist?(result) && IO.readlines(result).first.to_i
-      puts "res via file is #{cmd_name} is #{res}"
+      @exitValue = File.exist?(result) && IO.readlines(result).first.to_i
+      puts "@exitValue #{@exitValue} res is #{cmd_name} is #{res}"
       if res && /smoketest/i.match(@test_params[:test_to_run])
         puts "smoketest: Copy newly installed plugins for further tests back"
         FileUtils.cp_r(File.join(@docker.container_home, 'work'), WorkDir, verbose: true)
@@ -200,7 +201,7 @@ exit $status
       # stop container if we were unable to copy the result and/or log files
       @docker.stop_docker
     end
-    exit res ? 0 : 1
+    exit @exitValue ? 0 : 1
   end
 
   def run_test_exec
@@ -238,7 +239,7 @@ exit $status
     puts "Saving surefire-reports #{files.join("\n")}"
     FileUtils.cp_r(files, destination, verbose: true, preserve: true)
     diff_time = (Time.now - @start_time).to_i
-    puts "Total time #{diff_time / 60 }:#{diff_time % 60}"
+    puts "Total time #{diff_time / 60 }:#{diff_time % 60}. Result #{@exitValue == 0 ? 'SUCCESS' : 'FAILURE'}"
   end
 
   def initialize(test2run)
