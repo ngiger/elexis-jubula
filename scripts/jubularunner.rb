@@ -8,7 +8,7 @@ USE_X11 = !!ENV['USE_X11']
 
 # Helper class to use docker for the Jubula AUT
 class DockerRunner
-  attr_reader :container_home, :cleanup_in_container
+  attr_reader :container_home, :cleanup_in_container, :start_with
   # http://stackoverflow.com/questions/14112955/how-to-get-my-machines-ip-address-from-ruby-without-leveraging-from-other-ip-ad
   def local_ip
     orig, Socket.do_not_reverse_lookup = Socket.do_not_reverse_lookup, true # turn off reverse DNS resolution temporarily
@@ -27,9 +27,9 @@ class DockerRunner
       FileUtils.makedirs(dir, verbose: true) unless File.exist?(dir)
       FileUtils.chmod(0777, dir)
     end
-    [ @start_with + 'build', # as we might have added a new test_exec.sh
-      @start_with + 'create',
-      @start_with + 'start',
+    [ # instead of calling build, create, start we can use compose up -d
+      # Only possibility to make it work under compose 1.8
+      @start_with + 'up -d', # create and start do not create a network with compose 1.8, up -d does
       # TODO: How to run several instances of jenkinstest in parallel
       # using docker-compose scale and exec --index
       @start_with + "exec --user elexis #{@docker_name} #{cmd_in_docker}",
@@ -103,6 +103,24 @@ class JubulaRunner
   end
 
   def run_test_in_docker
+    if USE_X11 # needs also changes in docker-compose.yml!
+      # Thanks to jess Fraznelle https://blog.jessfraz.com/post/docker-containers-on-the-desktop/
+      @display = ENV['DISPLAY']
+      checks = [ '/tmp/.X11-unix', '/dev/snd' ]
+      checks.each do |needed_for_x|
+        cmd = "#{@docker.start_with} config | /bin/grep #{needed_for_x}"
+        unless system(cmd, MAY_FAIL)
+          puts "\n\n-----------\n\n"
+          puts "If you want to make USE_X11 work correctly, you must add defintions"
+          puts "for #{checks} into docker-compose.yaml"
+          puts "\n\n-----------\n\n"
+          exit 4
+        end
+      end
+      puts "Activating USE_X11 for DISPLAY #{@display}"
+    else
+      @display = '1:5' # as defined below for Xvfb
+    end
     prepare_docker
     res = false
     puts "run_test_in_docker from #{Dir.pwd}"
@@ -113,13 +131,6 @@ class JubulaRunner
     cmd = "status=99\n"
     cmd_name = '/home/elexis/testexec.sh'
     @test_params[:environment].each do |v,k| cmd += "export #{v}=#{k}\n" end if @test_params[:environment]
-    if USE_X11 # needs also changes in docker-compose.yml!
-      # Thanks to jess Fraznelle https://blog.jessfraz.com/post/docker-containers-on-the-desktop/
-      @display = ENV['DISPLAY']
-      puts "Activating USE_X11 for DISPLAY #{@display}"
-    else
-      @display = '1:5' # as defined below for Xvfb
-    end
     cmd += %(export LANG=de_CH.UTF-8
 export LANGUAGE=de_CH
 Xvfb :1 -screen 5 1280x1024x24 -nolisten tcp &

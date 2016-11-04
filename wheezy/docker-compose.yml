@@ -63,9 +63,9 @@ services:
       - ${PWD}/results:/home/elexis/results
       - ${PWD}/container_home_m2:/home/elexis/.m2
       - ${PWD}/container_home:/home/elexis
-    #   - /tmp/.X11-unix:/tmp/.X11-unix # für USE_X11
-    # devices: # für USE_X11
-    #   - /dev/snd # für USE_X11
+      - /tmp/.X11-unix:/tmp/.X11-unix # für USE_X11
+    devices: # für USE_X11
+      - /dev/snd # für USE_X11
     depends_on:
         - postgres
         - mysql
