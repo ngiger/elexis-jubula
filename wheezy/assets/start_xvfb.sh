@@ -3,3 +3,4 @@ whoami
 pwd
 echo "Waiting upt to an hour for more commands"
 /bin/sleep 3600
+/bin/bash

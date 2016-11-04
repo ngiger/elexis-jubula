@@ -57,7 +57,7 @@ The following arguments were in favor:
 The following arguments were against:
 * Jubula 8.2 is quite large (almost 900 MB) after the installation. We are able to zip the needed autagent to about 55MB.
 * We want to install Jubula only once on the target host
-* As moved to using the "ClientAPI":http://www.bredex.de/blog_article_en/jubula-client-api.html we could get rid of using dbtool, etc.
+* As moved to using the "ClientAPI":http://www.bredex.de/blog_article_en/jubula-client-api.html we could get rid of using dbtool, etc. See also "Writing Jubula test in Java":https://www.eclipse.org/community/eclipse_newsletter/2015/july/article3.php
 * It proved easy to build a autagent for all our supported environments. It is only necessary to add the `-vm /usr/bin/java` to avoid `No Java virtual machine was found`
 
 ### testing inside docker
@@ -71,6 +71,7 @@ To run a testsuite e.g. Screenshot just call `rake run_inside_docker Screenshot`
 It took my quite a few hours to overcome the following problems
 * Neither fluxbox nor awesome were window manager which allow (at least not without furter modification) to connect to the AUT (calling app.activate(AUTActivationMethod.titlebar) failed or hanged)
 * metacity seems to work, but need another 100 MB. Is starting the dbus the difference?
+* in november 2016 we moved to use docker-compose to run tests against MySQL and Postgres (docker) databases
 * When calling start_agent via shell script inside the docker, m_agent.startAUT(aut_config) failed and blocked
 * When I invoked `system` inside rake when call rake jubula_docker, starting the AUT failed, too.
 * Calling directly `scripts/jubularunner.rb run_in_docker Screenshot` blocked also
@@ -178,6 +179,7 @@ The following improvements are planned. Order may be varied depending whether we
 
 ### pending improvements
 
+* Run several instances of docker jenkinstest in parall using docker-compose scale and exec --index
 * Artikelstamm
 ** Show migration of legecy (stock, billing)
 ** Check whether we need any scripts from the db_check

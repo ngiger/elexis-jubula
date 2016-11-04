@@ -35,41 +35,37 @@ class DockerRunner
       cmd +=  " --device /dev/snd" # sound
       cmd += ' --rm'
     end
-    start_with = "docker-compose -f #{RootDir}/wheezy/docker-compose.yml "
-    [ start_with + 'rm --all --force', # Remove old docker images if present
-      start_with + 'build', # as we might have added a new test_exec.sh
-      start_with + 'create',
-      start_with + 'start',
-      start_with + 'exec --user elexis jenkinstest ' +cmd_in_docker,
+    [ @start_with + 'build', # as we might have added a new test_exec.sh
+      @start_with + 'create',
+      @start_with + 'start',
+      # TODO: How to run several instances of jenkinstest in parallel
+      # using docker-compose scale and exec --index
+      @start_with + "exec --user elexis #{@docker_name} #{cmd_in_docker}",
     ].each do |cmd|
-      puts system("Will run docker")
-      sleep 1
-      binding.pry
+      puts "#{Dir.pwd}: #{cmd}"
       res = system(cmd, MAY_FAIL)
+      # binding.pry if cmd_in_docker.match(cmd) && !res
     end
-    0.upto(10).each do |idx|
-      sleep 0.1
-      system("/usr/bin/docker inspect -f {{.State.Running}} #{@docker_name}")
-      puts "#{idx}/10: docker #{@docker_name} started? #{res}"
-      break if res
-    end unless USE_X11
   end
 
   def stop_docker
     result = Kernel.system("docker ps  | grep #{@docker_name}")
     return unless result
-    Kernel.system(@cleanup_in_container)
-    Kernel.system("docker kill #{@docker_name}")
-    Kernel.system("docker rm #{@docker_name}")
+    @stop_commands.each do |cmd| res = system(cmd, MAY_FAIL) end
   end
 
   def initialize(test_name, result_dir)
     @test_name = test_name
     @result_dir = result_dir
-    @docker_name = "jubula-#{@test_name}-#{ENV['VARIANT']}"
+    # TODO: Fix running tests in parallel
+    @docker_name = "jenkinstest" # this did work when calling docker directly "jubula-#{@test_name}-#{ENV['VARIANT']}"
     @container_home = File.join(RootDir, 'container_home')
     @m2_repo = File.join(RootDir, 'container_home_m2')
     @cleanup_in_container = 'chmod --silent --recursive o+rwX /home/elexis; rm -rf /home/elexis/.jubula /home/elexis/.cache /home/elexis/.fontconfig /home/elexis/.dbus'
+    @start_with = "docker-compose -f #{RootDir}/wheezy/docker-compose.yml "
+    @stop_commands = ["#{@start_with} stop", "#{@start_with} rm --force --all"]
+    # cleanup stale docker containers
+    @stop_commands.each do |cmd| res = system(cmd, MAY_FAIL) end
   end
 end
 
@@ -80,15 +76,7 @@ end
 # In all cases we assume that the correct Jubula executable is installed on the host
 class JubulaRunner
   attr_reader :start_time, :jubula_test_db_params, :jubula_test_data_dir, :rcp_support, :test_params
-  DISPLAY= ':1.5' # must match with values in START_XVFB_CMD and START_META_CMD
-  START_XVFB_CMD = 'Xvfb :1 -screen 5 1280x1024x24 -nolisten tcp &'
-  START_META_CMD = "#{USE_X11 ?  '' : "export DISPLAY=#{DISPLAY}" }
-/usr/bin/metacity --replace --sm-disable &
-sleep 1
-/usr/bin/metacity-message disable-keybindings
-/usr/bin/xclock &
-"
-
+  DISPLAY= ':1.5' # must match with values in Xvfb
   def get_h2_db_params(full_path)
     "-dburl 'jdbc:h2:#{full_path};MVCC=TRUE;AUTO_SERVER=TRUE;DB_CLOSE_ON_EXIT=FALSE' -dbuser 'sa' -dbpw ''"
   end
@@ -101,19 +89,9 @@ sleep 1
       f.puts(cmd)
     end
     FileUtils.chmod(0755, path)
-    FileUtils.cp(path, RootDir, :preserve => true)
-    puts "Wrote #{path}"
-    system("ls -la #{path}")
-    binding.pry
-  end
-
-  def start_xvfb
-    # http://support.xored.com/support/solutions/articles/3000028645
-    # https://www.eclipse.org/forums/index.php?t=msg&th=440461&goto=987043&#msg_987043
-    # Had window activation problem with Xvfb with or without awesome
-    # with startx this did not gow
-    return unless @docker
-    system('xhost local:root') if USE_X11
+    FileUtils.cp(path, RootDir, :preserve => true, :verbose => true)
+    system("ls -l #{path}")
+    puts Dir.pwd
   end
 
   def prepare_docker
@@ -137,7 +115,7 @@ sleep 1
   def run_test_in_docker
     prepare_docker
     res = false
-    Dir.chdir(WorkDir)
+    puts "run_test_in_docker from #{Dir.pwd}"
     source = File.join(ENV['HOME'], 'medelexis_jubula_license.xml')
     dest = File.join(@docker.container_home, 'medelexis_jubula_license.xml')
     FileUtils.cp(source, dest, :verbose => true) if File.exist?(source)
@@ -145,49 +123,37 @@ sleep 1
     cmd = "status=99\n"
     cmd_name = '/home/elexis/testexec.sh'
     @test_params[:environment].each do |v,k| cmd += "export #{v}=#{k}\n" end if @test_params[:environment]
-    cmd += %(
-#{START_XVFB_CMD}
-#{START_META_CMD}
+    cmd += %(export LANG=de_CH.UTF-8
+export LANGUAGE=de_CH
 Xvfb :1 -screen 5 1280x1024x24 -nolisten tcp &
-sleep 1
+#{USE_X11 ?  '' : "export DISPLAY=#{DISPLAY}" }
 /usr/bin/metacity --replace --sm-disable &
 sleep 1
 /usr/bin/metacity-message disable-keybindings
-/usr/bin/xclock &
-)
-cmd +="mkdir -p /home/elexis/results
-mkdir -p /home/elexis/elexis/GlobalInbox
-ls -la /home/elexis/elexis
+/usr/bin/xclock & # Gives early feedback, that X is running
 cp $0 /home/elexis/results
 /usr/bin/xclock -digital -twentyfour &
-export LANG=de_CH.UTF-8
-export LANGUAGE=de_CH
 #{@mvn_cmd} #{USE_X11 ? '' : '-DDISPLAY=' + DISPLAY}
-status=$?
-echo run_test_in_docker done. Status $status
-echo $status > /home/elexis/results/result_of_test_run
+export status=$?
+echo $status | tee /home/elexis/results/result_of_test_run
 sleep 1
 # this is needed that copying  the results and log files will not fail
 #{@docker.cleanup_in_container}
-rm -rf ~/.jubula
-ls -lR /home/elexis/results
-sleep 1
 killall /usr/bin/xclock
 exit $status
-"
+)
     store_cmd(cmd_name, cmd)
-    puts "Starting testexec.sh in docker: #{cmd}"
-    start_xvfb
+    # http://support.xored.com/support/solutions/articles/3000028645
+    # https://www.eclipse.org/forums/index.php?t=msg&th=440461&goto=987043&#msg_987043
+    # Had window activation problem with Xvfb with or without awesome
+    # with startx this did not gow
+    system('xhost local:root') if @docker && USE_X11
     begin
-      @docker.start_docker(cmd_name)
-      if USE_X11
-        res = IO.readlines(File.join(@result_dir, 'result_of_test_run')).first.to_i
-        puts "res of start_docker #{cmd_name} is #{res.inspect}"
-      else
-        puts "res of #{cmd_name} is #{res}"
-        sleep(0.5)
-        FileUtils.rm_f(cmd_name)
-      end
+      res = @docker.start_docker(cmd_name)
+      sleep(0.5)
+      result = File.join(@result_dir, 'result_of_test_run')
+      res = File.exist?(result) && IO.readlines(result).first.to_i
+      puts "res via file is #{cmd_name} is #{res}"
       if res && /smoketest/i.match(@test_params[:test_to_run])
         puts "smoketest: Copy newly installed plugins for further tests back"
         FileUtils.cp_r(File.join(@docker.container_home, 'work'), WorkDir, verbose: true)
@@ -203,7 +169,6 @@ exit $status
 
   def run_test_exec
     File.join(RootDir, 'results')
-    Dir.chdir RootDir
     @test_params[:environment].each do |v,k| ENV[v]=k end if @test_params[:environment]
     puts "Will run #{@mvn_cmd}"
     system(@mvn_cmd) # + ' --offline')
@@ -218,15 +183,16 @@ exit $status
 
   def run_test_suite(use_docker = false)
     @result_dir = File.join(RootDir, 'results')
-    saved_dir = Dir.pwd
+    FileUtils.makedirs(WorkDir) unless File.directory?(WorkDir)
     if use_docker
       patch_acl_for_elexis_and_current_user
+      Dir.chdir(RootDir)
       @docker = DockerRunner.new(@test_name, @result_dir)
+    else
+      Dir.chdir(WorkDir)
     end
-    FileUtils.makedirs(WorkDir) unless File.directory?(WorkDir)
     FileUtils.rm_rf(@result_dir)
     FileUtils.makedirs(@result_dir)
-    Dir.chdir(WorkDir)
     @mvn_cmd = "mvn integration-test -Dtest_to_run=#{@test_params[:test_to_run]}"
     @docker ? run_test_in_docker : run_test_exec
   ensure
@@ -237,7 +203,6 @@ exit $status
     FileUtils.cp_r(files, destination, verbose: true, preserve: true)
     diff_time = (Time.now - @start_time).to_i
     puts "Running took #{diff_time} seconds"
-    Dir.chdir(saved_dir)
   end
 
   def initialize(test2run)
@@ -251,9 +216,12 @@ exit $status
       FileUtils.rm_rf(WorkDir, :verbose => true)
       FileUtils.makedirs(WorkDir, :verbose => true)
       saved = Dir.pwd
-      Dir.chdir(WorkDir)
-      unzip(zip_file, File.join(WorkDir, 'Medelexis.ini'))
-      Dir.chdir(saved)
+      begin
+        Dir.chdir(WorkDir)
+        unzip(zip_file, File.join(WorkDir, 'Medelexis.ini'))
+      ensure
+        Dir.chdir(saved)
+      end
     end
     require 'install_open_source_elexis.rb' unless File.directory?(File.join(WorkDir, 'plugins'))
     @jubula_test_db_params = get_h2_db_params(File.join(WorkDir, 'database/embedded'))

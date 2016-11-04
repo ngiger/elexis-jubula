@@ -11,56 +11,68 @@
 # FROM postgres:9.4
 # RUN localedef -i de_DE -c -f UTF-8 -A /usr/share/locale/locale.alias de_DE.UTF-8
 # ENV LANG de_DE.utf8
+version: '2'
+services:
+  mysql:
+    image: mysql:5.7
+    volumes:
+      - ${PWD}/wheezy/mysql:/etc/mysql/conf.d
+    environment:
+      MYSQL_ROOT_PASSWORD: secretRoot
+      # username/password must be kept in sync with the AUT_RUN.java and
+      # postresql/init_elexis_db.sh
+      MYSQL_USER: elexistest
+      MYSQL_PASSWORD: elexisTestPassword
+      MYSQL_DATABASE: elexistest
 
-mysql:
-  image: mysql:5.7
-  volumes:
-    - ${PWD}/wheezy/mysql:/etc/mysql/conf.d
-  environment:
-    MYSQL_ROOT_PASSWORD: secretRoot
-    MYSQL_USER: elexis
-    MYSQL_PASSWORD: elexisTest
-    MYSQL_DATABASE: elexistest
+  pgdata:
+    image: postgres:9.1
+    entrypoint: /bin/bash
 
-pgdata:
-  image: postgres:9.1
-  entrypoint: /bin/bash
+  postgres:
+    image: postgres:9.4
+    volumes_from:
+      - pgdata
+    volumes:
+      - ${PWD}/wheezy/postgres:/docker-entrypoint-initdb.d
+    environment:
+      # LANG: 'de_CH.UTF-8'
+      PGUSER: elexistest
+      POSTGRES_DB: elexistest
+      POSTGRES_PASSWORD: elexisTestPassword
 
-postgres:
-  image: postgres:9.1
-  volumes_from:
-    - pgdata
-  environment:
-    POSTGRES_USER: elexistest
-    POSTGRES_PASSWORD: elexisTest
-    POSTGRES_DB: elexistest
+  jenkinstest:
+    build: .
+    # Elexis user uid is 1200
+    user: '1200'
+    ports:
+      - "8081:8080"
+    working_dir: /home/elexis
+    # We want silently kill the docker after an hour
+    entrypoint: '/app/start_xvfb.sh'
+    volumes:
+      - ${PWD}/results:/home/elexis/results
+      - ${PWD}/container_home_m2:/home/elexis/.m2
+      - ${PWD}/container_home:/home/elexis
+    depends_on:
+        - postgres
+        - mysql
+  #  links:
+  #    - postgres
+  #    - postgres:elexistest
+  #    - mysql:elexistest
+    environment:
+      DOCKER_OPTS: "-H tcp://0.0.0.0:4243 -H unix:///var/run/docker.sock"
+      PGUSER: elexistest
+      PGHOST: postgres
+      POSTGRES_DB: elexistest
+      POSTGRES_PASSWORD: elexisTestPassword
+      MYSQL_HOST: mysql
+      MYSQL_ROOT_PASSWORD: secretRoot
+      MYSQL_USER: elexistest
+      MYSQL_PASSWORD: elexisTestPassword
+      MYSQL_DATABASE: elexistest   #  MYSQL_HOST: mysqlTest
 
-jenkinstest:
-  build: .
-  # Elexis user uid is 1200
-  user: '1200'
-  ports:
-    - "8081:8080"
-  working_dir: /home/elexis
-  # We want silently kill the docker after an hour
-  entrypoint: '/app/start_xvfb.sh'
-  volumes:
-    - ${PWD}/container_home:/home/elexis
-    - ${PWD}/results:/home/elexis/results
-    - ${PWD}/container_home_m2:/home/elexis/.m2
-  links:
-    - postgres
-    - mysql
-  environment:
-    DOCKER_OPTS: "-H tcp://0.0.0.0:4243 -H unix:///var/run/docker.sock"
-    PGHOST: postgresTest
-    PGUSER: elexistest
-    PGHOST: postgres
-    PGPASSWORD: elexisTest
-    PGDATABASE: elexistest
-    MYSQL_HOST: mysql
-    MYSQL_ROOT_PASSWORD: secretRoot
-    MYSQL_USER: elexis
-    MYSQL_PASSWORD: elexisTest
-    MYSQL_DATABASE: elexistest   #  MYSQL_HOST: mysqlTest
-
+# das läuft jetzt 4.11.2016
+# mysql --user=elexis --password=elexisTestPassword
+# mysqldump --host=mysql --user=elexis --password=elexisTestPassword --add-drop-table elexistest

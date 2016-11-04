@@ -58,8 +58,8 @@ public class AUT_run {
 	private static String dump_command = null;
 	static String dump_to_file;
 	private static String load_command;
-	private static String db_user_pw =
-		" -Dch.elexis.dbUser=elexisTest -Dch.elexis.dbPw=elexisTest ";
+	// db_user_pw this must be kept in sync with docker-compose.yml file!
+	private final static String db_user_pw = " -Dch.elexis.dbUser=elexistest -Dch.elexis.dbPw=elexisTestPassword ";
 
 	private static void setupConfig(){
 		config.put(Constants.DB_CONNECTION, "h2");
@@ -181,7 +181,6 @@ public class AUT_run {
 	 */
 	private static void checkAndLoadDatabase(){
 		String db_connection = config.get(Constants.DB_CONNECTION);
-		db_user_pw = " -Dch.elexis.dbUser=elexisTest -Dch.elexis.dbPw=elexisTest ";
 		Utils.dbg_msg("db_connection ist: " + db_connection);
 		String vmargs_db_flavor = null;
 		if (db_connection == null || db_connection.equals("h2")) {
@@ -210,7 +209,7 @@ public class AUT_run {
 		if (!load_configured.equals("") && (file_to_load == null ||
 				! Files.isReadable(Paths.get(file_to_load)))
 				) {
-			Utils.dbg_msg("file_to_load is either null or not readable. There we exit with an error");
+			Utils.dbg_msg("file_to_load <" + file_to_load + "> is either null or not readable. Therefore we exit with an error");
 			System.exit(3);
 		}
 
@@ -240,7 +239,7 @@ public class AUT_run {
 		} else if (db_variant.equals("mysql")) {
 			config.put(Constants.AUT_VM_ARGS, config.get(Constants.AUT_VM_ARGS) + db_user_pw);
 			load_command = "/usr/bin/mysql " + " --host=" + db_host
-				+ " --user=elexisTest --password=elexisTest ";
+				+ " --user=elexistest --password=elexisTestPassword ";
 			if (db_port > 0) {
 				load_command += " --protocol=TCP " + String.format(" --port=%d ", db_port);
 			}
@@ -250,14 +249,13 @@ public class AUT_run {
 			load_command = "/bin/cat " + file_to_load + " | " + load_command;
 			dump_command += " --add-drop-table " + db_name + " > " + dump_to_file;
 		} else if (db_variant.equals("postgresql")) {
-			String set_pw = "export PGPASSWORD=elexisTest\n";
+			String set_pw = "export PGPASSWORD=elexisTestPassword\n";
 			// PG user elexisTest must be downcased to allow login! Niklaus Giger, 22.04.2016
 			// but the password remains mixed case.
-			db_user_pw = " -Dch.elexis.dbUser=elexistest -Dch.elexis.dbPw=elexisTest ";
 			vmargs_db_flavor = " -Dch.elexis.dbFlavor=" + db_variant + " -Dch.elexis.dbSpec="
 				+ db_connection.toLowerCase();
 
-			String connect_cmd = " --host=" + db_host + " --user=elexisTest ".toLowerCase();
+			String connect_cmd = " --host=" + db_host + " --user=elexistest ".toLowerCase();
 			if (db_port > 0) {
 				connect_cmd += String.format(" --port=%d ", db_port);
 			}

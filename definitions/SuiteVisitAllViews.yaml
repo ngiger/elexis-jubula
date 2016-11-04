@@ -2,6 +2,3 @@
 :exe_name:    Elexis3
 :test_to_run: SuiteVisitAllViews
 :agent_port:  6304
-:environment:
-  db_connection: 'jdbc:mysql://localhost/elexistest'
-  db_load_script: simpel.sql
