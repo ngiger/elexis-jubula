@@ -150,6 +150,7 @@ sleep 1
 # this is needed that copying  the results and log files will not fail
 #{@docker.cleanup_in_container}
 killall /usr/bin/xclock
+killall Xvfb
 exit $status
 )
     store_cmd(cmd_name, cmd)
@@ -212,7 +213,7 @@ exit $status
     puts "Saving surefire-reports #{files.join("\n")}"
     FileUtils.cp_r(files, destination, verbose: true, preserve: true)
     diff_time = (Time.now - @start_time).to_i
-    puts "Running took #{diff_time} seconds"
+    puts "Total time #{diff_time / 60 }:#{diff_time % 60}"
   end
 
   def initialize(test2run)
