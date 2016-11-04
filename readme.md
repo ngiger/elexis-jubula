@@ -4,6 +4,13 @@
 
 Here Niklaus tries to make a new, better environment for running the Jubula GUI-tests.
 
+## Requirements
+
+* docker-compose
+* docker
+* maven
+* Java-8
+
 ## Continuos integration
 
 Have a look at the "Jubula-Matrix":https://srv.elexis.info/jenkins/job/Elexis-3.0-Jubula-Matrix-Linux/ on elexis.info.
@@ -79,7 +86,7 @@ It took my quite a few hours to overcome the following problems
 * We ran the docker in in a Debian (Jessie) homes, which had docker-engine 1.11 installed. Additionally the following code was run
 bc. groupadd --gid 1200 elexis
 useradd --uid 1200 --gid 1200 elexis
-apt-get install -y docker-engine bundler maven xvfb
+apt-get install -y docker-engine docker-compose bundler maven xvfb
 git clone https://github.com/ngiger/elexis-jubula.git /opt/ci/some_dir
 cd /opt/ci/some_dir
 setfacl -R --mask -m  u:jenkins_slave:rwx,u:elexis:rwx,m:rwx,o:rw .
@@ -87,6 +94,10 @@ export LANG=de_CH.UTF-8
 export LANGUAGE=de_CH
 export VARIANT=prerelease
 bundle install --without debugger --path=./cache
+
+* If you want to watch the screen output inside the docker, you have
+** set environment variable USE_X11
+** uncomment the 3 lines in wheezy/docker-compose ending with USE_X11
 
 ### Object mapping
 
@@ -151,39 +162,12 @@ The following improvements are planned. Order may be varied depending whether we
 
 ### Catch up with previous capabilities
 
-* -Move to current Jubula-Version 8.3.-
-* Simplify vastly the ruby scripts. Ideas are:
-** -Move all config-variables in one (or more) YAML-files- "see":defaults.yaml. They may be overriden be putting your changes into config.yaml
-** -Add simple script to download Elexis-Opensource from Jenkin-CI- "see":scripts/install_open_source_elexis.rb
-** Add simple script to use Medelexis-Zip/license.xml from a given local directory
-** -Add the jubula*jar for running the tests to this project for easy installation- "see":scripts/run_jubula_test.rb
-*** -This file must patch the config.ini or the AUTagent will not start!-
-* -Run Jubula-Tests inside a docker environment (to work around libwebkit-gtk problem under Linux)-
-* -Test steps above with a very simple Jubula GUI test which creates only a screenshot of the main window. Must check whether running in a docker will create meaningfull (not mostly black) screenshots.- "see":definitions/Screenshot.yaml
-* -Ensure that the generated screenshots contain the titel bar. Needs a simple window manager (like lwm, awesome,xfwmw4 or even a whole desktop like xfce4)-
-* Add some -rake tasks to easily test core components- and publishing the docker image
-* -Rework visiting all Views and Perspectives to use the Jubula-provided tools-
-* -Migrate to use Java-based UI test automation. This should ease the pain from other developpers to get a head start-
-* Pending migration work items are
-** -Visit all preferences-
-** -Import Artikelstamm- but it fails, because it has changed from 3.0 to 3.1
-** -Create patient-
-** -Install all possible features-
-** -Show About SW- (saves a configuration report, too)
-** -create case-
-** -create consultation-
-** -create eigenleistung-
-** -Add eigenleistung to consultation-
-** -Invoice consultation-
-** Test upgrade
+* Test upgrade
 
 ### pending improvements
 
 * Run several instances of docker jenkinstest in parall using docker-compose scale and exec --index
 * Artikelstamm
-** Show migration of legecy (stock, billing)
-** Check whether we need any scripts from the db_check
+** Show migration of legacy (stock, billing)
 * -Test whether we are able to input umlauts and other special characters-
-* Rework some Elexis-GUI elements, e.g.
-** -DatePickers should allow entering a date via the keyboard. This is needed when a consultation for a previous date has to be entered- Done. Thanks to marco! see "commit":https://github.com/elexis/elexis-3-core/commit/b83089cc72c01c20b06aa9f1aaf86964f6eb9469
 * Complete basic tests until we can prove that Elexis creates correct bills

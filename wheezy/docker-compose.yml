@@ -11,10 +11,12 @@
 # FROM postgres:9.4
 # RUN localedef -i de_DE -c -f UTF-8 -A /usr/share/locale/locale.alias de_DE.UTF-8
 # ENV LANG de_DE.utf8
-version: '2'
+version: '2.0'
 services:
   mysql:
     image: mysql:5.7
+    networks:
+      private:
     volumes:
       - ${PWD}/wheezy/mysql:/etc/mysql/conf.d
     environment:
@@ -28,9 +30,13 @@ services:
   pgdata:
     image: postgres:9.1
     entrypoint: /bin/bash
+    networks:
+      private:
 
   postgres:
-    image: postgres:9.4
+    image: postgres:9.1
+    networks:
+      private:
     volumes_from:
       - pgdata
     volumes:
@@ -43,6 +49,9 @@ services:
 
   jenkinstest:
     build: .
+    networks:
+      private:
+      public:
     # Elexis user uid is 1200
     user: '1200'
     ports:
@@ -54,13 +63,12 @@ services:
       - ${PWD}/results:/home/elexis/results
       - ${PWD}/container_home_m2:/home/elexis/.m2
       - ${PWD}/container_home:/home/elexis
+    #   - /tmp/.X11-unix:/tmp/.X11-unix # für USE_X11
+    # devices: # für USE_X11
+    #   - /dev/snd # für USE_X11
     depends_on:
         - postgres
         - mysql
-  #  links:
-  #    - postgres
-  #    - postgres:elexistest
-  #    - mysql:elexistest
     environment:
       DOCKER_OPTS: "-H tcp://0.0.0.0:4243 -H unix:///var/run/docker.sock"
       PGUSER: elexistest
@@ -72,7 +80,6 @@ services:
       MYSQL_USER: elexistest
       MYSQL_PASSWORD: elexisTestPassword
       MYSQL_DATABASE: elexistest   #  MYSQL_HOST: mysqlTest
-
-# das läuft jetzt 4.11.2016
-# mysql --user=elexis --password=elexisTestPassword
-# mysqldump --host=mysql --user=elexis --password=elexisTestPassword --add-drop-table elexistest
+networks:
+  public:
+  private:

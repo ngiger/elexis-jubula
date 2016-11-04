@@ -27,14 +27,6 @@ class DockerRunner
       FileUtils.makedirs(dir, verbose: true) unless File.exist?(dir)
       FileUtils.chmod(0777, dir)
     end
-    if USE_X11 # Thanks to jess Fraznelle https://blog.jessfraz.com/post/docker-containers-on-the-desktop/
-      puts "USE_X11: Don't know on howto handle this"
-      exit 3
-      cmd +=  " -v /tmp/.X11-unix:/tmp/.X11-unix " # mount the X11 socket
-      cmd +=  " -e DISPLAY=unix$DISPLAY" # pass the display
-      cmd +=  " --device /dev/snd" # sound
-      cmd += ' --rm'
-    end
     [ @start_with + 'build', # as we might have added a new test_exec.sh
       @start_with + 'create',
       @start_with + 'start',
@@ -42,7 +34,6 @@ class DockerRunner
       # using docker-compose scale and exec --index
       @start_with + "exec --user elexis #{@docker_name} #{cmd_in_docker}",
     ].each do |cmd|
-      puts "#{Dir.pwd}: #{cmd}"
       res = system(cmd, MAY_FAIL)
       # binding.pry if cmd_in_docker.match(cmd) && !res
     end
@@ -76,7 +67,6 @@ end
 # In all cases we assume that the correct Jubula executable is installed on the host
 class JubulaRunner
   attr_reader :start_time, :jubula_test_db_params, :jubula_test_data_dir, :rcp_support, :test_params
-  DISPLAY= ':1.5' # must match with values in Xvfb
   def get_h2_db_params(full_path)
     "-dburl 'jdbc:h2:#{full_path};MVCC=TRUE;AUTO_SERVER=TRUE;DB_CLOSE_ON_EXIT=FALSE' -dbuser 'sa' -dbpw ''"
   end
@@ -123,17 +113,26 @@ class JubulaRunner
     cmd = "status=99\n"
     cmd_name = '/home/elexis/testexec.sh'
     @test_params[:environment].each do |v,k| cmd += "export #{v}=#{k}\n" end if @test_params[:environment]
+    if USE_X11 # needs also changes in docker-compose.yml!
+      # Thanks to jess Fraznelle https://blog.jessfraz.com/post/docker-containers-on-the-desktop/
+      @display = ENV['DISPLAY']
+      puts "Activating USE_X11 for DISPLAY #{@display}"
+    else
+      @display = '1:5' # as defined below for Xvfb
+    end
     cmd += %(export LANG=de_CH.UTF-8
 export LANGUAGE=de_CH
 Xvfb :1 -screen 5 1280x1024x24 -nolisten tcp &
-#{USE_X11 ?  '' : "export DISPLAY=#{DISPLAY}" }
+export DISPLAY=#{@display}
+)
+     cmd += %(
 /usr/bin/metacity --replace --sm-disable &
 sleep 1
 /usr/bin/metacity-message disable-keybindings
-/usr/bin/xclock & # Gives early feedback, that X is running
+) unless USE_X11
+  cmd  += %(/usr/bin/xclock -digital -twentyfour & # Gives early feedback, that X is running
 cp $0 /home/elexis/results
-/usr/bin/xclock -digital -twentyfour &
-#{@mvn_cmd} #{USE_X11 ? '' : '-DDISPLAY=' + DISPLAY}
+#{@mvn_cmd} -DDISPLAY=#{@display}
 export status=$?
 echo $status | tee /home/elexis/results/result_of_test_run
 sleep 1
