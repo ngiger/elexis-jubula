@@ -130,7 +130,7 @@ class JubulaRunner
           exit 4
         end
       end
-      @display = '1:5' # as defined below for Xvfb
+      @display = ':1.5' # as defined below for Xvfb
     end
     prepare_docker
     res = false
@@ -146,6 +146,20 @@ class JubulaRunner
 export LANGUAGE=de_CH
 Xvfb :1 -screen 5 1280x1024x24 -nolisten tcp &
 export DISPLAY=#{@display}
+# idea from https://gist.github.com/tullmann/476cc71169295d5c3fe6
+echo `date`: waiting for Xserver to be ready
+MAX=120 # About 60 seconds
+CT=0
+while ! xdpyinfo >/dev/null 2>&1; do
+    sleep 0.50s
+    CT=$(( CT + 1 ))
+    if [ "$CT" -ge "$MAX" ]; then
+        echo "FATAL: $0: Gave up waiting for X server $DISPLAY"
+        exit 11
+    fi
+done
+echo `date`: Xserver on display #{@display} seems to be ready
+
 )
      cmd += %(
 /usr/bin/metacity --replace --sm-disable &
