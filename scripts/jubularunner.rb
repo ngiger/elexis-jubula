@@ -32,7 +32,8 @@ class DockerRunner
       @start_with + 'up -d', # create and start do not create a network with compose 1.8, up -d does
       # TODO: How to run several instances of jenkinstest in parallel
       # using docker-compose scale and exec --index
-      @start_with + "exec --user elexis #{@docker_name} #{cmd_in_docker}",
+      # added -T to work around bug https://github.com/docker/compose/pull/4059
+      @start_with + "exec -T --user elexis #{@docker_name} #{cmd_in_docker}",
     ].each do |cmd|
       res = system(cmd, MAY_FAIL)
       # binding.pry if cmd_in_docker.match(cmd) && !res
