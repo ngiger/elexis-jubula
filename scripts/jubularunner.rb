@@ -169,9 +169,14 @@ sleep 1
 ) unless USE_X11
   cmd  += %(/usr/bin/xclock -digital -twentyfour & # Gives early feedback, that X is running
 cp $0 /home/elexis/results
+du -shx /home/elexis/.m2/repository
 #{@mvn_cmd} -DDISPLAY=#{@display}
 export status=$?
+echo status $status. cmd was #{@mvn_cmd}
 echo $status | tee /home/elexis/results/result_of_test_run
+echo erstellt am `date` | tee --appe /home/elexis/results/result_of_test_run
+cat /home/elexis/results/result_of_test_run
+ls -l /home/elexis/results/result_of_test_run
 sync # ensure that everything is written to the disk
 sleep 1
 # this is needed that copying  the results and log files will not fail
@@ -191,7 +196,7 @@ exit $status
       sleep(0.5)
       result = File.join(@result_dir, 'result_of_test_run')
       @exitValue = File.exist?(result) && IO.readlines(result).first.to_i
-      puts "@exitValue #{@exitValue} res is #{cmd_name} is #{res}"
+      puts "@exitValue #{@exitValue} res is #{cmd_name} is #{res} aus result #{result} mit Inhalt\n#{IO.readlines(result)}"
       if res && /smoketest/i.match(@test_params[:test_to_run])
         puts "smoketest: Copy newly installed plugins for further tests back"
         FileUtils.cp_r(File.join(@docker.container_home, 'work'), WorkDir, verbose: true)
@@ -209,7 +214,7 @@ exit $status
     File.join(RootDir, 'results')
     @test_params[:environment].each do |v,k| ENV[v]=k end if @test_params[:environment]
     puts "Will run #{@mvn_cmd}"
-    system(@mvn_cmd) # + ' --offline')
+    system(@mvn_cmd)
   ensure
     system("killall --quiet #{@test_params[:exe_name]}", MAY_FAIL)
   end
@@ -231,7 +236,8 @@ exit $status
     end
     FileUtils.rm_rf(@result_dir)
     FileUtils.makedirs(@result_dir)
-    @mvn_cmd = "mvn integration-test -Dtest_to_run=#{@test_params[:test_to_run]}"
+    # -offline does not work inside docker. Don't know why
+    @mvn_cmd = "mvn clean integration-test -Dtest_to_run=#{@test_params[:test_to_run]}" # + ' -offline' #
     @docker ? run_test_in_docker : run_test_exec
   ensure
     destination =  @result_dir + '-' + @test_params[:test_to_run]
@@ -240,7 +246,7 @@ exit $status
     puts "Saving surefire-reports #{files.join("\n")}"
     FileUtils.cp_r(files, destination, verbose: true, preserve: true)
     diff_time = (Time.now - @start_time).to_i
-    puts "Total time #{diff_time / 60 }:#{diff_time % 60}. Result #{@exitValue == 0 ? 'SUCCESS' : 'FAILURE'}"
+    puts "Total time #{diff_time / 60 }:#{sprintf('%02d', diff_time % 60)}. Result #{@exitValue == 0 ? 'SUCCESS' : 'FAILURE'}"
   end
 
   def initialize(test2run)
