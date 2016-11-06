@@ -43,7 +43,7 @@ public class Utils {
 		@Override
 		protected void failed(Throwable e, Description description){
 			watchedLog += description + "\n";
-			Utils.dbg_msg("xxx: " + description.toString());
+			Utils.dbg_msg("xxx: " + watchedLog);
 			e.printStackTrace(Utils.getWriter());
 			Utils.dbg_msg("afterPrint");
 
@@ -140,8 +140,17 @@ public class Utils {
 				System.out.println(s);
 				dbg_msg(s);
 			}
-			dbg_msg("run_system_cmd: " + script_file + " exitValue " + p.exitValue());
-			return p.exitValue() == 0;
+			dbg_msg("run_system_cmd: " + script_file + " will check exitValue in 100 ms");
+			sleepMs(100);
+			try {
+				dbg_msg("run_system_cmd: " + script_file + " exitValue " + p.exitValue());
+				return p.exitValue() == 0;
+			} catch (IllegalThreadStateException e) {
+				dbg_msg("exception happened - here's what I know: "+ e.toString());
+				System.out.println("exception happened - here's what I know: "+ e.toString());
+				e.printStackTrace(writer);
+				return true;
+			}
 		} catch (IOException e) {
 			dbg_msg("exception happened - here's what I know: "+ e.toString());
 			System.out.println("exception happened - here's what I know: "+ e.toString());
@@ -151,8 +160,6 @@ public class Utils {
 	}
 
 	private static PrintWriter writer = null;
-
-	private static String RESULT_DIR = null;
 
 	static String setupResultDir(){
 		java.nio.file.Path rPath = Paths.get("../results").toAbsolutePath().normalize();
