@@ -64,17 +64,21 @@ public class Utils {
 	}
 
 	public static void sleepMs(int timoutInMs){
+		String startTime = getTimeStamp();
 		try {
 			// dbg_msg("sleep timoutInMs " + timoutInMs);
 			Thread.sleep(timoutInMs);
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			String finished = getTimeStamp();
+			dbg_msg("sleep " + timoutInMs + " ms was interrupted started at " + startTime + " is now " + finished);
 		}
 	}
 
+	public static String getTimeStamp() {
+		return new SimpleDateFormat("dd.MM.yyyy HH:mm:ss.S").format(Calendar.getInstance().getTime());
+	}
 	public static void dbg_msg(String msg){
-		String timeStamp =
-			new SimpleDateFormat("dd.MM.yyyy HH:mm:ss").format(Calendar.getInstance().getTime());
+		String timeStamp = getTimeStamp();
 		// log.info(msg);
 		if (Utils.writer == null) {
 			String log_name = null;
