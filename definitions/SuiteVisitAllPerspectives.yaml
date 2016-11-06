@@ -2,6 +2,3 @@
 :exe_name:    Elexis3
 :test_to_run: SuiteVisitAllPerspectives
 :agent_port:  6302
-:environment:
-  db_connection: 'jdbc:postgresql://postgres/elexistest'
-  db_load_script: simpel.sql

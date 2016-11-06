@@ -2,9 +2,4 @@
 :exe_name:    Elexis3
 :test_to_run: Screenshot
 :agent_port:  6305
-:environment:
-  db_load_script: simpel.sql
-  # only one connect active at the
-  # inside docker we cannot use localhost when we reference another container
-  my_db_connection: 'jdbc:mysql://mysql/elexistest'
-  db_connection: 'jdbc:postgresql://postgres/elexistest'
+
