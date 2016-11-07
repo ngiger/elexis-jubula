@@ -60,6 +60,7 @@ services:
     # We want silently kill the docker after an hour
     entrypoint: '/app/start_xvfb.sh'
     volumes:
+      - ${PWD}/wheezy/mysql:/etc/mysql/conf.d
       - ${PWD}/results:/home/elexis/results
       - ${PWD}/container_home_m2:/home/elexis/.m2
       - ${PWD}/container_home:/home/elexis

@@ -117,7 +117,7 @@ public class AUT_run {
 		// -Dch.elexis.username=007 -Dch.elexis.password=topsecret
 		config.put(Constants.AUT_VM_ARGS,
 			"-nl " + config.get(Constants.AUT_LOCALE)
-				+ " --clean -vmargs -Declipse.p2.unsignedPolicy=allow" + " -Dautagent_port="
+				+ " --clean --configuration configuration -vmargs -Declipse.p2.unsignedPolicy=allow" + " -Dautagent_port="
 				+ config.get(Constants.AGENT_PORT) + " -Dautagent_host="
 				+ config.get(Constants.AGENT_HOST)
 				+ " -Dch.elexis.username=007 -Dch.elexis.password=topsecret "); //  osgi.locking=none

@@ -89,14 +89,12 @@ It took my quite a few hours to overcome the following problems
 bc. groupadd --gid 1200 elexis
 useradd --uid 1200 --gid 1200 elexis
 apt-get install -y docker-engine docker-compose bundler maven xvfb
-git clone https://github.com/ngiger/elexis-jubula.git /opt/ci/some_dir
-cd /opt/ci/some_dir
-setfacl -R --mask -m  u:jenkins_slave:rwx,u:elexis:rwx,m:rwx,o:rw .
-export LANG=de_CH.UTF-8
-export LANGUAGE=de_CH
-export VARIANT=prerelease
-bundle install --without debugger --path=./cache
-
+mkdir /opt/ci
+setfacl -b /opt/ci
+setfacl -d -m u:elexis:rwX,jenkins_slave:rwX,group::rwX,other::rwX /opt/ci/
+setfacl    -m u:elexis:rwX,jenkins_slave:rwX,group::rwX,other::rwX /opt/ci/
+setfacl -d -m u:elexis:rwX,jenkins_slave:rwX,other:rwX /opt/ci/
+setfacl -m u:elexis:rwX,jenkins_slave:rwX,other:rwX /opt/ci/
 * If you want to watch the screen output inside the docker, you have
 ** set environment variable USE_X11
 ** uncomment the 3 lines in wheezy/docker-compose ending with USE_X11

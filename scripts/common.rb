@@ -109,8 +109,8 @@ def patch_acl_for_elexis_and_current_user(force=false)
   system("chmod -R o+rw #{RootDir} 2>/dev/null", MAY_FAIL)
   return unless force && `getfacl #{RootDir} | grep user:1200`
   ['1200', ENV['USER']].each do |user|
-    system("setfacl -R -m user:#{user}:rwX #{RootDir}")
-    system("setfacl -d -m user:#{user}:rwX #{RootDir}")
+    system("sudo setfacl -R    -m user:#{user}:rwX")
+    system("sudo setfacl -F -d -m user:#{user}:rwX")
   end
 end
 
