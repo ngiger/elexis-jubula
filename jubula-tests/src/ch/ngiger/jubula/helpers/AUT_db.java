@@ -1,11 +1,9 @@
 package ch.ngiger.jubula.helpers;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLDecoder;
-import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Map;
 
@@ -21,6 +19,7 @@ public class AUT_db {
 	private static String db_host = null;
 	private static int db_port = 0;
 	private static String db_connection = null;
+	private static String load_configured = null;
 	private static Map<String, String> config;
 	private static String load_command;
 	// db_user_pw this must be kept in sync with docker-compose.yml file!
@@ -70,13 +69,19 @@ public class AUT_db {
 	 */
 	public static void checkAndLoadDatabase(Map<String, String> db_config){
 		config = db_config;
+		Utils.dbg_msg("load demanded? " + config.get(Constants.DB_LOAD_SCRIPT));
+		load_configured = config.get(Constants.DB_LOAD_SCRIPT);
+		if (load_configured == null) {
+			load_configured = "";
+		}
 		db_connection = config.get(Constants.DB_CONNECTION);
 		Utils.dbg_msg("db_connection ist: " + db_connection);
-		if (db_connection == null || db_connection.equals("h2")) {
+		if (db_connection == null || config.get(Constants.AUT_RUN_FROM_SCRATCH).equals("true"))
+		{
 			config.put(Constants.AUT_VM_ARGS,
 				config.get(Constants.AUT_VM_ARGS) + " -Delexis-run-mode=RunFromScratch");
-			Utils.dbg_msg("AUT_VM_ARGS are: " + config.get(Constants.AUT_VM_ARGS));
 		}
+		Utils.dbg_msg("db_connection " + db_connection +": AUT_VM_ARGS are: " + config.get(Constants.AUT_VM_ARGS));
 		String cleanURI = db_connection.substring(db_connection.indexOf(":") + 1);
 		uri = URI.create(cleanURI);
 		if (uri == null)
@@ -92,12 +97,9 @@ public class AUT_db {
 		vmargs_db_flavor =
 			" -Dch.elexis.dbFlavor=" + db_variant + " -Dch.elexis.dbSpec=" + db_connection;
 
-		Utils.dbg_msg("load demanded? " + config.get(Constants.DB_LOAD_SCRIPT));
-		String load_configured = config.get(Constants.DB_LOAD_SCRIPT);
-		String file_to_load = getDatabaseFile(db_variant, config.get(Constants.DB_LOAD_SCRIPT));
-		if (!load_configured.equals("")
-			&& (file_to_load == null || !Files.isReadable(Paths.get(file_to_load)))) {
-			Utils.dbg_msg("file_to_load <" + file_to_load
+		file_to_load = getDatabaseFile(db_variant, config.get(Constants.DB_LOAD_SCRIPT));
+		if (!load_configured.equals("")	&& (file_to_load == null )) {
+			Utils.dbg_msg("load_configured file_to_load <" + file_to_load
 				+ "> is either null or not readable. Therefore we exit with an error");
 			System.exit(3);
 		}
@@ -105,11 +107,12 @@ public class AUT_db {
 	}
 
 	private static void load_database(){
-		String load_configured = config.get(Constants.DB_LOAD_SCRIPT);
+		String save_to = config.get(Constants.RESULT_DIR)
+				+ "/" + db_variant + "_";
 		if (load_configured.equals("")) {
-			dump_to_file = System.getenv("test_to_run") + "_after.sql";
+			dump_to_file = save_to + System.getenv("test_to_run") + "_after.sql";
 		} else {
-			dump_to_file = file_to_load + "_after.sql";
+			dump_to_file = save_to + file_to_load + "_after.sql";
 		}
 		if (db_variant.equals("h2")) {
 			// This will not work if you run the agent on a different host!
@@ -129,17 +132,18 @@ public class AUT_db {
 				+ " -url jdbc:h2:${DB_NAME}" + " -script " + dump_to_file;
 
 		} else if (db_variant.equals("mysql")) {
+			String db_name = uri.getPath().replace("/", "");
 			config.put(Constants.AUT_VM_ARGS, config.get(Constants.AUT_VM_ARGS) + db_user_pw);
 			load_command = "/usr/bin/mysql " + " --host=" + db_host
  				+ " --user=elexistest --password=elexisTestPassword ";
 			if (db_port > 0) {
 				load_command += " --protocol=TCP " + String.format(" --port=%d ", db_port);
 			}
-			String db_name = uri.getPath().replace("/", "");
+			String drop_and_create = load_command  + " -e 'drop database " + db_name + "; create database " + db_name + "; show databases';";
 			dump_command = load_command.replace("/bin/mysql ", "/bin/mysqldump ");
 			load_command += db_name;
-			load_command = "/bin/cat " + file_to_load + " | " + load_command;
-			dump_command += " --add-drop-table " + db_name + " > " + dump_to_file;
+			load_command = drop_and_create + "/bin/cat " + file_to_load + " | " + load_command;
+			dump_command += " --add-drop-database --add-drop-table " + db_name + " > " + dump_to_file;
 		} else if (db_variant.equals("postgresql")) {
 			String set_pw = "export PGPASSWORD=elexisTestPassword\n";
 			// PG user elexisTest must be downcased to allow login! Niklaus Giger, 22.04.2016
@@ -156,12 +160,15 @@ public class AUT_db {
 			load_command = set_pw + "/bin/cat " + file_to_load + " | /usr/bin/psql " + connect_cmd;
 			dump_command = set_pw + "pg_dump --clean " + connect_cmd + " > " + dump_to_file;
 
-		} else {
+		} else if (!load_configured.equals("")) {
 			Assert.fail(Constants.DB_CONNECTION + " unsupported type " + db_variant
 				+ " from config " + config.get(Constants.DB_CONNECTION));
 		}
-		if (load_configured.length() > 0 && !Utils.run_system_cmd(load_command)) {
-			String error = "loading database failed: " + dump_command;
+		if (load_configured.equals("")) {
+			Utils.dbg_msg("load_configured is empty. Setting load_command to '' instead of: " + load_command);
+			load_command = null;
+		} else if (!Utils.run_system_cmd(load_command)) {
+			String error = "loading database failed: " + load_command;
 			Utils.dbg_msg(error);
 			Assert.fail(error);
 		}
@@ -183,6 +190,7 @@ public class AUT_db {
 		}
 		Utils.dbg_msg("dumpDatabase ran  "+ dump_command);
 		Utils.sleep1second();
+		/*
 		java.nio.file.Path save_to = Paths.get(config.get(Constants.RESULT_DIR));
 		try {
 			if (dump_to_file != null && new File(dump_to_file).canRead()) {
@@ -193,6 +201,7 @@ public class AUT_db {
 		} catch (IOException e) {
 			// Just ignore this error, probably we had no elexis log
 		}
+		*/
 		Utils.dbg_msg("dumpDatabase done");
 	}
 }

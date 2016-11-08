@@ -25,7 +25,7 @@ class DockerRunner
     # First cleanup possible remnants of old runs
     [@m2_repo, @container_home, @result_dir].each do |dir|
       FileUtils.makedirs(dir, verbose: true) unless File.exist?(dir)
-      FileUtils.chmod(0777, dir)
+      FileUtils.chmod(0777, dir, verbose: true)
     end
     [ # instead of calling build, create, start we can use compose up -d
       # Only possibility to make it work under compose 1.8
@@ -80,7 +80,7 @@ class JubulaRunner
       f.puts '#!/bin/sh -v'
       f.puts(cmd)
     end
-    FileUtils.chmod(0755, path)
+    FileUtils.chmod(0755, path, verbose: true)
     FileUtils.cp(path, RootDir, :preserve => true, :verbose => true)
     system("ls -l #{path}")
     puts Dir.pwd
@@ -102,6 +102,7 @@ class JubulaRunner
       FileUtils.cp_r(File.join(RootDir, item), @docker.container_home, verbose: true, preserve: true)
     end
     FileUtils.cp_r(WorkDir, File.join(@docker.container_home, 'work'), verbose: true, preserve: true)
+    FileUtils.chmod_R('o+w', @docker.container_home, verbose: true)
   end
 
   def run_test_in_docker
@@ -229,7 +230,6 @@ exit $status
     @result_dir = File.join(RootDir, 'results')
     FileUtils.makedirs(WorkDir) unless File.directory?(WorkDir)
     if use_docker
-      patch_acl_for_elexis_and_current_user
       Dir.chdir(RootDir)
       @docker = DockerRunner.new(@test_name, @result_dir)
     else

@@ -2,4 +2,7 @@
 :exe_name:    Elexis3
 :test_to_run: Screenshot
 :agent_port:  6305
-
+:environment:
+  db_connection: 'jdbc:mysql://mysql/elexistest'
+  db_load_script: simpel.sql
+  # aut_run_from_scratch: true

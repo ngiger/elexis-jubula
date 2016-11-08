@@ -14,6 +14,7 @@ public class Constants {
 	 * Additional args to be passed as vm_args to the started application
 	 *
 	 */
+	final static public String AUT_RUN_FROM_SCRATCH = "aut_run_from_scratch"; //$NON-NLS-1$
 	final static public String AUT_VM_ARGS = "aut_vm_args"; //$NON-NLS-1$
 	final static public String AUT_LOCALE = "aut_locale"; //$NON-NLS-1$
 	final static public String AUT_KEYBOARD = "aut_keyboard"; //$NON-NLS-1$
@@ -45,7 +46,7 @@ public class Constants {
 	 * Values controlling the test procedure Often a value of 1000 (aka 1 second) is better if you
 	 * want to diagnose the flow!
 	 */
-	
+
 	/*
 	 * Values controlling the test procedure
 	 */

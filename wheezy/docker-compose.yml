@@ -18,6 +18,7 @@ services:
     networks:
       private:
     volumes:
+      # File in this directory must not be world readable or the mysqld will simply ignore it!
       - ${PWD}/wheezy/mysql:/etc/mysql/conf.d
     environment:
       MYSQL_ROOT_PASSWORD: secretRoot
@@ -60,10 +61,11 @@ services:
     # We want silently kill the docker after an hour
     entrypoint: '/app/start_xvfb.sh'
     volumes:
-      - ${PWD}/wheezy/mysql:/etc/mysql/conf.d
       - ${PWD}/results:/home/elexis/results
       - ${PWD}/container_home_m2:/home/elexis/.m2
       - ${PWD}/container_home:/home/elexis
+      # File in this directory must not be world readable or the mysqld will simply ignore it!
+      - ${PWD}/wheezy/mysql:/etc/mysql/conf.d
     #   - /tmp/.X11-unix:/tmp/.X11-unix # für USE_X11
     # devices: # für USE_X11
     #   - /dev/snd # für USE_X11
