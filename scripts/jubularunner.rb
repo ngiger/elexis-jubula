@@ -29,6 +29,7 @@ class DockerRunner
     end
     [ # instead of calling build, create, start we can use compose up -d
       # Only possibility to make it work under compose 1.8
+      @start_with + 'build', # ensure that a changed Dockerfile gets rebuilt
       @start_with + 'up -d', # create and start do not create a network with compose 1.8, up -d does
       # TODO: How to run several instances of jenkinstest in parallel
       # using docker-compose scale and exec --index
@@ -199,7 +200,7 @@ exit $status
       puts "@exitValue #{@exitValue} res is #{cmd_name} is #{res} aus result #{result} mit Inhalt\n#{IO.readlines(result)}"
       if res && /smoketest/i.match(@test_params[:test_to_run])
         puts "smoketest: Copy newly installed plugins for further tests back"
-        FileUtils.cp_r(File.join(@docker.container_home, 'work'), WorkDir, verbose: true)
+        FileUtils.cp_r(Dir.glob(File.join(@docker.container_home, 'work/*')), WorkDir, verbose: true)
       else
         puts "Skip copying plugins as testsuite #{@test_params[:test_to_run]} != smoketest"
       end

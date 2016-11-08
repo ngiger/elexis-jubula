@@ -49,6 +49,7 @@ public class AUT_run {
 		Paths.get(System.getProperty("user.home") + "/elexis/logs/elexis-3.log");
 	public static boolean isMedelexis = false;
 	private static boolean stopping_autagent = false;
+	private static boolean starting_autagent = false;
 
 	private static void setupConfig(){
 		config.put(Constants.DB_CONNECTION, "h2");
@@ -107,6 +108,7 @@ public class AUT_run {
 			}
 		}
 
+		config.put(Constants.AUT_RUN_FROM_SCRATCH, "");
 		config.put(Constants.AUT_LOCALE, "de_DE");
 		config.put(Constants.AUT_ID, "elexis");
 		config.put(Constants.AUT_PROGRAM_ARGS,
@@ -175,7 +177,7 @@ public class AUT_run {
 				Assert.assertTrue(rPath.toFile().canExecute());
 				Utils.run_system_cmd(rPath.toString() + " -vm /usr/bin/java -l -p "
 					+ config.get(Constants.AGENT_PORT) + " &");
-				if (!stopping_autagent) {
+				if (!stopping_autagent & !starting_autagent) {
 					Utils.dbg_msg("Premature stop of autagent. Why?");
 					Assert.fail("Premature stop of autagent");
 				}
@@ -197,6 +199,7 @@ public class AUT_run {
 	}
 
 	public static AUT startAUT(){
+		starting_autagent = true;
 		if (m_aut != null && m_aut.isConnected()) {
 			stopAut(m_aut);
 		}
@@ -243,6 +246,7 @@ public class AUT_run {
 
 		}
 		m_aut = new_aut;
+		starting_autagent = false;
 		return new_aut;
 	}
 

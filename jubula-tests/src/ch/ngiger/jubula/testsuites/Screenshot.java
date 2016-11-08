@@ -28,7 +28,6 @@ public class Screenshot {
 		AUT_run.takeScreenshotActiveWindow(AUT_run.m_aut, AUT_run.app, "first_screenshot.png");
 		Assert.assertTrue(true);
 		Utils.dbg_msg("screenshot_active_window done");
-		AUT_run.stopAut(m_aut);
 	}
 
 	@AfterClass
