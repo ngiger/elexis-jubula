@@ -54,12 +54,12 @@ services:
       private:
       public:
     # Elexis user uid is 1200
-    user: '1200'
+    # user: '1200'
     ports:
       - "8081:8080"
     working_dir: /home/elexis
     # We want silently kill the docker after an hour
-    entrypoint: '/app/start_xvfb.sh'
+    entrypoint: '/app/create_elexis_user.sh'
     volumes:
       - ${PWD}/results:/home/elexis/results
       - ${PWD}/container_home_m2:/home/elexis/.m2
@@ -73,6 +73,7 @@ services:
         - postgres
         - mysql
     environment:
+      HOST_UID: # We want to map 1200 as our HOST_ID using create_elexis_user
       DOCKER_OPTS: "-H tcp://0.0.0.0:4243 -H unix:///var/run/docker.sock"
       PGUSER: elexistest
       PGHOST: postgres

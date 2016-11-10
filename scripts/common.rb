@@ -105,15 +105,6 @@ def get_full_file_path_or_fail(path)
   File.expand_path(path)
 end
 
-def patch_acl_for_elexis_and_current_user(force=false)
-  system("chmod -R o+rw #{RootDir} 2>/dev/null", MAY_FAIL)
-  return unless force && `getfacl #{RootDir} | grep user:1200`
-  ['1200', ENV['USER']].each do |user|
-    system("sudo setfacl -R    -m user:#{user}:rwX")
-    system("sudo setfacl -F -d -m user:#{user}:rwX")
-  end
-end
-
 def prepare_medelexis(inst_dir)
   if Dir.glob(File.join(inst_dir, 'plugins', 'ch.medelexis.application_*.jar')).size > 0
     prefs = File.join(inst_dir, 'configuration', '.settings', 'MedelexisDesk.prefs')

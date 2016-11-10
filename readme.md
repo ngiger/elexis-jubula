@@ -83,18 +83,12 @@ It took my quite a few hours to overcome the following problems
 * in november 2016 we moved to use docker-compose to run tests against MySQL and Postgres (docker) databases
 * When calling start_agent via shell script inside the docker, m_agent.startAUT(aut_config) failed and blocked
 * When I invoked `system` inside rake when call rake jubula_docker, starting the AUT failed, too.
+* We set the environment variable HOST_UID to the uid of the process calling docker-compose, which will be used for the user elexis in the container.
 * Calling directly `scripts/jubularunner.rb run_in_docker Screenshot` blocked also
 * Calling `rake jubula_docker` worked
-* We ran the docker in in a Debian (Jessie) homes, which had docker-engine 1.11 installed. Additionally the following code was run
-bc. groupadd --gid 1200 elexis
-useradd --uid 1200 --gid 1200 elexis
-apt-get install -y docker-engine docker-compose bundler maven xvfb
-mkdir /opt/ci
-setfacl -b /opt/ci
-setfacl -d -m u:elexis:rwX,jenkins_slave:rwX,group::rwX,other::rwX /opt/ci/
-setfacl    -m u:elexis:rwX,jenkins_slave:rwX,group::rwX,other::rwX /opt/ci/
-setfacl -d -m u:elexis:rwX,jenkins_slave:rwX,other:rwX /opt/ci/
-setfacl -m u:elexis:rwX,jenkins_slave:rwX,other:rwX /opt/ci/
+* We ran the docker in in a Debian (Jessie) homes, which had docker-engine 1.12.3 and docker-compose 1.7.0 installed. Additionally the following code was run
+-bc. apt-get install -y docker-engine docker-compose bundler maven xvfb
+
 * If you want to watch the screen output inside the docker, you have
 ** set environment variable USE_X11
 ** uncomment the 3 lines in wheezy/docker-compose ending with USE_X11

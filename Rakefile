@@ -7,13 +7,6 @@ RuboCop::RakeTask.new
 
 our_directory = File.expand_path(File.dirname(__FILE__))
 
-# Note: Needs FACL support from the filesystem
-# Note: 1200 is the UID used in the dockerfile for the user elexis
-desc "Allow rwX access on all files under #{our_directory} to container elexis user UID 1200."
-task 'set_rw_for_1200' do
-  patch_acl_for_elexis_and_current_user(true)
-end
-
 desc 'Build the docker image'
 task :docker_build do
   fail 'docker_build failed!' unless system('scripts/jubularunner.rb docker_build')

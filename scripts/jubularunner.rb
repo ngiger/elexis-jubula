@@ -8,7 +8,7 @@ USE_X11 = !!ENV['USE_X11']
 
 # Helper class to use docker for the Jubula AUT
 class DockerRunner
-  attr_reader :container_home, :cleanup_in_container, :start_with
+  attr_reader :container_home, :start_with
   # http://stackoverflow.com/questions/14112955/how-to-get-my-machines-ip-address-from-ruby-without-leveraging-from-other-ip-ad
   def local_ip
     orig, Socket.do_not_reverse_lookup = Socket.do_not_reverse_lookup, true # turn off reverse DNS resolution temporarily
@@ -21,12 +21,8 @@ class DockerRunner
   end
 
   def start_docker(cmd_in_docker, env = nil, workdir = nil)
-    puts "cmd_in_docker #{cmd_in_docker}"
-    # First cleanup possible remnants of old runs
-    [@m2_repo, @container_home, @result_dir].each do |dir|
-      FileUtils.makedirs(dir, verbose: true) unless File.exist?(dir)
-      FileUtils.chmod(0777, dir, verbose: true)
-    end
+    ENV['HOST_UID'] = Process.uid.to_s
+    puts "cmd_in_docker #{cmd_in_docker} with uid #{ENV['HOST_UID']}"
     [ # instead of calling build, create, start we can use compose up -d
       # Only possibility to make it work under compose 1.8
       @start_with + 'build', # ensure that a changed Dockerfile gets rebuilt
@@ -54,7 +50,6 @@ class DockerRunner
     @docker_name = "jenkinstest" # this did work when calling docker directly "jubula-#{@test_name}-#{ENV['VARIANT']}"
     @container_home = File.join(RootDir, 'container_home')
     @m2_repo = File.join(RootDir, 'container_home_m2')
-    @cleanup_in_container = 'chmod --silent --recursive o+rwX /home/elexis; rm -rf /home/elexis/.jubula /home/elexis/.cache /home/elexis/.fontconfig /home/elexis/.dbus'
     @start_with = "docker-compose -f #{RootDir}/wheezy/docker-compose.yml "
     @stop_commands = ["#{@start_with} stop", "#{@start_with} rm --force --all"]
     # cleanup stale docker containers
@@ -102,7 +97,6 @@ class JubulaRunner
       FileUtils.cp_r(File.join(RootDir, item), @docker.container_home, verbose: true, preserve: true)
     end
     FileUtils.cp_r(WorkDir, File.join(@docker.container_home, 'work'), verbose: true, preserve: true)
-    FileUtils.chmod_R('o+w', @docker.container_home, verbose: true)
   end
 
   def run_test_in_docker
@@ -172,6 +166,7 @@ sleep 1
   cmd  += %(/usr/bin/xclock -digital -twentyfour & # Gives early feedback, that X is running
 cp $0 /home/elexis/results
 du -shx /home/elexis/.m2/repository
+rm -rf /home/elexis/p2
 #{@mvn_cmd} -DDISPLAY=#{@display}
 export status=$?
 echo saved status $status for #{@mvn_cmd}
@@ -181,8 +176,6 @@ cat /home/elexis/results/result_of_test_run
 ls -l /home/elexis/results/result_of_test_run
 sync # ensure that everything is written to the disk
 sleep 1
-# this is needed that copying  the results and log files will not fail
-#{@docker.cleanup_in_container}
 ps -ef
 echo killing children process
 pkill -P $$
@@ -199,8 +192,14 @@ exit $status
       res = @docker.start_docker(cmd_name)
       sleep(0.5)
       result = File.join(@result_dir, 'result_of_test_run')
-      @exitValue = File.exist?(result) && IO.readlines(result).first.to_i
-      puts "@exitValue #{@exitValue} res is #{cmd_name} is #{res} aus result #{result} mit Inhalt\n#{IO.readlines(result)}"
+      if !File.exist?(result)
+        @exitValue = 999
+        inhalt = "result_of_test_run not found"
+      else
+        inhalt = IO.readlines(result)
+        @exitValue = File.exist?(result) && inhalt.first.to_i
+      end
+      puts "@exitValue #{@exitValue} res is #{cmd_name} is #{res} aus result #{result} mit Inhalt\n#{inhalt}"
       if res && /smoketest/i.match(@test_params[:test_to_run])
         puts "smoketest: Copy newly installed plugins for further tests back"
         FileUtils.cp_r(Dir.glob(File.join(@docker.container_home, 'work/*')), WorkDir, verbose: true)

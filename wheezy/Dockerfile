@@ -24,19 +24,7 @@ RUN apt-get update && \
 # must be converted to png using "convert screen.xwd screen.png" (on host)
 # also some tools like lsof htop to debug problems
 
-RUN useradd --uid 1000 --user-group --create-home --shell /bin/bash dummy
-RUN useradd --uid 1200 --user-group --create-home --shell /bin/bash elexis && \
-    echo "elexis ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/elexis && \
-    chmod 0440 /etc/sudoers.d/elexis && \
-    mkdir -p elexis /home/elexis/work /home/elexis/results
-
-# ENTRYPOINT Xvfb :1 -screen 5 1280x1024x24 -nolisten tcp && /bin/bash
-# Configure the main working directory. This is the base
-# directory used in any further RUN, COPY, and ENTRYPOINT
-# commands.
 RUN mkdir -p /app /tmp/.X11-unix/ && chmod 1777 /tmp/.X11-unix/  /var/lib/apt/lists/
 WORKDIR /app
 COPY assets/* /app/
-USER elexis
-ENTRYPOINT  ['./start_xvfb.sh']
 CMD ['/bin/bash']
