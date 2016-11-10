@@ -90,7 +90,7 @@ public class Software extends Common {
 		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, root + "about.png"); //$NON-NLS-1$
 
 		clickComponent(OM.SW_About_Detail_btn); //$NON-NLS-1$
-		waitForWindow(details_title);
+		waitForWindow(details_title); new Perspectives(AUT_run.m_aut, AUT_run.app);
 
 		HashMap<String, String> map = new HashMap<>();
 		map.put("configuration", "Configuration"); //$NON-NLS-1$
@@ -115,12 +115,16 @@ public class Software extends Common {
 
 		// Open SW Install Window
 		openMenu(menu_install);
+		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, root + "init.png"); //$NON-NLS-1$;
 
 		// Select all SW from all sites
 		@SuppressWarnings("unchecked")
 		ComboComponent combo = SwtComponents.createComboComponent(OM.SW_update_select_site_combo);
-		clickComponent(OM.SW_update_select_site_combo);
-
+		Utils.sleep1second();
+		Utils.sleep1second();
+		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, root + "second.png"); //$NON-NLS-1$;
+		waitForWindowClose(".*Problem.*", Constants.ONE_SECOND);
+		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, root + "third.png"); //$NON-NLS-1$;
 		// Select all SW from all sites
 		AUT_run.m_aut.execute(
 			combo.selectEntryByValue(select_base, Operator.matches, SearchType.absolute), null);

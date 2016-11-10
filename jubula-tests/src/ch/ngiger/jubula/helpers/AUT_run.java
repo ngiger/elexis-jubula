@@ -369,6 +369,7 @@ public class AUT_run {
 	/** cleanup */
 	@AfterClass
 	public static void tearDown() throws Exception{
+		takeScreenshot(m_aut, app, "tearDown.png"); //$NON-NLS-1$;
 		stopping_autagent = true;
 		if (m_aut != null) {
 			Utils.dbg_msg("AUT_run.tearDown " + m_aut + " isCon " + m_aut.isConnected());
