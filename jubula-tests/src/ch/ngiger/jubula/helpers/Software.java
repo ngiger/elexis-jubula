@@ -124,8 +124,9 @@ public class Software extends Common {
 		Utils.sleep1second();
 		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, root + "second.png"); //$NON-NLS-1$;
 		waitForWindowClose(".*Problem.*", Constants.ONE_SECOND);
-		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, root + "third.png"); //$NON-NLS-1$;
 		// Select all SW from all sites
+		select_base = ".*All.*";
+		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, root + select_base + "_before.png"); //$NON-NLS-1$;
 		AUT_run.m_aut.execute(
 			combo.selectEntryByValue(select_base, Operator.matches, SearchType.absolute), null);
 		// Three seconds were not enough when running from the command line
@@ -137,6 +138,7 @@ public class Software extends Common {
 				break;
 			}
 		}
+		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, root + select_base + "_after.png"); //$NON-NLS-1$;
 
 	}
 

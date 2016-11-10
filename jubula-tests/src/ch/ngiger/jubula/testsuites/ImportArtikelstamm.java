@@ -7,10 +7,12 @@ import org.eclipse.jubula.toolkit.concrete.components.Application;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
+import org.junit.runners.MethodSorters;
 
 import ch.ngiger.jubula.helpers.AUT_run;
 import ch.ngiger.jubula.helpers.Artikelstamm;
@@ -23,6 +25,7 @@ import ch.ngiger.jubula.helpers.Software;
 import ch.ngiger.jubula.helpers.Utils;
 import ch.ngiger.jubula.helpers.Views;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ImportArtikelstamm {
 	public static String SAVE_RESULTS_DIR = null;
 	private static String watchedLog = "Started:\n";
@@ -113,13 +116,27 @@ public class ImportArtikelstamm {
 				Utils.dbg_msg(k + " connected " + v.m_aut.isConnected() + " v" + v);
 		});
 	}
+	@Test()
+	/**
+	 * Run SW-Installation early
+	 * @throws Exception
+	 */
+	public void _install_sw() throws Exception{
+		if (install_and_show_sw) {
+			software.showAbout("first", false);
+		}
+		if (install_and_show_sw) {
+			software.installAllSW();
+		}
+		if (install_and_show_sw ) {
+			 // need to distinguis between v3 and v4 for Artikelstamm
+			software.showAbout("second", true);
+		}
+	}
 
 	@Test()
 	public void importArtikelstamm() throws Exception{
 		Utils.dbg_msg("importArtikelstamm Medelexis " + AUT_run.isMedelexis);
-		if (install_and_show_sw) {
-			software.installAllSW();
-		}
 		software.showAbout("artikel", true); // needed to get info whether
 		Utils.dbg_msg("importArtikelstamm v4 " + software.isArtikelstamm_v4());
 		String filename = "";

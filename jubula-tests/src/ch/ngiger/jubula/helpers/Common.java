@@ -351,7 +351,7 @@ public class Common {
 			Utils.dbg_msg("synchronizedTextReplace: is editable");
 			String changedValue = filter ? newValue.replaceAll("[^\\w\\s\\.-_/]", "_") : newValue; // Stuff like üis not possible
 			Thread.sleep(100);
-			Utils.dbg_msg(String.format("synchronizedTextReplace: %s -> %s %s", cid.toString(),
+			Utils.dbg_msg(String.format("synchronizedTextReplace: %s -> %s",
 				newValue, filter ? "changed " + changedValue : " unfiltered"));
 			m_aut.execute(tic.replaceText(changedValue), null);
 			Thread.sleep(100);

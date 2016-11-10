@@ -393,9 +393,14 @@ public class Patients extends Common {
 		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "cons/artikel/selected_artikelstamm.png"); //$NON-NLS-1$
 		artikelstamm.selectFirstItemMatching(item);
 		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "cons/artikel/before_drag_top_left.png"); //$NON-NLS-1$
+		Utils.sleepMs(500);
 		dragTopLeftCell(OM.Artikelstamm_Alle_Table_1_tbl);
+		Utils.sleepMs(500);
 		dropIntoMiddleOfComponent(OM.Kons_Verrechnung_table);
-		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "cons/artikel/done.png"); //$NON-NLS-1$
+		Utils.sleepMs(500);
+		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "cons/artikel/after_drop.png"); //$NON-NLS-1$
+		clickComponent(OM.Kons_Verrechnung_table);
+		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "cons/artikel/after_click_in_rechnunstable.png"); //$NON-NLS-1$
 		Utils.dbg_msg("artikelstammItemVerrechnen done: " + item); //$NON-NLS-1$
 	}
 

@@ -17,10 +17,12 @@ import org.eclipse.jubula.tools.ComponentIdentifier;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
+import org.junit.runners.MethodSorters;
 
 import ch.ngiger.jubula.elexiscore.OM;
 import ch.ngiger.jubula.helpers.AUT_run;
@@ -34,6 +36,7 @@ import ch.ngiger.jubula.helpers.Software;
 import ch.ngiger.jubula.helpers.Utils;
 import ch.ngiger.jubula.helpers.Views;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class Smoketest {
 	private static final boolean show_sw = true;
 	private static final boolean install_sw = true;
@@ -162,10 +165,11 @@ public class Smoketest {
 	}
 
 	@Test()
-	public void smoketest() throws Exception{
-		Utils.dbg_msg("smoketest install_sw is " + install_sw
-			+ " with_artikelstamm " + with_artikelstamm + " Medelexis " + AUT_run.isMedelexis);
-		// showVars();
+	/**
+	 * Run SW-Installation early
+	 * @throws Exception
+	 */
+	public void _install_sw() throws Exception{
 		if (show_sw) {
 			software.showAbout("first", false);
 		}
@@ -176,6 +180,13 @@ public class Smoketest {
 			 // need to distinguis between v3 and v4 for Artikelstamm
 			software.showAbout("second", true);
 		}
+	}
+
+	@Test()
+	public void smoketest() throws Exception{
+		Utils.dbg_msg("smoketest install_sw is " + install_sw
+			+ " with_artikelstamm " + with_artikelstamm + " Medelexis " + AUT_run.isMedelexis);
+		// showVars();
 		Utils.dbg_msg("Smoketest with_artikelstamm " + with_artikelstamm + " v4 "
 			+ software.isArtikelstamm_v4());
 		if (with_artikelstamm) {
@@ -205,7 +216,7 @@ public class Smoketest {
 		pat.createConsultation("Scheint ein Simulant zu sein", "Kann gut fabulieren");
 
 		if (with_artikelstamm) {
-			pat.artikelstammItemVerrechnen(artikelstamm, "CYKLOKAPRON");
+			pat.artikelstammItemVerrechnen(artikelstamm, "ASPIRIN C Brause");
 		}
 
 		pat.eigenleistungVerrechnen(eigenleistung, leistung_short, leistungs_name);
