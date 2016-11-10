@@ -174,17 +174,19 @@ cp $0 /home/elexis/results
 du -shx /home/elexis/.m2/repository
 #{@mvn_cmd} -DDISPLAY=#{@display}
 export status=$?
-echo status $status. cmd was #{@mvn_cmd}
+echo saved status $status for #{@mvn_cmd}
 echo $status | tee /home/elexis/results/result_of_test_run
-echo erstellt am `date` | tee --appe /home/elexis/results/result_of_test_run
+echo Resultat von #{@test_params[:test_to_run]} um `date` war $status | tee --append /home/elexis/results/result_of_test_run
 cat /home/elexis/results/result_of_test_run
 ls -l /home/elexis/results/result_of_test_run
 sync # ensure that everything is written to the disk
 sleep 1
 # this is needed that copying  the results and log files will not fail
 #{@docker.cleanup_in_container}
-killall /usr/bin/xclock
-killall Xvfb
+ps -ef
+echo killing children process
+pkill -P $$
+echo about to exit with status $status
 exit $status
 )
     store_cmd(cmd_name, cmd)
