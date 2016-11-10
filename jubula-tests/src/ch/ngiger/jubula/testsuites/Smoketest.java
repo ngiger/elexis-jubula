@@ -216,7 +216,7 @@ public class Smoketest {
 		pat.createConsultation("Scheint ein Simulant zu sein", "Kann gut fabulieren");
 
 		if (with_artikelstamm) {
-			pat.artikelstammItemVerrechnen(artikelstamm, "ASPIRIN C Brause");
+			pat.artikelstammItemVerrechnen(artikelstamm, "ASPIRIN");
 		}
 
 		pat.eigenleistungVerrechnen(eigenleistung, leistung_short, leistungs_name);
