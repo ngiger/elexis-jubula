@@ -16,7 +16,7 @@ public class AUT_db {
 	private static String dump_command = null;
 	private static String file_to_load = null;
 	private static String dump_to_file = null;
-	private static String vmargs_db_flavor = null;
+	private static String vmargs_db_flavor = "";
 	private static URI uri = null;
 	private static String db_host = null;
 	private static int db_port = 0;
@@ -25,7 +25,7 @@ public class AUT_db {
 	private static Map<String, String> config;
 	private static String load_command;
 	// db_user_pw this must be kept in sync with docker-compose.yml file!
-	private final static String db_user_pw =
+	private static String db_user_pw =
 		" -Dch.elexis.dbUser=elexistest -Dch.elexis.dbPw=elexisTestPassword ";
 
 	/**
@@ -78,11 +78,6 @@ public class AUT_db {
 		}
 		db_connection = config.get(Constants.DB_CONNECTION);
 		Utils.dbg_msg("db_connection ist: " + db_connection);
-		if (db_connection == null || config.get(Constants.AUT_RUN_FROM_SCRATCH).equals("true"))
-		{
-			config.put(Constants.AUT_VM_ARGS,
-				config.get(Constants.AUT_VM_ARGS) + " -Delexis-run-mode=RunFromScratch");
-		}
 		Utils.dbg_msg("db_connection " + db_connection +": AUT_VM_ARGS are: " + config.get(Constants.AUT_VM_ARGS));
 		String cleanURI = db_connection.substring(db_connection.indexOf(":") + 1);
 		uri = URI.create(cleanURI);
@@ -95,10 +90,15 @@ public class AUT_db {
 		db_host = uri.getHost();
 		Utils.dbg_msg(db_connection + ": -> " + db_variant + ", " + db_host + ", " + db_port + ", "
 			+ uri.getPath());
-
-		vmargs_db_flavor =
-			" -Dch.elexis.dbFlavor=" + db_variant + " -Dch.elexis.dbSpec=" + db_connection;
-
+		if (db_connection == null || config.get(Constants.AUT_RUN_FROM_SCRATCH).equals("true") ||
+				config.get(Constants.DB_LOAD_SCRIPT).length() == 0)
+		{
+			config.put(Constants.AUT_VM_ARGS,
+				config.get(Constants.AUT_VM_ARGS) + " -Delexis-run-mode=RunFromScratch -Dch.elexis.username=007 -Dch.elexis.password=topsecret");
+		} else {
+			vmargs_db_flavor =
+					" -Dch.elexis.dbFlavor=" + db_variant + " -Dch.elexis.dbSpec=" + db_connection;
+		}
 		file_to_load = getDatabaseFile(db_variant, config.get(Constants.DB_LOAD_SCRIPT));
 		if (!load_configured.equals("")	&& (file_to_load == null )) {
 			Utils.dbg_msg("load_configured file_to_load <" + file_to_load
@@ -121,6 +121,7 @@ public class AUT_db {
 			dump_to_file = save_to  + "after_" + path.getFileName().toString();
 		}
 		if (db_variant.equals("h2")) {
+			db_user_pw = "";
 			// This will not work if you run the agent on a different host!
 			java.nio.file.Path j2_jar_file =
 				Paths.get("../work/plugins/org.h2_1.3.170.jar").toAbsolutePath().normalize();
