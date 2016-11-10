@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLDecoder;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 
@@ -108,11 +110,15 @@ public class AUT_db {
 
 	private static void load_database(){
 		String save_to = config.get(Constants.RESULT_DIR)
-				+ "/" + db_variant + "_";
+				+ "/" + db_variant + "_" ;
+		if (System.getenv("test_to_run") != null) {
+			save_to = save_to + System.getenv("test_to_run") + "_";
+		}
 		if (load_configured.equals("")) {
-			dump_to_file = save_to + System.getenv("test_to_run") + "_after.sql";
+			dump_to_file = save_to + "after_from_scratch.sql";
 		} else {
-			dump_to_file = save_to + file_to_load + "_after.sql";
+			Path path = FileSystems.getDefault().getPath(file_to_load);
+			dump_to_file = save_to  + "after_" + path.getFileName().toString();
 		}
 		if (db_variant.equals("h2")) {
 			// This will not work if you run the agent on a different host!
@@ -139,7 +145,7 @@ public class AUT_db {
 			if (db_port > 0) {
 				load_command += " --protocol=TCP " + String.format(" --port=%d ", db_port);
 			}
-			String drop_and_create = load_command  + " -e 'drop database " + db_name + "; create database " + db_name + "; show databases';";
+			String drop_and_create = load_command  + " -e 'drop database " + db_name + " IF EXISTS; create database " + db_name + "; show databases';";
 			dump_command = load_command.replace("/bin/mysql ", "/bin/mysqldump ");
 			load_command += db_name;
 			load_command = drop_and_create + "/bin/cat " + file_to_load + " | " + load_command;
@@ -167,7 +173,7 @@ public class AUT_db {
 		if (load_configured.equals("")) {
 			Utils.dbg_msg("load_configured is empty. Setting load_command to '' instead of: " + load_command);
 			load_command = null;
-		} else if (!Utils.run_system_cmd(load_command)) {
+		} else if (!Utils.run_system_cmd(load_command, "load_database")) {
 			String error = "loading database failed: " + load_command;
 			Utils.dbg_msg(error);
 			Assert.fail(error);
@@ -186,22 +192,10 @@ public class AUT_db {
 	}
 	public static void dumpDatabase(){
 		if (dump_command != null) {
-			Utils.run_system_cmd(dump_command);
+			Utils.run_system_cmd(dump_command, "dump_database");
 		}
 		Utils.dbg_msg("dumpDatabase ran  "+ dump_command);
 		Utils.sleep1second();
-		/*
-		java.nio.file.Path save_to = Paths.get(config.get(Constants.RESULT_DIR));
-		try {
-			if (dump_to_file != null && new File(dump_to_file).canRead()) {
-				java.nio.file.Files.copy(Paths.get(dump_to_file), Paths.get(save_to.toString()));
-				Utils.dbg_msg("dumpDatabase copied "+ dump_to_file + " => " +save_to.toAbsolutePath());
-				Utils.sleep1second();
-			}
-		} catch (IOException e) {
-			// Just ignore this error, probably we had no elexis log
-		}
-		*/
 		Utils.dbg_msg("dumpDatabase done");
 	}
 }
