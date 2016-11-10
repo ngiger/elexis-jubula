@@ -174,9 +174,12 @@ public class AUT_run {
 				String msg =
 					"autagent " + rPath.toFile().canExecute() + " " + rPath.toAbsolutePath();
 				Utils.dbg_msg(msg);
+				if (!rPath.toFile().canExecute()){
+					Utils.dbg_msg(rPath + " is not executable");
+				}
 				Assert.assertTrue(rPath.toFile().canExecute());
 				Utils.run_system_cmd(rPath.toString() + " -vm /usr/bin/java -l -p "
-					+ config.get(Constants.AGENT_PORT) + " &");
+					+ config.get(Constants.AGENT_PORT) + " ", "start_autagent");
 				if (!stopping_autagent & !starting_autagent) {
 					Utils.dbg_msg("Premature stop of autagent. Why?");
 					Assert.fail("Premature stop of autagent");
