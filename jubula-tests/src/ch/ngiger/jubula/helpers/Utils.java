@@ -20,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
@@ -105,21 +106,28 @@ public class Utils {
 	 * run_system_cmd writes the command into a temporary file to allow useage of pipes and
 	 * redirection. Then makes the file executable and executes it.
 	 *
-	 * @param args
+	 * @param cmd
 	 *            Executable and parameters
-	 * @return
+	 * @param short_name
+	 * 		      will be used to save the script in the results
+	 *            directory for trouble shooting
+	 *
+	 * @return  true if command exited with status 0
 	 */
-	public static boolean run_system_cmd(String cmd){
+	public static boolean run_system_cmd(String cmd, String short_name){
 		String s = null;
 		String cmd_prefix = "#!/bin/bash -v\n";
 		try {
 			Utils.sleepMs(100); // Without this delay dumpin the DB failed!!
-			Path script_file = Files.createTempFile("script_", ".sh");
+			Path script_file = Files.createTempFile(short_name +"_", ".sh");
 			dbg_msg("run_system_cmd: " + script_file + " with " + cmd);
 			Files.write(script_file, (cmd_prefix + cmd).getBytes());
 			// Utils.sleep1second();
 			script_file.toFile().setExecutable(true);
 			// Utils.sleep1second();
+			// Save the script run in the results dir
+			// This can be handy to diagnose problem
+			Files.copy(script_file, Paths.get(SAVE_RESULTS_DIR, short_name + ".sh"), StandardCopyOption.REPLACE_EXISTING);
 
 			Process p = Runtime.getRuntime().exec(script_file.toString());
 
