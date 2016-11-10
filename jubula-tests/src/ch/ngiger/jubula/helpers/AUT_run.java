@@ -12,7 +12,6 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Random;
 
 import org.apache.commons.lang.SystemUtils;
 import org.eclipse.jubula.client.AUT;
@@ -118,12 +117,9 @@ public class AUT_run {
 		// ./Medelexis -eclipse.password ~/.medelexis.dummy.password -clean
 		// -debug -consoleLog -vmargs -Delexis-run-mode=RunFromScratch
 		// -Dch.elexis.username=007 -Dch.elexis.password=topsecret
-		Random ran = new Random();
-		int x = ran.nextInt(6);
 		config.put(Constants.AUT_VM_ARGS,
 			"-nl " + config.get(Constants.AUT_LOCALE)
-				+ " --clean -configuration ~/configuration" + x
-				+ " -vmargs -Declipse.p2.unsignedPolicy=allow" + " -Dautagent_port="
+				+ " --clean -vmargs -Declipse.p2.unsignedPolicy=allow" + " -Dautagent_port="
 				+ config.get(Constants.AGENT_PORT) + " -Dautagent_host="
 				+ config.get(Constants.AGENT_HOST)
 				+ " -Dch.elexis.username=007 -Dch.elexis.password=topsecret "); //  osgi.locking=none
