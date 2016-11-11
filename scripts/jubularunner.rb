@@ -52,6 +52,7 @@ class DockerRunner
     @docker_name = "jenkinstest" # this did work when calling docker directly "jubula-#{@test_name}-#{ENV['VARIANT']}"
     @container_home = File.join(RootDir, 'container_home')
     @m2_repo = File.join(RootDir, 'container_home_m2')
+    FileUtils.makedirs(@m2_repo, :verbose => true)
     @start_with = "docker-compose -f #{RootDir}/wheezy/docker-compose.yml "
     @stop_commands = ["#{@start_with} stop", "#{@start_with} rm --force --all"]
     # cleanup stale docker containers
@@ -169,6 +170,7 @@ sleep 1
 cp $0 /home/elexis/results
 du -shx /home/elexis/.m2/repository
 rm -rf /home/elexis/p2
+mkdir -p /home/elexis/elexis/GlobalInbox
 #{@mvn_cmd} -DDISPLAY=#{@display}
 export status=$?
 echo saved status $status for #{@mvn_cmd}
@@ -248,7 +250,7 @@ exit $status
     @docker ? run_test_in_docker : run_test_exec
   ensure
     destination =  @result_dir + '-' + @test_params[:test_to_run]
-    FileUtils.cp_r(@result_dir, destination, verbose: true, preserve: true)
+    FileUtils.cp_r(@result_dir, destination, verbose: true, preserve: true) if File.exist?(@result_dir)
     FileUtils.cp(@elexis_log, destination, verbose: true, preserve: true)  if File.exist?(@elexis_log)
     files = Dir.glob(File.join(@docker.container_home, '*/*/surefire-reports/*'))
     puts "Saving surefire-reports #{files.join("\n")}"
