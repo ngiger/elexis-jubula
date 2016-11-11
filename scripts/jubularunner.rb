@@ -3,6 +3,7 @@ $LOAD_PATH.unshift File.dirname(__FILE__)
 require 'common'
 require 'socket'
 require 'tmpdir'
+require 'etc'
 
 USE_X11 = !!ENV['USE_X11']
 
@@ -234,9 +235,12 @@ exit $status
     if use_docker
       Dir.chdir(RootDir)
       @docker = DockerRunner.new(@test_name, @result_dir)
+      @elexis_log = "#{@docker.container_home}/elexis/logs/elexis-3.log"
     else
+      @elexis_log = "#{Etc.getpwuid.dir}/elexis/logs/elexis-3.log"
       Dir.chdir(WorkDir)
     end
+    FileUtils.rm @elexis_log if File.exist?(@elexis_log)
     FileUtils.rm_rf(@result_dir)
     FileUtils.makedirs(@result_dir)
     # -offline does not work inside docker. Don't know why
@@ -245,6 +249,7 @@ exit $status
   ensure
     destination =  @result_dir + '-' + @test_params[:test_to_run]
     FileUtils.cp_r(@result_dir, destination, verbose: true, preserve: true)
+    FileUtils.cp(@elexis_log, destination, verbose: true, preserve: true)  if File.exist?(@elexis_log)
     files = Dir.glob(File.join(@docker.container_home, '*/*/surefire-reports/*'))
     puts "Saving surefire-reports #{files.join("\n")}"
     FileUtils.cp_r(files, destination, verbose: true, preserve: true)
