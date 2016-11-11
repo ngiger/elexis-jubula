@@ -170,10 +170,8 @@ public class Smoketest {
 	 * @throws Exception
 	 */
 	public void _install_sw() throws Exception{
-		if (show_sw) {
-			software.showAbout("first", false);
-		}
-		if (install_sw) {
+		software.showAbout("first", false);
+		if (install_sw && !software.baseChIsInstalled()) {
 			software.installAllSW();
 		}
 		if (show_sw || with_artikelstamm) {
@@ -225,9 +223,15 @@ public class Smoketest {
 		Pattern p = Pattern.compile("[0-9]{4}.*Testperson.*ArmesWesen.*1990");
 		Matcher m = p.matcher(test);
 		boolean found = m.find();
-		Utils.dbg_msg("getInvoicesAsString Testing >" + test + "< matches <" + p
-			+ "> returns found " + found);
-		Assert.assertTrue(found);
+		int j = pat.nrRowsInTable(OM.BillSummary_Tbc);
+		Utils.dbg_msg("Smoketest found " + j + " bills"); //$NON-NLS-1$ //$NON-NLS-2$
+		if (AUT_run.AUT_runs_on_localhost()) {
+			Utils.dbg_msg("getInvoicesAsString Testing >" + test + "< matches <" + p
+				+ "> returns found " + found);
+			Assert.assertTrue(found);
+		} else {
+			Utils.dbg_msg("Skip check on remote host" + j);
+		}
 		Utils.dbg_msg("Smoketest.finished successfully!"); //$NON-NLS-1$
 	}
 

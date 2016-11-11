@@ -84,11 +84,26 @@ public class Common {
 	 * @param: cid	a ComponentIdentifier
 	 */
 	public void clickInMiddleOfComponent(@SuppressWarnings("rawtypes") ComponentIdentifier cid){
+		waitForComponent(cid);
 		@SuppressWarnings("unchecked")
 		GraphicsComponent comp =
 			org.eclipse.jubula.toolkit.base.AbstractComponents.createGraphicsComponent(cid);
 		m_aut.execute(comp.clickInComponent(new Integer(1), InteractionMode.primary, new Integer(1),
 			Unit.percent, new Integer(50), Unit.percent), null);
+	}
+
+	/**
+	 * Waits max 1 second for component to be present. Then clicks in the top right (e.g. combo box)
+	 *
+	 * @param: cid	a ComponentIdentifier
+	 */
+	public void clickTopRightOfComponent(@SuppressWarnings("rawtypes") ComponentIdentifier cid){
+		waitForComponent(cid);
+		@SuppressWarnings("unchecked")
+		GraphicsComponent comp =
+			org.eclipse.jubula.toolkit.base.AbstractComponents.createGraphicsComponent(cid);
+		m_aut.execute(comp.clickInComponent(new Integer(1), InteractionMode.primary, new Integer(99),
+			Unit.percent, new Integer(1), Unit.percent), null);
 	}
 
 	public boolean componentIsEnabled(@SuppressWarnings("rawtypes") ComponentIdentifier cid){
@@ -162,26 +177,24 @@ public class Common {
 		return data;
 	}
 
-	/*
-	 * This is the only way I could think of by getting the value of text component, which
-	 * selects the component, selects all text, copies it to the clipboard and reads the local clipboard
-	 * Therefore it will fail miserably if your AUT is running on another host!
+	/**
+	 * Return the text from a Text Component.
+	 *
+	 * @param  ComponentIdentifier
+	 *
+	 * @return Text or "" if component does not support readValue()
 	 */
 	public String getTextFromCompent(@SuppressWarnings("rawtypes") ComponentIdentifier cid){
 		@SuppressWarnings("unchecked")
 		org.eclipse.jubula.toolkit.concrete.components.TextComponent tic =
 			ConcreteComponents.createTextComponent(cid);
 		m_aut.execute(tic.waitForComponent(Constants.ONE_SECOND, 0), null);
-		m_aut.execute(tic.click(new Integer(1), InteractionMode.primary), null);
-		Utils.sleep1second();
-		m_aut.execute(m_app.externalKeyCombination(new Modifier[] {
-			Modifier.control
-		}, "a"), null); //$NON-NLS-1$
-		Utils.sleep1second();
-		m_aut.execute(m_app.externalKeyCombination(new Modifier[] {
-			Modifier.control
-		}, "c"), null); //$NON-NLS-1$
-		return getClipboarAsString();
+		try {
+			Result<Object> txt = m_aut.execute(tic.readValue(), null);
+			return txt.getReturnValue();
+		} catch (ActionException | ComponentNotFoundException e) {
+			return "empty";
+		}
 	}
 
 	public boolean isEnabled(@SuppressWarnings("rawtypes") ComponentIdentifier cid){
@@ -273,6 +286,11 @@ public class Common {
 			// Assert.fail(msg);
 		}
 		return false;
+	}
+
+	public void pressEscape(){
+		Utils.dbg_msg("press Escape");
+		AUT_run.m_aut.execute(m_app.externalKeyCombination(new Modifier[] {}, "Escape"), null);
 	}
 
 	public void pressEnter(){

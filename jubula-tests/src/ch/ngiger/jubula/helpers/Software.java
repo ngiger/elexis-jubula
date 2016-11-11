@@ -10,7 +10,7 @@
  *******************************************************************************/
 package ch.ngiger.jubula.helpers;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 import org.eclipse.jubula.client.AUT;
 import org.eclipse.jubula.toolkit.concrete.components.Application;
@@ -39,9 +39,14 @@ public class Software extends Common {
 	private static String root = "sw_inst/";
 	private static String ElexisCoreVersion = "unknown";
 	private static boolean artikelstamm_v4 = false;
+	private static boolean base_ch_installed = false;
 
 	public boolean isArtikelstamm_v4(){
 		return artikelstamm_v4;
+	}
+
+	public boolean baseChIsInstalled(){
+		return base_ch_installed;
 	}
 
 	public String getElexisCoreVersion() {
@@ -58,13 +63,17 @@ public class Software extends Common {
 		selectTabByValue(tab_id, name);
 		Utils.sleep1second(); // It takes some time to construct the view
 		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, root + "about_" + abbrev + ".png");
-		String info = getTextFromCompent(tab_id);
-		if (info != null && !info.startsWith("empty")) {
+
+		if (componentIsEnabled(OM.SW_Details_Configuration_tic)) {
+			String info = getTextFromCompent(OM.SW_Details_Configuration_tic);
 			if (info.contains("at.medevit.ch.artikelstamm.elexis.common (3.2")) {
 				Utils.dbg_msg("handleAboutDetail: found artikelstamm_v4");
 				artikelstamm_v4 = true;
 			} else {
 				Utils.dbg_msg("handleAboutDetail: NO artikelstamm_v4 found");
+			}
+			if (info.contains("ch.elexis.base.ch.artikel")) {
+				base_ch_installed = true;
 			}
 			final String searchString = "ch.elexis.core (";
 			int beginIndex = info.indexOf(searchString, 0);
@@ -92,21 +101,27 @@ public class Software extends Common {
 		clickComponent(OM.SW_About_Detail_btn); //$NON-NLS-1$
 		waitForWindow(details_title); new Perspectives(AUT_run.m_aut, AUT_run.app);
 
-		HashMap<String, String> map = new HashMap<>();
-		map.put("configuration", "Configuration"); //$NON-NLS-1$
+		LinkedHashMap<String, String>orderedMap = new LinkedHashMap<>();
 		if (!minimal) {
-			map.put("history", "Update Chronik"); //$NON-NLS-1$
-			map.put("installed", "Installierte Software"); //$NON-NLS-1$
-			map.put("plugins", "Plug.*"); //$NON-NLS-1$
+			orderedMap.put("installed", "Installierte Software"); //$NON-NLS-1$
+			orderedMap.put("history", "Update Chronik"); //$NON-NLS-1$
+			orderedMap.put("plugins", "Plug.*"); //$NON-NLS-1$
 		}
-		map.forEach((abbrev, name) -> handleAboutDetail(abbrev, name));
-
-		pressEnter();
-		// 		clickButton(OM.AboutElexisOpenSource_ElexisOpenSourceInstallatio0_Close_btn); //$NON-NLS-1$
-		waitForWindowClose(details_title);
-
+		orderedMap.put("configuration", "Configuration"); //$NON-NLS-1$
+		orderedMap.forEach((abbrev, name) -> handleAboutDetail(abbrev, name));
+		selectTabByValue(OM.AboutElexisOpenSource_ElexisOpenSourceInstallatio0_TabFolder_1_tpn, "Configuration");
+		// SW_Details_Configuration_close_btn is only correctly defined in this tab
+		clickComponent(OM.SW_Details_Configuration_close_btn);
+		if (!waitForWindowClose(details_title))	{
+			Utils.dbg_msg("SW-Details window did not close" + details_title);
+			pressEscape();
+		}
+		waitForComponent(OM.SW_about_ok_btn); //$NON-NLS-1$
 		clickComponent(OM.SW_about_ok_btn); //$NON-NLS-1$
-		waitForWindowClose(about_title);
+		if (!waitForWindowClose(about_title)) {
+			Utils.dbg_msg("SW-About Window did not close" + about_title);
+			pressEscape();
+		}
 	}
 
 	private void swInitAll(){
@@ -126,7 +141,9 @@ public class Software extends Common {
 		waitForWindowClose(".*Problem.*", Constants.ONE_SECOND);
 		// Select all SW from all sites
 		select_base = ".*All.*";
-		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, root + select_base + "_before.png"); //$NON-NLS-1$;
+		clickTopRightOfComponent(OM.SW_update_select_site_combo);
+		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, root + "all_sites.png"); //$NON-NLS-1$;
+		pressEscape(); // Close the list
 		AUT_run.m_aut.execute(
 			combo.selectEntryByValue(select_base, Operator.matches, SearchType.absolute), null);
 		// Three seconds were not enough when running from the command line

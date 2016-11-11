@@ -11,7 +11,6 @@
 package ch.ngiger.jubula.helpers;
 
 import org.eclipse.jubula.client.AUT;
-import org.eclipse.jubula.client.Result;
 import org.eclipse.jubula.client.exceptions.ActionException;
 import org.eclipse.jubula.client.exceptions.CheckFailedException;
 import org.eclipse.jubula.toolkit.concrete.ConcreteComponents;
@@ -19,7 +18,6 @@ import org.eclipse.jubula.toolkit.concrete.components.Application;
 import org.eclipse.jubula.toolkit.concrete.components.TableComponent;
 import org.eclipse.jubula.toolkit.enums.ValueSets;
 import org.eclipse.jubula.toolkit.enums.ValueSets.InteractionMode;
-import org.eclipse.jubula.toolkit.enums.ValueSets.Modifier;
 import org.eclipse.jubula.toolkit.enums.ValueSets.Operator;
 import org.eclipse.jubula.toolkit.enums.ValueSets.Unit;
 import org.eclipse.jubula.toolkit.swt.components.Table;
@@ -148,8 +146,7 @@ public class Perspectives extends Common {
 					"1", //$NON-NLS-1$
 					Operator.equals, new Integer(1), new Integer(50), Unit.percent, new Integer(50),
 					Unit.percent, ValueSets.BinaryChoice.no, InteractionMode.primary), null);
-				Result<Object> txt = m_aut.execute(tableComp.readValue(), null);
-				String name = txt.getReturnValue();
+				String name = getTextFromCompent(OM.OpenPerspective_ViewTree_grc);
 
 				clickComponent(OM.ShowView_OkButton_grc);
 
@@ -188,8 +185,7 @@ public class Perspectives extends Common {
 			j++;
 			Utils.dbg_msg("closeMultipleProblems. Trying pressEnter " + j + " of "+maxTries + " maxTries");
 			if (j % 2 == 0) {
-				Utils.dbg_msg("press Escape");
-				AUT_run.m_aut.execute(m_app.externalKeyCombination(new Modifier[] {}, "Escape"), null);
+				pressEscape();
 			} else {
 				pressEnter();
 			}

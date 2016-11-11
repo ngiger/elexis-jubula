@@ -360,10 +360,12 @@ public class Patients extends Common {
 		}
 		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "cons/eigenleistung/item_selected.png"); //$NON-NLS-1$
 		dragTopLeftCell(OM.Eigenleistung_Alle_Table_1_tbl);
+		Utils.sleepMs(100); // This delay is sometimes needed, or jenkins build fail
 		dropIntoMiddleOfComponent(OM.Kons_Verrechnung_table);
 		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "cons/eigenleistung/dropped.png"); //$NON-NLS-1$
+		Utils.sleepMs(100); // This delay is sometimes needed, or jenkins build fail
 		clickComponent(OM.Kons_Texteingabe_txf);
-		Utils.sleep1second();
+		Utils.sleepMs(100); // This delay is sometimes needed, or jenkins build fail
 		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "cons/eigenleistung/done.png"); //$NON-NLS-1$
 	}
 
@@ -393,11 +395,11 @@ public class Patients extends Common {
 		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "cons/artikel/selected_artikelstamm.png"); //$NON-NLS-1$
 		artikelstamm.selectFirstItemMatching(item);
 		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "cons/artikel/before_drag_top_left.png"); //$NON-NLS-1$
-		Utils.sleepMs(500);
+		Utils.sleepMs(100); // This delay is sometimes needed, or jenkins build fail
 		dragTopLeftCell(OM.Artikelstamm_Alle_Table_1_tbl);
-		Utils.sleepMs(500);
+		Utils.sleepMs(100); // This delay is sometimes needed, or jenkins build fail
 		dropIntoMiddleOfComponent(OM.Kons_Verrechnung_table);
-		Utils.sleepMs(500);
+		Utils.sleepMs(100); // This delay is sometimes needed, or jenkins build fail
 		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "cons/artikel/after_drop.png"); //$NON-NLS-1$
 		clickComponent(OM.Kons_Verrechnung_table);
 		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "cons/artikel/after_click_in_rechnunstable.png"); //$NON-NLS-1$

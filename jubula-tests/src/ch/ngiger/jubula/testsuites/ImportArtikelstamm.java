@@ -125,7 +125,7 @@ public class ImportArtikelstamm {
 		if (install_and_show_sw) {
 			software.showAbout("first", false);
 		}
-		if (install_and_show_sw) {
+		if (install_and_show_sw && !software.baseChIsInstalled()) {
 			software.installAllSW();
 		}
 		if (install_and_show_sw ) {
