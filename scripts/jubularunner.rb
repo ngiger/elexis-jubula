@@ -142,7 +142,7 @@ class JubulaRunner
     @test_params[:environment].each do |v,k| cmd += "export #{v}=#{k}\n" end if @test_params[:environment]
     cmd += %(export LANG=de_CH.UTF-8
 export LANGUAGE=de_CH
-Xvfb :1 -screen 5 1280x1024x24 -nolisten tcp &
+Xvfb :1 -screen 5 1600x1280x24 -nolisten tcp &
 export DISPLAY=#{@display}
 # idea from https://gist.github.com/tullmann/476cc71169295d5c3fe6
 echo `date`: waiting for Xserver to be ready
