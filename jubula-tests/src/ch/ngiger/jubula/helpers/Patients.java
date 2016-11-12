@@ -388,9 +388,12 @@ public class Patients extends Common {
 			perspectives.resetPerspective();
 			selectAndClickInKonsView();
 		}
+		waitForComponent(OM.Kons_Verrechnung_grc);
+		Utils.sleep1second();
 		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "cons/artikel/start.png"); //$NON-NLS-1$
 		clickComponent(OM.Kons_Verrechnung_grc);
 		Utils.sleep1second();
+		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "cons/artikel/all_tabs.png"); //$NON-NLS-1$
 		selectTabByValue(OM.CTabFolder_1_tpn, "Artikelstamm");
 		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "cons/artikel/selected_artikelstamm.png"); //$NON-NLS-1$
 		artikelstamm.selectFirstItemMatching(item);
