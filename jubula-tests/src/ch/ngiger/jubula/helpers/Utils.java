@@ -11,6 +11,7 @@
 package ch.ngiger.jubula.helpers;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -71,13 +72,16 @@ public class Utils {
 			Thread.sleep(timoutInMs);
 		} catch (InterruptedException e) {
 			String finished = getTimeStamp();
-			dbg_msg("sleep " + timoutInMs + " ms was interrupted started at " + startTime + " is now " + finished);
+			dbg_msg("sleep " + timoutInMs + " ms was interrupted started at " + startTime
+				+ " is now " + finished);
 		}
 	}
 
-	public static String getTimeStamp() {
-		return new SimpleDateFormat("dd.MM.yyyy HH:mm:ss.S").format(Calendar.getInstance().getTime());
+	public static String getTimeStamp(){
+		return new SimpleDateFormat("dd.MM.yyyy HH:mm:ss.S")
+			.format(Calendar.getInstance().getTime());
 	}
+
 	public static void dbg_msg(String msg){
 		String timeStamp = getTimeStamp();
 		// log.info(msg);
@@ -103,23 +107,24 @@ public class Utils {
 	}
 
 	/**
-	 * Helper procedure to set size of Elexis to 1400x1024 .
-	 * This avoids problem with Artikelstamm and other ctab, where we cannot see all of them
-	 * Uses wmctl command line
+	 * Helper procedure to set size of Elexis to 1400x1024 . This avoids problem with Artikelstamm
+	 * and other ctab, where we cannot see all of them Uses wmctl command line
 	 */
-	public static void maximizeElexisWindow() {
-	   if (AUT_run.AUT_runs_on_localhost()) {
+	public static void maximizeElexisWindow(){
+		String script = "/app/maximize_elexis.rb";
+		if (AUT_run.AUT_runs_on_localhost() && new File(script).canExecute()) {
 			// Thanks to http://blog.spiralofhope.com/1042/wmctrl-user-documentation.html !
-			String cmd =  "export name=`wmctrl -l | grep -i elexis | cut -c22-80`; ";
-				cmd = cmd + "wmctrl -r \"$name\" -e 1,0,0,1400, 1024" ;
-			Utils.run_system_cmd(cmd , "maximize Elexis");
-			AUT_run.takeScreenshotActiveWindow(AUT_run.m_aut, AUT_run.app, "maximizeElexisWindow.png");
+			// The script is in an external file to avoid eternal problems with quoting
+			// inside ruby/java/bash
+			Utils.run_system_cmd(script, "maximize_elexis");
+			AUT_run.takeScreenshotActiveWindow(AUT_run.m_aut, AUT_run.app,
+				"maximizeElexisWindow.png");
 			// https://help.ubuntu.com/community/Metacity maximize Alt-F10 works on a gnome
 			// but not with metacity alone
-			// AUT_run.m_aut.execute(AUT_run.app.externalKeyCombination(new Modifier[] {Modifier.alt}, "F10"), null);
-	   } else {
-		   Utils.dbg_msg("Cannot maximize Elexis on remote host!!");
-	   }
+			// AUT_ng8752run.m_aut.execute(AUT_run.app.externalKeyCombination(new Modifier[] {Modifier.alt}, "F10"), null);
+		} else {
+			Utils.dbg_msg("Cannot maximize Elexis on remote host!! or script " + script + " not executable");
+		}
 
 	}
 
@@ -130,25 +135,25 @@ public class Utils {
 	 * @param cmd
 	 *            Executable and parameters
 	 * @param short_name
-	 * 		      will be used to save the script in the results
-	 *            directory for trouble shooting
+	 *            will be used to save the script in the results directory for trouble shooting
 	 *
-	 * @return  true if command exited with status 0
+	 * @return true if command exited with status 0
 	 */
 	public static boolean run_system_cmd(String cmd, String short_name){
 		String s = null;
 		String cmd_prefix = "#!/bin/bash -v\n";
 		try {
 			Utils.sleepMs(100); // Without this delay dumpin the DB failed!!
-			Path script_file = Files.createTempFile(short_name +"_", ".sh");
+			Path script_file = Files.createTempFile(short_name + "_", ".sh");
 			dbg_msg("run_system_cmd: " + script_file + " with " + cmd);
-			Files.write(script_file, (cmd_prefix + cmd).getBytes());
+			Files.write(script_file, (cmd_prefix + cmd + "\n").getBytes());
 			// Utils.sleep1second();
 			script_file.toFile().setExecutable(true);
 			// Utils.sleep1second();
 			// Save the script run in the results dir
 			// This can be handy to diagnose problem
-			Files.copy(script_file, Paths.get(SAVE_RESULTS_DIR, short_name + ".sh"), StandardCopyOption.REPLACE_EXISTING);
+			Files.copy(script_file, Paths.get(SAVE_RESULTS_DIR, short_name + ".sh"),
+				StandardCopyOption.REPLACE_EXISTING);
 
 			Process p = Runtime.getRuntime().exec(script_file.toString());
 
@@ -175,14 +180,14 @@ public class Utils {
 				dbg_msg("run_system_cmd: " + script_file + " exitValue " + p.exitValue());
 				return p.exitValue() == 0;
 			} catch (IllegalThreadStateException e) {
-				dbg_msg("exception happened - here's what I know: "+ e.toString());
-				System.out.println("exception happened - here's what I know: "+ e.toString());
+				dbg_msg("exception happened - here's what I know: " + e.toString());
+				System.out.println("exception happened - here's what I know: " + e.toString());
 				e.printStackTrace(writer);
 				return true;
 			}
 		} catch (IOException e) {
-			dbg_msg("exception happened - here's what I know: "+ e.toString());
-			System.out.println("exception happened - here's what I know: "+ e.toString());
+			dbg_msg("exception happened - here's what I know: " + e.toString());
+			System.out.println("exception happened - here's what I know: " + e.toString());
 			e.printStackTrace(writer);
 			return false;
 		}

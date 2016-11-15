@@ -193,7 +193,7 @@ public class AUT_db {
 	}
 	public static void dumpDatabase(){
 		if (dump_command == null || (db_variant.equals("h2") && config.get(Constants.AGENT_HOST).length() > 0)) {
-			Utils.dbg_msg("Skip dumping as remote host" + config.get(Constants.AGENT_HOST) + " and db_variant " + db_variant + " or no dump_command ");
+			Utils.dbg_msg("Skip dumping as remote host " + config.get(Constants.AGENT_HOST) + " and db_variant " + db_variant + " or no dump_command ");
 		} else {
 			Utils.dbg_msg("dumpDatabase host" + config.get(Constants.AGENT_HOST) + " and db_variant " + db_variant );
 			Utils.run_system_cmd(dump_command, "dump_database");

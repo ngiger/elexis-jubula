@@ -401,7 +401,7 @@ public class AUT_run {
 	}
 
 	public static boolean AUT_runs_on_localhost() {
-		 return config.get(Constants.AGENT_HOST).length() == 0;
+		 return config.get(Constants.AGENT_HOST).equals("localhost");
 	}
 	public static AUT restartApp(AUT aut){
 		Utils.dbg_msg(
