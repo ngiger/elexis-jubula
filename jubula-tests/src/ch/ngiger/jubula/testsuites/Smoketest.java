@@ -116,6 +116,7 @@ public class Smoketest {
 		invoice = new Invoice(AUT_run.m_aut, AUT_run.app);
 		artikelstamm = new Artikelstamm(AUT_run.m_aut, AUT_run.app, perspectives);
 		perspectives.initialSetup();
+		artikelstamm.openArtikelstammView(); // Force migration
 	}
 
 	private static void showVars(){

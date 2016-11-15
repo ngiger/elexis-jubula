@@ -79,6 +79,15 @@ public class Artikelstamm extends Common {
 		AUT_run.m_aut.execute(artTabl.checkText(should_match, Operator.matches), null);
 	}
 
+	public void openArtikelstammView(){
+		m_perspectives.openArtikelPerspective();
+		waitForElexisMainWindow(Constants.ONE_SECOND);
+		selectTabByValue(OM.CTab_Artikel, "Artikelstamm");
+		// Void problems with migration
+		Utils.sleep1second();
+		waitForElexisMainWindow(Constants.ONE_SECOND * 10);
+	}
+
 	@SuppressWarnings("unchecked")
 	public boolean importArtikelstamm(String filename){
 		filename = checkDefaultArtikelstamm(filename);
@@ -90,14 +99,8 @@ public class Artikelstamm extends Common {
 			Utils.dbg_msg("Stamm must exist and be readable: " + stamm.getAbsolutePath()); //$NON-NLS-1$
 			return false;
 		}
-
-		m_perspectives.openArtikelPerspective();
-		waitForElexisMainWindow(Constants.ONE_SECOND);
-		m_perspectives.resetPerspective();
-
+		openArtikelstammView();
 		Utils.dbg_msg("Importing " + stamm.getAbsolutePath()); //$NON-NLS-1$
-		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "import_artikelstamm/p_artikel.png"); //$NON-NLS-1$
-		selectTabByValue(OM.CTab_Artikel, "Artikelstamm");
 
 		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "import_artikelstamm/tab_artikel.png"); //$NON-NLS-1$
 		Utils.sleep1second();

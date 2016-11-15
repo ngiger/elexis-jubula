@@ -140,7 +140,7 @@ public class Software extends Common {
 		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, root + "second.png"); //$NON-NLS-1$;
 		waitForWindowClose(".*Problem.*", Constants.ONE_SECOND);
 		// Select all SW from all sites
-		select_base = ".*All.*";
+		select_base = ".*Base.*";
 		clickTopRightOfComponent(OM.SW_update_select_site_combo);
 		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, root + "all_sites.png"); //$NON-NLS-1$;
 		pressEscape(); // Close the list

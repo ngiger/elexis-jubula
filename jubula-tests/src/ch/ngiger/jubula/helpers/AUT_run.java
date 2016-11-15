@@ -57,9 +57,11 @@ public class AUT_run {
 		config.put(Constants.AGENT_HOST, "localhost");
 		config.put(Constants.AGENT_PORT, "6333");
 		config.put(Constants.WORK_DIR, USER_DIR);
+		// TODO: For elexis in docker must find a way to pass directories correctly
 		Path elexis3 = Paths.get(USER_DIR + "/../work/Elexis3");
 		Path medelexis3 = null;
 		if (elexis3.toFile().canExecute()) {
+			// config.put(Constants.AUT_EXE, elexis3.toAbsolutePath().normalize().toString());
 			config.put(Constants.AUT_EXE, elexis3.toAbsolutePath().normalize().toString());
 		} else {
 			String variant = System.getenv("VARIANT");
@@ -119,6 +121,7 @@ public class AUT_run {
 		// -Dch.elexis.username=007 -Dch.elexis.password=topsecret
 		config.put(Constants.AUT_VM_ARGS,
 			"-nl " + config.get(Constants.AUT_LOCALE)
+				// TODO: For elexis in docker must pass -vm /usr/bin/java
 				+ " --clean -vmargs -Declipse.p2.unsignedPolicy=allow" + " -Dautagent_port="
 				+ config.get(Constants.AGENT_PORT) + " -Dautagent_host="
 				+ config.get(Constants.AGENT_HOST)
@@ -211,7 +214,7 @@ public class AUT_run {
 		Utils.dbg_msg("Calling startAUT: aut_config" + aut_config);
 		try {
 			int j = 0;
-			while (j < 60 && !m_agent.isConnected()) {
+			while (j < 120 && !m_agent.isConnected()) {
 				Utils.dbg_msg("Calling startAUT " + j + " m_agent.isConnected " + m_agent.isConnected());
 				Utils.sleep1second();
 			}

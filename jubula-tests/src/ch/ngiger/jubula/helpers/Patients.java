@@ -388,9 +388,14 @@ public class Patients extends Common {
 			perspectives.resetPerspective();
 			selectAndClickInKonsView();
 		}
-		waitForComponent(OM.Kons_Verrechnung_grc);
-		Utils.sleep1second();
+		boolean res = waitForComponent(OM.Kons_Verrechnung_grc);
+		Utils.dbg_msg("Kons_Verrechnung_grc here1 ?: "+ res + " and enabled? " + componentIsEnabled(OM.Kons_Verrechnung_grc));
 		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "cons/artikel/start.png"); //$NON-NLS-1$
+		res = waitForComponent(OM.Kons_Verrechnung_grc);
+		Utils.dbg_msg("Kons_Verrechnung_grc here2 ?: "+ res + " and enabled? " + componentIsEnabled(OM.Kons_Verrechnung_grc));
+		clickComponent(OM.Kons_Verrechnung_grc);
+
+		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "cons/artikel/start2.png"); //$NON-NLS-1$
 		clickComponent(OM.Kons_Verrechnung_grc);
 		Utils.sleep1second();
 		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "cons/artikel/all_tabs.png"); //$NON-NLS-1$

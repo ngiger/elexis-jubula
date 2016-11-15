@@ -258,10 +258,7 @@ public class Common {
 			} catch (ActionException | CheckFailedException | ComponentNotFoundException e) {
 				String msg = String.format("nrRowsInTable j %d error %s %s ", j, e.getClass(),
 					e.getMessage());
-				System.out.println(msg);
 				Utils.dbg_msg(msg);
-				e.printStackTrace(System.out);
-				e.printStackTrace(Utils.getWriter());
 				return j;
 			}
 			j++;
@@ -285,6 +282,7 @@ public class Common {
 			AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "open_menu_failed.png"); //$NON-NLS-1$
 			// Assert.fail(msg);
 		}
+		pressEscape();
 		return false;
 	}
 
@@ -305,6 +303,7 @@ public class Common {
 	 */
 	public void selectTabByValue(@SuppressWarnings("rawtypes") ComponentIdentifier cid,
 		String tabName){
+		waitForComponent(cid);
 		@SuppressWarnings("unchecked")
 		TabComponent tab = SwtComponents.createCTabFolder(cid);
 		try {
