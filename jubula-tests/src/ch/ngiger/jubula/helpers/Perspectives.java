@@ -10,6 +10,9 @@
  *******************************************************************************/
 package ch.ngiger.jubula.helpers;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.jubula.client.AUT;
 import org.eclipse.jubula.client.exceptions.ActionException;
 import org.eclipse.jubula.client.exceptions.CheckFailedException;
@@ -55,13 +58,13 @@ public class Perspectives extends Common {
 			clickComponent(cid);
 		} else {
 			Utils.dbg_msg("fastOpenPerspectives: " + name + " via menu");
-			openPerspectiveByName(name + ".*"); // Match (default) for Patientenübersicht
+			openPerspectiveByName(name); // Match (default) for Patientenübersicht
 		}
 
 	}
 
 	public void openAbrechnungsPerspective(){
-		fastOpenPerspectives(OM.Abrechnungen_tbi, "Abrechnung");
+		fastOpenPerspectives(OM.Abrechnungen_tbi, "Abrechnungen");
 	}
 
 	public void openAdressenPerspective(){
@@ -100,17 +103,19 @@ public class Perspectives extends Common {
 	}
 
 	public void openPatientenPerspective(){
-		fastOpenPerspectives(OM.Patientenübersicht_tbi, "Patienten");
+		fastOpenPerspectives(OM.Patientenübersicht_tbi, "Patientenübersicht (default)");
 	}
 
 	public void openReminderPerspective(){
 		fastOpenPerspectives(OM.Reminder_tbi, "Reminder");
 	}
 
-	public void openPerspectiveByName(String name){
+	public boolean openPerspectiveByName(String name){
 		String localized_name = Messages.getString("VisitAllPerspectives.2");
 		Utils.dbg_msg(String.format("openPerspectiveByName %s via %s", name, localized_name));
-		openMenu(localized_name);
+		if (!openMenu(localized_name)) {
+			return false;
+		}
 		if (!waitForWindow("Open Perspective", Constants.ONE_SECOND))
 		{
 			Assert.fail("openPerspectiveByName: Unable to open " + name);
@@ -120,10 +125,51 @@ public class Perspectives extends Common {
 			ConcreteComponents.createTableComponent(OM.OpenPerspective_ViewTree_grc);
 		AUT_run.m_aut.execute(tbl.clickInComponent(new Integer(1), InteractionMode.primary,
 			new Integer(50), Unit.percent, new Integer(50), Unit.percent), null);
-		AUT_run.m_aut.execute(tbl.selectCell(name, Operator.matches, "1", Operator.equals,
-			new Integer(1), new Integer(50), Unit.percent, new Integer(50), Unit.percent,
-			ValueSets.BinaryChoice.no, InteractionMode.primary), null);
+		try {
+			AUT_run.m_aut.execute(tbl.selectCell(name, Operator.equals, "1", Operator.equals,
+				new Integer(1), new Integer(50), Unit.percent, new Integer(50), Unit.percent,
+				ValueSets.BinaryChoice.no, InteractionMode.primary), null);
+		} catch (ActionException e) {
+			AUT_run.m_aut.execute(tbl.selectCell(name + ".*", Operator.matches, "1", Operator.equals,
+				new Integer(1), new Integer(50), Unit.percent, new Integer(50), Unit.percent,
+				ValueSets.BinaryChoice.no, InteractionMode.primary), null);
+		}
 		clickComponent(OM.ShowView_OkButton_grc);
+		return true;
+	}
+
+	/**
+	 *
+	 * @return a list of a perspective names
+	 */
+	public List<String> get_all_perspective_name() {
+		String window_title = Messages.getString("VisitAllPerspectives.0"); //$NON-NLS-1$
+		List<String> names = new ArrayList<>();
+		openMenu(Messages.getString("VisitAllPerspectives.2"));
+		waitForWindow(window_title);
+		@SuppressWarnings({
+			"unchecked"
+		})
+		ComponentIdentifier<Table> tbl = OM.OpenPerspective_ViewTree_grc;
+		TableComponent tableComp = org.eclipse.jubula.toolkit.concrete.ConcreteComponents
+			.createTableComponent(tbl);
+		int j = 0;
+		try {
+			while (true) {
+				j++;
+				AUT_run.m_aut.execute(tableComp.selectCell(Integer.toString(j), Operator.equals,
+					"1", //$NON-NLS-1$
+					Operator.equals, new Integer(1), new Integer(50), Unit.percent, new Integer(50),
+					Unit.percent, ValueSets.BinaryChoice.no, InteractionMode.primary), null);
+				names.add(getTextFromCompent(OM.OpenPerspective_ViewTree_grc));
+			}
+		} catch (ActionException e) {
+			Utils.dbg_msg("ActionException in row " + j); //$NON-NLS-1$
+		} catch (CheckFailedException e) {
+			Utils.dbg_msg("CheckFailedException in row " + j); //$NON-NLS-1$
+		}
+		pressEscape(); // close window
+		return names;
 	}
 
 	/** test visiting all perspectives */
@@ -174,6 +220,7 @@ public class Perspectives extends Common {
 		// We must open Leistungen first, as this take a lot of time
 		openLeistungenPerspective(); // First patient gets selected. Don't know wha
 		openPatientenPerspective();
+		Utils.maximizeElexisWindow();
 		resetPerspective();
 	}
 
