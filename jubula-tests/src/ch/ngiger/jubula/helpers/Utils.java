@@ -103,6 +103,27 @@ public class Utils {
 	}
 
 	/**
+	 * Helper procedure to set size of Elexis to 1400x1024 .
+	 * This avoids problem with Artikelstamm and other ctab, where we cannot see all of them
+	 * Uses wmctl command line
+	 */
+	public static void maximizeElexisWindow() {
+	   if (AUT_run.AUT_runs_on_localhost()) {
+			// Thanks to http://blog.spiralofhope.com/1042/wmctrl-user-documentation.html !
+			String cmd =  "export name=`wmctrl -l | grep -i elexis | cut -c22-80`; ";
+				cmd = cmd + "wmctrl -r \"$name\" -e 1,0,0,1400, 1024" ;
+			Utils.run_system_cmd(cmd , "maximize Elexis");
+			AUT_run.takeScreenshotActiveWindow(AUT_run.m_aut, AUT_run.app, "maximizeElexisWindow.png");
+			// https://help.ubuntu.com/community/Metacity maximize Alt-F10 works on a gnome
+			// but not with metacity alone
+			// AUT_run.m_aut.execute(AUT_run.app.externalKeyCombination(new Modifier[] {Modifier.alt}, "F10"), null);
+	   } else {
+		   Utils.dbg_msg("Cannot maximize Elexis on remote host!!");
+	   }
+
+	}
+
+	/**
 	 * run_system_cmd writes the command into a temporary file to allow useage of pipes and
 	 * redirection. Then makes the file executable and executes it.
 	 *

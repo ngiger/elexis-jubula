@@ -8,6 +8,7 @@ import org.junit.Test;
 
 import ch.ngiger.jubula.helpers.AUT_run;
 import ch.ngiger.jubula.helpers.Utils;
+import ch.ngiger.jubula.helpers.Views;
 
 public class Screenshot {
 
@@ -25,7 +26,10 @@ public class Screenshot {
 	public void screenshot_active_window() throws Exception{
 		m_aut = AUT_run.startAUT();
 		Utils.dbg_msg("screenshot_active_window");
-		AUT_run.takeScreenshotActiveWindow(AUT_run.m_aut, AUT_run.app, "first_screenshot.png");
+		AUT_run.takeScreenshotActiveWindow(m_aut, AUT_run.app, "first_screenshot.png");
+		Views views = new Views(m_aut, AUT_run.app);
+		Utils.maximizeElexisWindow();
+
 		Assert.assertTrue(true);
 		Utils.dbg_msg("screenshot_active_window done");
 	}
