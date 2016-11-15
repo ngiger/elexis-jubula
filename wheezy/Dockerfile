@@ -23,6 +23,11 @@ RUN apt-get update && \
 # x11-apps: to be able to take a screen-shot inside the container using xwd  -root -out screen.xwd
 # must be converted to png using "convert screen.xwd screen.png" (on host)
 # also some tools like lsof htop to debug problems
+# we want wmctrl to maximize Elexis
+
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends wmctrl libreoffice-writer && \
+    apt-get clean; rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /app /tmp/.X11-unix/ && chmod 1777 /tmp/.X11-unix/  /var/lib/apt/lists/
 WORKDIR /app
