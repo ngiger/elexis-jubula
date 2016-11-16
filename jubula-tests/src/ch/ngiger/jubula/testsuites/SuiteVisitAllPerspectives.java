@@ -28,7 +28,7 @@ public class SuiteVisitAllPerspectives {
 		this.name = name;
 	}
 
-	@Parameters
+	@Parameters(name="{0}")
 	public static Collection<Object[]> data(){
 		// this will be run even before the @BeforeClass!!
 		try {

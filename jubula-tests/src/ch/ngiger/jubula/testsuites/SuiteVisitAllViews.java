@@ -33,7 +33,7 @@ public class SuiteVisitAllViews {
 		this.index = name;
 	}
 
-	@Parameters
+	@Parameters(name="{0}")
 	public static Collection<Object[]> data(){
 		// this will be run even before the @BeforeClass!!
 		try {
@@ -43,7 +43,7 @@ public class SuiteVisitAllViews {
 		}
 		m_aut = AUT_run.startAUT();
 		p = new Perspectives(m_aut, AUT_run.app);
-		// p.initialSetup(); // Sonst haben wir Probleme mit den Leistungen!
+		p.initialSetup(); // Sonst haben wir Probleme mit den Leistungen!
 		v = new Views(m_aut, AUT_run.app);
 		v.maximixeView();
 		java.util.List<String> indices = v.getAllViewIndices();
