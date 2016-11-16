@@ -10,14 +10,15 @@
  *******************************************************************************/
 package ch.ngiger.jubula.helpers;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.jubula.client.AUT;
-import org.eclipse.jubula.client.exceptions.ActionException;
 import org.eclipse.jubula.client.exceptions.CheckFailedException;
-import org.eclipse.jubula.client.exceptions.CommunicationException;
-import org.eclipse.jubula.client.exceptions.ExecutionException;
 import org.eclipse.jubula.toolkit.concrete.ConcreteComponents;
 import org.eclipse.jubula.toolkit.concrete.components.Application;
 import org.eclipse.jubula.toolkit.concrete.components.TableComponent;
+import org.eclipse.jubula.toolkit.concrete.components.TextInputComponent;
 import org.eclipse.jubula.toolkit.concrete.components.TreeComponent;
 import org.eclipse.jubula.toolkit.enums.ValueSets;
 import org.eclipse.jubula.toolkit.enums.ValueSets.BinaryChoice;
@@ -37,28 +38,30 @@ import ch.ngiger.jubula.elexiscore.OM;
 /** @author BREDEX GmbH */
 public class Views extends Common {
 
+	private final static String window_other = "Fenster.*/Ansicht.*/Other.*";
+	@SuppressWarnings("unchecked")
+	private final static TextInputComponent selViewCti =
+		ConcreteComponents.createTextInputComponent(OM.ShowView_SelView_cti);
+	@SuppressWarnings("unchecked")
+	private final static TableComponent viewTree =
+		ConcreteComponents.createTableComponent(OM.ShowView_ViewTree_grc);//$NON-NLS-1$
+	@SuppressWarnings("unchecked")
+	private final static TreeTable tbl2 = SwtComponents.createTreeTable(OM.ShowView_ViewTree_grc);//$NON-NLS-1$
+
 	public Views(AUT aut, Application app){
 		super(aut, app);
 		Utils.dbg_msg("Views init " + m_aut + " app " + m_app);
 	}
 
 	void openViewByName(String name){
-		openMenu("Fenster.*/Ansicht.*/Other.*");
+		openMenu(window_other);
 		if (!waitForWindow("Show View", 5 * Constants.ONE_SECOND)) {
 			Assert.fail("finishInstallSelectedSW: Unable to open Show View");
 		}
 
-		@SuppressWarnings("unchecked")
-		org.eclipse.jubula.toolkit.concrete.components.TextInputComponent viewTxt =
-			ConcreteComponents.createTextInputComponent(OM.ShowView_SelView_cti);
-		viewTxt.replaceText(name);
-		@SuppressWarnings("unchecked")
-		TableComponent tableComp =
-			ConcreteComponents.createTableComponent(OM.ShowView_ViewTree_grc);//$NON-NLS-1$
-		@SuppressWarnings("unchecked")
-		TreeTable tbl2 = SwtComponents.createTreeTable(OM.ShowView_ViewTree_grc);//$NON-NLS-1$
+		selViewCti.replaceText(name);
 		tbl2.waitForComponent(Constants.ONE_SECOND, 10);
-		AUT_run.m_aut.execute(tableComp.click(new Integer(1), InteractionMode.primary), null);
+		AUT_run.m_aut.execute(viewTree.click(new Integer(1), InteractionMode.primary), null);
 		AUT_run.m_aut.execute(tbl2.selectNodeByTextpath(SearchType.absolute, new Integer(0), name,
 			Operator.matches, 1, InteractionMode.primary, BinaryChoice.no), null);
 
@@ -67,109 +70,78 @@ public class Views extends Common {
 		waitForElexisMainWindow(Constants.ONE_SECOND);
 	}
 
-	private void closeAndReturnToElexis(){
-		clickComponent(OM.ShowView_OkButton_grc); //$NON-NLS-1$
-		waitForElexisMainWindow();
+
+	public boolean openViewByIndex(String index){
+		openMenu(window_other);
+		if (!waitForWindow("Show View", 5 * Constants.ONE_SECOND)) {
+			Assert.fail("finishInstallSelectedSW: Unable to open Show View");
+		}
+
+		selViewCti.replaceText(index);
+		tbl2.waitForComponent(Constants.ONE_SECOND, 10);
+		AUT_run.m_aut.execute(viewTree.click(new Integer(1), InteractionMode.primary), null);
+		AUT_run.m_aut.execute(tbl2.selectNodeByIndexpath(SearchType.absolute,
+			new Integer(0), index, new Integer(1), InteractionMode.primary,
+			ValueSets.BinaryChoice.no), null);
+
+		clickComponent(OM.ShowView_OkButton_grc);
+		Utils.sleep1second();
+		waitForElexisMainWindow(Constants.ONE_SECOND);
+		maximixeView();
+		return true;
 	}
 
-	/** test visiting all views */
-	@Test
-	@SuppressWarnings("unchecked")
-	public void visit_all_views() throws Exception{
-		int major = 0, minor = 0, nr_views = 0;
-		int restart_after = 25; // On my wheezy with a relatively small window I could open 37 view
-		// With the Medelexis I had problems after 26 windows
-		String new_pos = "first_time", new_pos2 = ""; //$NON-NLS-1$ //$NON-NLS-2$
+	public List<String> getAllViewIndices() {
+		Utils.dbg_msg("getAllViewIndices");
+		String new_pos = "first_time"; //$NON-NLS-1$ //$NON-NLS-2$
+		List<String> indices = new ArrayList<>();
+		openMenu(Messages.getString("VisitAllViews.7")); //$NON-NLS-1$
+		waitForWindow( Messages.getString("VisitAllViews.4"));
+
+		int major = 0, minor = 0;
+		@SuppressWarnings("unchecked")
 		ComponentIdentifier<Tree> tree = OM.ShowView_ViewTree_grc; //$NON-NLS-1$
 		Assert.assertNotNull("ShowView_ViewTree_grc may not be null", tree);
-		TreeComponent treeComp =
-			org.eclipse.jubula.toolkit.concrete.ConcreteComponents.createTreeComponent(tree);
-		try {
-			String window_title = Messages.getString("VisitAllViews.4"); //$NON-NLS-1$
+		TreeComponent treeComp = ConcreteComponents.createTreeComponent(tree);
+		while (true) {
+			major++;
+			minor = 1;
 			while (true) {
+				new_pos = Integer.toString(major) + "/" + Integer.toString(minor); //$NON-NLS-1$
 				try {
-					major++;
-					Utils.dbg_msg(
-						String.format("Visiting view %d in row %d open %s", nr_views, major, //$NON-NLS-1$
-							Messages.getString("VisitAllViews.7")));//$NON-NLS-1$
-					minor = 0;
-					while (true) {
-						minor++;
-						if (nr_views % restart_after == (restart_after - 1)) {
-							Utils.dbg_msg("Restarting app as nr_views is: " + nr_views);
-							AUT_run.takeScreenshotActiveWindow(m_aut, m_app,
-								"window/before_restart_after_" + nr_views + ".png"); //$NON-NLS-1$ //$NON-NLS-2$
-							m_aut = AUT_run.restartApp(m_aut);
-							AUT_run.activate(m_aut);
-							Utils.dbg_msg("After restarting app as nr_views is: " + nr_views);
-							treeComp = org.eclipse.jubula.toolkit.concrete.ConcreteComponents
-								.createTreeComponent(tree);
-						}
-						Utils.dbg_msg(String.format(
-							"Visiting inner view %d in row major %d minor %d ", nr_views, major, //$NON-NLS-1$
-							minor));//$NON-NLS-1$
-						openMenu(Messages.getString("VisitAllViews.7")); //$NON-NLS-1$
-						waitForWindow(window_title);
-						new_pos = Integer.toString(major) + "/" + Integer.toString(minor); //$NON-NLS-1$
-						new_pos2 = Integer.toString(major) + "_" + Integer.toString(minor); //$NON-NLS-1$
-						try {
-							AUT_run.m_aut.execute(treeComp.expandNodeByIndexpath(
-								SearchType.absolute, new Integer(0), new_pos), null);
-						} catch (ExecutionException | CommunicationException
-								| IllegalArgumentException e) {
-							Utils.dbg_msg("expandNodeByIndexpath for " + window_title + " new_pos "
-								+ new_pos + " FAILED " + e.toString());
-							if (minor == 1) {
-								return;
-							}
-							closeAndReturnToElexis();
-							minor = -1;
-							break;
-						}
-						AUT_run.m_aut.execute(treeComp.selectNodeByIndexpath(SearchType.absolute,
-							new Integer(0), new_pos, new Integer(1), InteractionMode.primary,
-							ValueSets.BinaryChoice.no), null);
-						nr_views++;
-						closeAndReturnToElexis();
-						maximixeView();
-						// TODO: get name of selected view
-						// Result<Object> txt = m_aut.execute(treeComp.readValue(), null);
-						// String name = txt.getReturnValue();
-
-						Utils.sleep1second();
-						AUT_run.takeScreenshotActiveWindow(m_aut, m_app,
-							"window/view_" + new_pos2 + ".png"); //$NON-NLS-1$ //$NON-NLS-2$
+					AUT_run.m_aut.execute(treeComp.checkExistenceOfNodeByIndexpath(SearchType.absolute, new Integer(0), new_pos, true), null);
+					AUT_run.m_aut.execute(treeComp.selectNodeByIndexpath(SearchType.absolute,
+						new Integer(0), new_pos, new Integer(1), InteractionMode.primary,
+						ValueSets.BinaryChoice.no), null);
+					// This does not work as it throws ActionException Operation not supported by the selected toolkit.
+					// Utils.dbg_msg("value is " + Common.getTextFromCompent(OM.ShowView_ViewTree_grc));
+					indices.add(new_pos);
+					if (indices.size() % 10 == 0) {
+						AUT_run.takeScreenshotActiveWindow(AUT_run.m_aut, AUT_run.app,
+						"Views/View_" + major + "/" + minor + "_overview.png"); //$NON-NLS-1$ //$NON-NLS-2$
 					}
-				} catch (ActionException e) {
-					Utils.dbg_msg(String.format(
-						"ActionException2  new_pos %d major %d minor %d. After nr_views  %d", //$NON-NLS-1$
-						new_pos, major, minor, nr_views));
-					if (minor == 1) {
-						Utils.dbg_msg(String.format(
-							"ActionException2 minor with %s -> No more entries found for %d %d. Found  %d views.", //$NON-NLS-1$
-							new_pos, major, minor, nr_views));
-						return; // No more entries found for mayor
+					minor++;
+				} catch (CheckFailedException e) {
+					if (minor == 1 ) {
+						pressEscape(); // close window
+						return indices;
 					}
+					AUT_run.takeScreenshotActiveWindow(AUT_run.m_aut, AUT_run.app,
+						"Views/View_" + major + "/" + minor + "_last.png"); //$NON-NLS-1$ //$NON-NLS-2$
+					minor = -1;
+					break;
 				}
 			}
-		} catch (ActionException e) {
-			Utils.dbg_msg(String.format("ActionException3 major with %d pos %s. Having %d views", //$NON-NLS-1$
-				nr_views, new_pos, nr_views));
-			if (nr_views == 0)
-				e.printStackTrace();
-			e.printStackTrace();
-
-		} catch (CheckFailedException e) {
-			Utils.dbg_msg("visit_all_views: error was " + e.getMessage());
-			e.printStackTrace(Utils.getWriter());
-			AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "window/CheckFailedException.png"); //$NON-NLS-1$
-			e.printStackTrace();
-		} finally
-
-		{
-			Utils.dbg_msg("my m-aut" + AUT_run.m_aut + " AUT_runs is " + AUT_run.m_aut);
-			Utils.dbg_msg("visit_all_views: done. Found views: " + nr_views);
-			Assert.assertTrue("We should have more than 10 views to visit!", nr_views >= 10); //$NON-NLS-1$
 		}
+	}
+	public static void visitOneview(String index) {
+		Utils.dbg_msg("visiting "+index);
+
+	}
+	/** test visiting all views */
+	@Test
+	public void visit_all_views() throws Exception{
+		List<String> indices = getAllViewIndices();
+		indices.forEach((index) -> visitOneview(index));
 	}
 }

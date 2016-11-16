@@ -27,6 +27,7 @@ import org.eclipse.jubula.client.exceptions.CheckFailedException;
 import org.eclipse.jubula.client.exceptions.CommunicationException;
 import org.eclipse.jubula.client.exceptions.ComponentNotFoundException;
 import org.eclipse.jubula.client.exceptions.ExecutionException;
+import org.eclipse.jubula.toolkit.base.AbstractComponents;
 import org.eclipse.jubula.toolkit.base.components.GraphicsComponent;
 import org.eclipse.jubula.toolkit.concrete.ConcreteComponents;
 import org.eclipse.jubula.toolkit.concrete.components.Application;
@@ -73,8 +74,7 @@ public class Common {
 		Assert.assertNotNull(cid + " may not be null", cid); //$NON-NLS-1$
 		waitForComponent(cid);
 		@SuppressWarnings("unchecked")
-		GraphicsComponent comp =
-			org.eclipse.jubula.toolkit.base.AbstractComponents.createGraphicsComponent(cid);
+		GraphicsComponent comp = AbstractComponents.createGraphicsComponent(cid);
 		m_aut.execute(comp.click(1, InteractionMode.primary), null);
 	}
 
@@ -86,8 +86,7 @@ public class Common {
 	public void clickInMiddleOfComponent(@SuppressWarnings("rawtypes") ComponentIdentifier cid){
 		waitForComponent(cid);
 		@SuppressWarnings("unchecked")
-		GraphicsComponent comp =
-			org.eclipse.jubula.toolkit.base.AbstractComponents.createGraphicsComponent(cid);
+		GraphicsComponent comp = AbstractComponents.createGraphicsComponent(cid);
 		m_aut.execute(comp.clickInComponent(new Integer(1), InteractionMode.primary, new Integer(1),
 			Unit.percent, new Integer(50), Unit.percent), null);
 	}
@@ -100,8 +99,7 @@ public class Common {
 	public void clickTopRightOfComponent(@SuppressWarnings("rawtypes") ComponentIdentifier cid){
 		waitForComponent(cid);
 		@SuppressWarnings("unchecked")
-		GraphicsComponent comp =
-			org.eclipse.jubula.toolkit.base.AbstractComponents.createGraphicsComponent(cid);
+		GraphicsComponent comp = AbstractComponents.createGraphicsComponent(cid);
 		m_aut.execute(comp.clickInComponent(new Integer(1), InteractionMode.primary, new Integer(99),
 			Unit.percent, new Integer(1), Unit.percent), null);
 	}
@@ -110,8 +108,7 @@ public class Common {
 		// Click Okay
 		Assert.assertNotNull(cid + " may not be null", cid); //$NON-NLS-1$
 		@SuppressWarnings("unchecked")
-		GraphicsComponent comp =
-			org.eclipse.jubula.toolkit.base.AbstractComponents.createGraphicsComponent(cid);
+		GraphicsComponent comp = AbstractComponents.createGraphicsComponent(cid);
 		try {
 			m_aut.execute(comp.waitForComponent(Constants.ONE_SECOND, 0), null);
 			m_aut.execute(comp.checkEnablement(true), null);
@@ -124,8 +121,7 @@ public class Common {
 	public void contextMenuByText(@SuppressWarnings("rawtypes") ComponentIdentifier cid,
 		String menuEntry, boolean rightClick){
 		@SuppressWarnings("unchecked")
-		GraphicsComponent comp =
-			org.eclipse.jubula.toolkit.base.AbstractComponents.createGraphicsComponent(cid);
+		GraphicsComponent comp = AbstractComponents.createGraphicsComponent(cid);
 		InteractionMode mode = rightClick ? InteractionMode.secondary : InteractionMode.primary;
 		Operator op = Operator.matches;
 		try {
@@ -154,8 +150,7 @@ public class Common {
 
 	public void dropIntoMiddleOfComponent(@SuppressWarnings("rawtypes") ComponentIdentifier cid){
 		@SuppressWarnings("unchecked")
-		GraphicsComponent comp =
-			org.eclipse.jubula.toolkit.base.AbstractComponents.createGraphicsComponent(cid);
+		GraphicsComponent comp = AbstractComponents.createGraphicsComponent(cid);
 		comp.drop(new Integer(50), Unit.percent, new Integer(50), Unit.percent,
 			Constants.ONE_SECOND);
 		m_aut.execute(comp.drop(new Integer(50), Unit.percent, new Integer(50), Unit.percent,
@@ -184,13 +179,13 @@ public class Common {
 	 *
 	 * @return Text or "" if component does not support readValue()
 	 */
-	public String getTextFromCompent(@SuppressWarnings("rawtypes") ComponentIdentifier cid){
+	public static String getTextFromCompent(@SuppressWarnings("rawtypes") ComponentIdentifier cid){
 		@SuppressWarnings("unchecked")
-		org.eclipse.jubula.toolkit.concrete.components.TextComponent tic =
+		TextComponent tic =
 			ConcreteComponents.createTextComponent(cid);
-		m_aut.execute(tic.waitForComponent(Constants.ONE_SECOND, 0), null);
+		AUT_run.m_aut.execute(tic.waitForComponent(Constants.ONE_SECOND, 0), null);
 		try {
-			Result<Object> txt = m_aut.execute(tic.readValue(), null);
+			Result<Object> txt = AUT_run.m_aut.execute(tic.readValue(), null);
 			return txt.getReturnValue();
 		} catch (ActionException | ComponentNotFoundException e) {
 			return "empty";
@@ -203,7 +198,7 @@ public class Common {
 		Result<Object> result = null;
 		@SuppressWarnings("unchecked")
 		GraphicsComponent comp =
-			org.eclipse.jubula.toolkit.base.AbstractComponents.createGraphicsComponent(cid);
+			AbstractComponents.createGraphicsComponent(cid);
 		try {
 			result = m_aut.execute(comp.click(1, InteractionMode.primary), null);
 		} catch (ActionException | ComponentNotFoundException e) {
@@ -218,13 +213,12 @@ public class Common {
 	public void maximixeView(){
 		Utils.dbg_msg("maximize does not work in elexis");
 		/* Works only when running natively with keyboard set to de_CH, but not under xvfb
-		m_aut.execute(AUT_run.app.externalKeyCombination(new Modifier[] {
-			Modifier.none
-		}, "m"), null);
 		*/
-		m_aut.execute(AUT_run.app.externalKeyCombination(new Modifier[] {
-			Modifier.alt
-		}, "F10"), null);
+		 // bot.menu(IDEWorkbenchMessages.Workbench_window).menu("Maximize Active View or Editor").click();
+		// Workbench action (id: "maximize", commandId: "org.eclipse.ui.window.maximizePart"): Maximize/restore the active part.
+		m_aut.execute(AUT_run.app.clickInActiveWindow(2, InteractionMode.primary, new Integer(1), Unit.percent, new Integer(1), Unit.percent), null);
+		// m_aut.execute(AUT_run.app.externalKeyCombination(new Modifier[] {Modifier.control}, "m"), null); // this does not work!
+		// m_aut.execute(AUT_run.app.externalKeyCombination(new Modifier[] {Modifier.control}, "n"), null); // this open open view dialog
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -387,8 +381,7 @@ public class Common {
 	public boolean waitForComponent(@SuppressWarnings("rawtypes") ComponentIdentifier cid){
 		try {
 			@SuppressWarnings("unchecked")
-			GraphicsComponent comp =
-				org.eclipse.jubula.toolkit.base.AbstractComponents.createGraphicsComponent(cid);
+			GraphicsComponent comp = AbstractComponents.createGraphicsComponent(cid);
 			m_aut.execute(comp.waitForComponent(Constants.ONE_SECOND, 0), null);
 			return true;
 		} catch (ActionException | CheckFailedException | ComponentNotFoundException e) {
