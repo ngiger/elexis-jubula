@@ -10,6 +10,9 @@
  *******************************************************************************/
 package ch.ngiger.jubula.helpers;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.jubula.client.AUT;
 import org.eclipse.jubula.client.Result;
 import org.eclipse.jubula.client.exceptions.ActionException;
@@ -17,6 +20,7 @@ import org.eclipse.jubula.client.exceptions.CheckFailedException;
 import org.eclipse.jubula.client.exceptions.CommunicationException;
 import org.eclipse.jubula.client.exceptions.ComponentNotFoundException;
 import org.eclipse.jubula.client.exceptions.ConfigurationException;
+import org.eclipse.jubula.toolkit.concrete.ConcreteComponents;
 import org.eclipse.jubula.toolkit.concrete.components.Application;
 import org.eclipse.jubula.toolkit.concrete.components.TreeComponent;
 import org.eclipse.jubula.toolkit.enums.ValueSets;
@@ -43,7 +47,7 @@ public class PreferencePages extends Common {
 		Utils.dbg_msg("Perspectives init " + m_aut + " app " + m_app);
 	}
 
-	boolean gotoPreferencPage(String position){
+	public boolean gotoPreferencPage(String position){
 		String window_title = Messages.getString("VisitAllPreferencePages.4"); //$NON-NLS-1$
 		Assert.assertTrue(waitForWindowClose(window_title));
 		Assert.assertTrue(waitForElexisMainWindow(Constants.ONE_SECOND));
@@ -64,7 +68,7 @@ public class PreferencePages extends Common {
 		return true;
 	}
 
-	private String create_named_preference_screenshot(String prefix){
+	public String create_named_preference_screenshot(String prefix){
 		try {
 			@SuppressWarnings("unchecked")
 			org.eclipse.jubula.toolkit.concrete.components.TextComponent txt_comp = SwtComponents.createTextComponent(OM.Preference_title_txt);
@@ -81,6 +85,44 @@ public class PreferencePages extends Common {
 		}
 	}
 
+	public List<String> getAllPreferenceIndices() {
+		Utils.dbg_msg("getAllPreferenceNames");
+		String position = "first_time"; //$NON-NLS-1$ //$NON-NLS-2$
+		List<String> indices = new ArrayList<>();
+		openMenu(Messages.getString("VisitAllPreferencePages.7")); //$NON-NLS-1$
+		waitForWindow( Messages.getString("VisitAllPreferencePages.4"));
+
+		@SuppressWarnings({"unchecked"})
+		ComponentIdentifier<Tree> tree = OM.Preferences_ItemChoice_tre; //$NON-NLS-1$
+		int major = 0, minor = 0;
+		Assert.assertNotNull("ShowView_ViewTree_grc may not be null", tree);
+		TreeComponent treeComp = ConcreteComponents.createTreeComponent(tree);
+		while (true) {
+			major++;
+			try {
+				// clickComponent(tree); // This click is only necessary after visiting "Security Storage"! Took me 3h to find it
+				position =  Integer.toString(major);
+				AUT_run.m_aut.execute(treeComp.checkExistenceOfNodeByIndexpath(SearchType.absolute, new Integer(0), position, true), null);
+				indices.add(position);
+			} catch (CheckFailedException e) {
+				Utils.dbg_msg("getAllPreferenceNames finished at position " + position + " with " + indices.size() + " indices");
+				pressEscape(); // close window
+				return indices;
+			}
+			minor = 1;
+			while (true) {
+				position = Integer.toString(major) + "/" + Integer.toString(minor); //$NON-NLS-1$
+				try {
+					// clickComponent(tree); // This click is only necessary after visiting "Security Storage"! Took me 3h to find it
+					AUT_run.m_aut.execute(treeComp.checkExistenceOfNodeByIndexpath(SearchType.absolute, new Integer(0), position, true), null);
+					indices.add(position);
+					minor++;
+				} catch (CheckFailedException e) {
+					break;
+				}
+			}
+		}
+	}
 	/** test visiting all preferencePages */
 	@SuppressWarnings("unchecked")
 	public void visit_all_preferencePages() throws Exception{
