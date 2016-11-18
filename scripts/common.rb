@@ -133,7 +133,9 @@ end
 def install_rcp_support_for_jubula(inst_dir)
   return if DRY_RUN
   rcp_support = File.expand_path(File.join(File.dirname(__FILE__), '..', 'assets', 'rcp-support.zip'))
-  Dir.chdir(File.join(inst_dir, 'plugins'))
+  dropins = File.join(inst_dir, 'dropins', 'plugins')
+  FileUtils.makedirs(dropins, :verbose => true)
+  Dir.chdir(dropins)
   unzip(rcp_support, 'org.eclipse.jubula.rc.rcp_*.jar')
 end
 
@@ -153,21 +155,19 @@ def patch_ini_file_for_jubula_rc(inst_dir)
     File.open(bundles_info, 'w') do |file|
       file.write info;
       parts = File.basename(jubula_jar, '.jar').split('_')
-      # uk.org.lidalia.sysout-over-slf4j,1.0.2,plugins/uk.org.lidalia.sysout-over-slf4j_1.0.2.jar,4,false
       line = "#{parts[0]},#{parts[1]},plugins/#{ File.basename(jubula_jar)},3,true"
       puts line
       file.puts line
-      # org.eclipse.jubula.rc.rcp_4.0.0.201607281404.jar
       file.puts "# patched by #{__FILE__} at #{Time.now}"
       file.close
       system("tail #{bundles_info}")
     end
   else
     config_ini = IO.readlines(ini_name)
-    FileUtils.cp(ini_name, ini_name + '.bak', verbose: true) unless
+    FileUtils.cp(ini_name, ini_name + '.bak', verbose: true) unless File.exist?(ini_name + '.bak')
     config_ini.each do |line|
       next unless /^osgi.bundles=/.match(line)
-      line.sub!(/osgi.bundles=/, 'osgi.bundles=reference\:file\:' + File.basename(jubula_jar) + '@3\:start,')
+      line.sub!(/osgi.bundles=/, 'osgi.bundles=reference\:file\:../dropins/plugins/' + File.basename(jubula_jar) + '@3\:start,')
       File.open(ini_name, 'w') { |file| file.write config_ini.join(''); file.puts "# patched by #{__FILE__} at #{Time.now}" }
       return true
     end
