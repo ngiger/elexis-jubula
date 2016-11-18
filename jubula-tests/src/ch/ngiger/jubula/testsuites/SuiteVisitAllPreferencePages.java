@@ -67,14 +67,16 @@ public class SuiteVisitAllPreferencePages {
 		@SuppressWarnings({
 			"unchecked"
 		})
+		String base_png_name = "preferences/" + this.index.replace("/", "_");
 		ComponentIdentifier<Button> ok_btn = OM.Preferences_OkButton_grc; //$NON-NLS-1$
 		if (!prefs.gotoPreferencPage(this.index)) {
 			AUT_run.takeScreenshotActiveWindow(AUT_run.m_aut, AUT_run.app,
-				"PreferencePages/PreferencePage_" + this.index + "_failed.png"); //$NON-NLS-1$ //$NON-NLS-2$
+				base_png_name + "_failed.png"); //$NON-NLS-1$ //$NON-NLS-2$
 			Assert.fail("Unable to open PreferencePage " + this.index);
 
 		}
 		String name = prefs.create_named_preference_screenshot(this.index.replace("/", "_"));
+		String name2 = "";
 		try {
 			prefs.clickComponent(ok_btn);
 			// the ok_btn is not present in the Security/Secure Storage!!
@@ -86,14 +88,17 @@ public class SuiteVisitAllPreferencePages {
 			Utils.dbg_msg(
 				"visit_all_preferencePages. must cancel. Got exception: " + e.getMessage());
 			AUT_run.takeScreenshotActiveWindow(m_aut, AUT_run.app,
-				"preferences/cancel_" + this.index.replace("/", "_") + ".png"); //$NON-NLS-1$ //$NON-NLS-2$
+				base_png_name +  "_failed.png"); //$NON-NLS-1$ //$NON-NLS-2$
+			name2 = prefs.create_named_preference_screenshot(this.index.replace("/", "_"));
 			prefs.clickComponent(ok_btn);
 		}
+		Utils.dbg_msg("SuiteVisitAllPreferencePages.test_single_PreferencePage: " + this.index
+			+ " fails " + name + " name2: " + name2);
 		AUT_run.takeScreenshotActiveWindow(AUT_run.m_aut, AUT_run.app,
-			"PreferencePages/" + this.index + "_okay_did_not_work.png"); //$NON-NLS-1$ //$NON-NLS-2$
+			base_png_name + "_after_2nd_ok.png"); //$NON-NLS-1$ //$NON-NLS-2$
 		prefs.pressEscape(); // return to main
 		prefs.pressEscape(); // return to main
-		if (!name.contains("Security")) {
+		if (!name2.contains("Secure Storage") ) { // ignore this non Elexis problem
 			Assert.fail("Okay-Button did not work");
 		}
 	}
