@@ -160,8 +160,8 @@ The following improvements are planned. Order may be varied depending whether we
 
 ### pending improvements
 
-* Run several instances of docker jenkinstest in parall using docker-compose scale and exec --index
 * Artikelstamm
 ** Show migration of legacy (stock, billing)
 * -Test whether we are able to input umlauts and other special characters-
 * Complete basic tests until we can prove that Elexis creates correct bills
+* Checking upgrade of older databases (real, but anonymized ones!)
