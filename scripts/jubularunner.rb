@@ -53,9 +53,9 @@ class DockerRunner
     @container_home = File.join(RootDir, 'container_home')
     @m2_repo = File.join(RootDir, 'container_home_m2')
     FileUtils.makedirs(@m2_repo, :verbose => true)
-    @project_name = test_name.sub(/Suite/i, '').sub(/All/i,'')
-    @start_with = "docker-compose -f #{RootDir}/wheezy/docker-compose.yml --project-name #{@project_name}#{Process.pid} "
-    @stop_commands = ["#{@start_with} stop", "#{@start_with} rm --force --all"]
+    @project_name = (test_name.sub(/Suite/i, '').sub(/All/i,'')+Process.pid.to_s).downcase
+    @start_with = "docker-compose -f #{RootDir}/wheezy/docker-compose.yml --project-name #{@project_name} "
+    @stop_commands = ["#{@start_with} stop", "#{@start_with} rm --force --all", "docker network rm  #{@project_name}_public #{@project_name}_private"]
     # cleanup stale docker containers
     @stop_commands.each do |cmd| res = system(cmd, MAY_FAIL) end
   end
