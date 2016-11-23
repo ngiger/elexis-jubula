@@ -6,6 +6,7 @@ require 'tmpdir'
 require 'etc'
 
 USE_X11 = !!ENV['USE_X11']
+$need_to_stop_docker = true
 
 # Helper class to use docker for the Jubula AUT
 class DockerRunner
@@ -40,9 +41,10 @@ class DockerRunner
   end
 
   def stop_docker
-    result = Kernel.system("docker ps  | grep #{@docker_name}")
-    return unless result
+    # puts "stop_docker was called $need_to_stop_docker is #{$need_to_stop_docker}"
+    return unless $need_to_stop_docker
     @stop_commands.each do |cmd| res = system(cmd, MAY_FAIL) end
+    $need_to_stop_docker = false
   end
 
   def initialize(test_name, result_dir)
@@ -53,9 +55,10 @@ class DockerRunner
     @container_home = File.join(RootDir, 'container_home')
     @m2_repo = File.join(RootDir, 'container_home_m2')
     FileUtils.makedirs(@m2_repo, :verbose => true)
-    @project_name = (test_name.sub(/Suite/i, '').sub(/All/i,'')+Process.pid.to_s).downcase
+    @project_name = test_name.sub(/Suite/i, '').sub(/All/i,'').downcase+Process.pid.to_s
     @start_with = "docker-compose -f #{RootDir}/wheezy/docker-compose.yml --project-name #{@project_name} "
-    @stop_commands = ["#{@start_with} stop", "#{@start_with} rm --force --all", "docker network rm  #{@project_name}_public #{@project_name}_private"]
+    @cleanup_networks =  "docker network rm  #{@project_name}_public; sleep 1; docker network rm  #{@project_name}_private"
+    @stop_commands = ["#{@start_with} stop", "#{@start_with} rm --force --all", @cleanup_networks]
     # cleanup stale docker containers
     @stop_commands.each do |cmd| res = system(cmd, MAY_FAIL) end
   end
@@ -86,7 +89,8 @@ class JubulaRunner
   end
 
   def prepare_docker
-    @docker.stop_docker
+    @docker.stop_docker # cleanup from previous runs if any
+    $need_to_stop_docker = true
     at_exit { @docker.stop_docker }
     tmp_dest_dir = File.join(RootDir, 'tmp.to_be_deleted')
     puts "tmp_dest_dir is #{tmp_dest_dir}"
@@ -145,8 +149,11 @@ class JubulaRunner
     @test_params[:environment].each do |v,k| cmd += "export #{v}=#{k}\n" end if @test_params[:environment]
     cmd += %(export LANG=de_CH.UTF-8
 export LANGUAGE=de_CH
-Xvfb :1 -screen 5 1600x1280x24 -nolisten tcp &
 export DISPLAY=#{@display}
+export VARIANT=#{VARIANT}
+export agent_port=#{ENV['agent_port']}
+Xvfb :1 -screen 5 1600x1280x24 -nolisten tcp &
+
 # idea from https://gist.github.com/tullmann/476cc71169295d5c3fe6
 echo `date`: waiting for Xserver to be ready
 MAX=120 # About 60 seconds
@@ -168,17 +175,25 @@ sleep 1
 /usr/bin/metacity-message disable-keybindings
 ) unless USE_X11
   cmd  += %(/usr/bin/xclock -digital -twentyfour & # Gives early feedback, that X is running
+# /home/elexis/results is mounted via docker-compose.yml
 cp $0 /home/elexis/results
 du -shx /home/elexis/.m2/repository
 rm -rf /home/elexis/p2
 mkdir -p /home/elexis/elexis/GlobalInbox
+echo xxx `date` >  /home/elexis/.medelexis.dummy.password
+cp medelexis_jubula_license.xml /home/elexis/elexis/license.xml
+#{@medelexis_script}
+/app/start_jubula.rb localhost 8752 2>&1 | /usr/bin/tee --append /home/elexis/results/start_jubula.log &
+date
 #{@mvn_cmd} -DDISPLAY=#{@display}
+date
 export status=$?
 echo saved status $status for #{@mvn_cmd}
 echo $status | tee /home/elexis/results/result_of_test_run
 echo Resultat von #{@test_params[:test_to_run]} um `date` war $status | tee --append /home/elexis/results/result_of_test_run
 cat /home/elexis/results/result_of_test_run
 ls -l /home/elexis/results/result_of_test_run
+# sleep 3600 # some time for debugging
 sync # ensure that everything is written to the disk
 sleep 1
 ps -ef
@@ -205,7 +220,7 @@ exit $status
         @exitValue = File.exist?(result) && inhalt.first.to_i
       end
       puts "@exitValue #{@exitValue} res is #{cmd_name} is #{res} aus result #{result} mit Inhalt\n#{inhalt}"
-      if res && /smoketest/i.match(@test_params[:test_to_run])
+      if res && /smoketest|medelexis/i.match(@test_params[:test_to_run])
         puts "smoketest: Copy newly installed plugins for further tests back"
         FileUtils.cp_r(Dir.glob(File.join(@docker.container_home, 'work/*')), WorkDir, verbose: true)
       else
@@ -250,12 +265,16 @@ exit $status
     @mvn_cmd = "mvn clean integration-test -Dtest_to_run=#{@test_params[:test_to_run]}" # + ' -offline' #
     @docker ? run_test_in_docker : run_test_exec
   ensure
+    @docker.stop_docker if @docker
     destination =  @result_dir + '-' + @test_params[:test_to_run]
+    FileUtils.rm_rf(destination, :verbose => true)
     FileUtils.cp_r(@result_dir, destination, verbose: true, preserve: true) if File.exist?(@result_dir)
     FileUtils.cp(@elexis_log, destination, verbose: true, preserve: true)  if File.exist?(@elexis_log)
-    files = Dir.glob(File.join(@docker.container_home, '*/*/surefire-reports/*'))
-    puts "Saving surefire-reports #{files.join("\n")}"
-    FileUtils.cp_r(files, destination, verbose: true, preserve: true)
+    if @docker
+      files = Dir.glob(File.join(@docker.container_home, '*/*/surefire-reports/*'))
+      puts "Saving surefire-reports #{files.join("\n")}"
+      FileUtils.cp_r(files, destination, verbose: true, preserve: true)
+    end
     diff_time = (Time.now - @start_time).to_i
     puts "Total time #{diff_time / 60 }:#{sprintf('%02d', diff_time % 60)}. Result #{@exitValue == 0 ? 'SUCCESS' : 'FAILURE'}"
   end
@@ -264,10 +283,12 @@ exit $status
     @test_name = test2run
     @start_time = Time.now
     @test_params = YAML.load_file(File.join(RootDir, 'definitions', "#{@test_name}.yaml"))
+    ENV['agent_port'] = @test_params[:agent_port] ? @test_params[:agent_port].to_s : '6333'
     show_configuration if $VERBOSE || DRY_RUN
     if (medelexis = Dir.glob("*medelexis*application*.zip")) && medelexis.size > 0
       zip_file = File.expand_path(medelexis.first)
       puts "Unpacking Medelexs zip file #{medelexis}"
+      @medelexis_script = "/app/install_sw_medelexis.rb /home/elexis/work/Medelexis #{VARIANT} /home/elexis/results 2>&1 | tee /home/elexis/results/install_sw_medelexis.log "
       FileUtils.rm_rf(WorkDir, :verbose => true)
       FileUtils.makedirs(WorkDir, :verbose => true)
       saved = Dir.pwd
@@ -277,6 +298,10 @@ exit $status
       ensure
         Dir.chdir(saved)
       end
+    end
+    if /medelexis/i.match(test2run) && medelexis.size == 0
+      STDERR.puts "Could not find medelexis zip file in #{Dir.pwd} and test2run was #{test2run}"
+      exit 3
     end
     require 'install_open_source_elexis.rb' unless File.directory?(File.join(WorkDir, 'plugins'))
     @jubula_test_db_params = get_h2_db_params(File.join(WorkDir, 'database/embedded'))

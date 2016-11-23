@@ -56,7 +56,7 @@ public class Views extends Common {
 	void openViewByName(String name){
 		openMenu(window_other);
 		if (!waitForWindow("Show View", 5 * Constants.ONE_SECOND)) {
-			Assert.fail("finishInstallSelectedSW: Unable to open Show View");
+			Assert.fail("openViewByName: Unable to open Show View " + name);
 		}
 
 		selViewCti.replaceText(name);
@@ -74,7 +74,7 @@ public class Views extends Common {
 	public boolean openViewByIndex(String index){
 		openMenu(window_other);
 		if (!waitForWindow("Show View", 5 * Constants.ONE_SECOND)) {
-			Assert.fail("finishInstallSelectedSW: Unable to open Show View");
+			Assert.fail("openViewByIndex: Unable to open Show View for " + index);
 		}
 
 		selViewCti.replaceText(index);
@@ -116,7 +116,7 @@ public class Views extends Common {
 					// This does not work as it throws ActionException Operation not supported by the selected toolkit.
 					// Utils.dbg_msg("value is " + Common.getTextFromCompent(OM.ShowView_ViewTree_grc));
 					indices.add(new_pos);
-					if (indices.size() % 10 == 0) {
+					if (minor % 5 == 1) { // Take a screenshot every 5 item, then we should be able to pinpoint problems
 						AUT_run.takeScreenshotActiveWindow(AUT_run.m_aut, AUT_run.app,
 						"Views/View_" + major + "/" + minor + "_overview.png"); //$NON-NLS-1$ //$NON-NLS-2$
 					}
@@ -134,9 +134,8 @@ public class Views extends Common {
 			}
 		}
 	}
-	public static void visitOneview(String index) {
-		Utils.dbg_msg("visiting "+index);
-
+	public void visitOneview(String index) {
+		openViewByIndex(index);
 	}
 	/** test visiting all views */
 	@Test

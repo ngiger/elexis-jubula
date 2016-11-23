@@ -4,15 +4,16 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.eclipse.jubula.client.AUT;
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
+import org.junit.runners.MethodSorters;
 
 import ch.ngiger.jubula.helpers.AUT_run;
 import ch.ngiger.jubula.helpers.Artikelstamm;
@@ -25,6 +26,7 @@ import ch.ngiger.jubula.helpers.Software;
 import ch.ngiger.jubula.helpers.Utils;
 import ch.ngiger.jubula.helpers.Views;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class Medelexis {
 	public static String SAVE_RESULTS_DIR = null;
 	@Rule
@@ -56,7 +58,6 @@ public class Medelexis {
 	private static Software software = null;
 	private static Patients pat = null;
 	private static Invoice invoice = null;
-	private static boolean is_first = true;
 	private static AUT m_aut = null;
 
 	@BeforeClass
@@ -64,8 +65,6 @@ public class Medelexis {
 		AUT_run.setUp();
 		Utils.dbg_msg("AUT_run: setup done"); //$NON-NLS-1$
 		m_aut = AUT_run.startAUT();
-		is_first = true;
-
 		perspectives = new Perspectives(AUT_run.m_aut, AUT_run.app);
 		software = new Software(AUT_run.m_aut, AUT_run.app);
 		eigenleistung = new Eigenleistung(AUT_run.m_aut, AUT_run.app);
@@ -91,26 +90,7 @@ public class Medelexis {
 	}
 
 	@Test()
-	public void suite_visit_all_perspectives() throws Exception{
-		Perspectives p = new Perspectives(AUT_run.m_aut, AUT_run.app);
-		p.initialSetup();
-		p.visit_all_perspectives();
-	}
-
-	@Test()
-	public void suite_visit_all_preferencePages() throws Exception{
-		PreferencePages pp = new PreferencePages(AUT_run.m_aut, AUT_run.app);
-		pp.visit_all_preferencePages();
-	}
-
-	// TODO: @Test()
-	public void suite_visit_all_views() throws Exception{
-		Views v = new Views(AUT_run.m_aut, AUT_run.app);
-		v.visit_all_views();
-	}
-
-	@Test()
-	public void medelexis_smoketest() throws Exception{
+	public void medelexis_1_smoketest() throws Exception{
 		boolean with_artikelstamm = false;
 		Utils.dbg_msg("medelexis_smoketest with_artikelstamm " + with_artikelstamm);
 		if (with_artikelstamm) {
@@ -155,19 +135,27 @@ public class Medelexis {
 		Utils.dbg_msg("medelexis_smoketest.finished successfully!"); //$NON-NLS-1$
 	}
 
-	@After
-	public void teardown() throws Exception{
-		Utils.dbg_msg("Smoketest.teardown"); //$NON-NLS-1$
-		// AUT_run.stopAut(m_aut);
-		// AUT_run.tearDown();
+	@Test()
+	public void medelexis_2_all_perspectives() throws Exception{
+		Perspectives p = new Perspectives(AUT_run.m_aut, AUT_run.app);
+		p.initialSetup();
+		p.visit_all_perspectives();
 	}
+
+	@Test()
+	public void medelexis_3_all_preferencePages() throws Exception{
+		PreferencePages pp = new PreferencePages(AUT_run.m_aut, AUT_run.app);
+		pp.visit_all_preferencePages();
+	}
+
+	@Test()
+	public void medelexis_4_all_views() throws Exception{
+		Views v = new Views(AUT_run.m_aut, AUT_run.app);
+		v.visit_all_views();
+	}
+
 	@AfterClass
 	public static void teardownFinal() throws Exception{
-		Utils.dbg_msg("Smoketest.teardownFinal Resettting patient"); //$NON-NLS-1$
-		Perspectives p = new Perspectives(AUT_run.m_aut, AUT_run.app);
-		p.openPatientenPerspective();
-		p.resetPerspective();
-		AUT_run.stopAut(m_aut);
-		AUT_run.tearDown();
+		Utils.dbg_msg("Smoketest.teardown"); //$NON-NLS-1$
 	}
 }

@@ -74,6 +74,7 @@ public class Utils {
 			String finished = getTimeStamp();
 			dbg_msg("sleep " + timoutInMs + " ms was interrupted started at " + startTime
 				+ " is now " + finished);
+			e.printStackTrace(writer);
 		}
 	}
 
@@ -125,7 +126,6 @@ public class Utils {
 		} else {
 			Utils.dbg_msg("Cannot maximize Elexis on remote host!! or script " + script + " not executable");
 		}
-
 	}
 
 	/**

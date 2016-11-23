@@ -112,7 +112,7 @@ public class Perspectives extends Common {
 
 	public boolean openPerspectiveByName(String name){
 		String localized_name = Messages.getString("VisitAllPerspectives.2");
-		Utils.dbg_msg(String.format("openPerspectiveByName %s via %s", name, localized_name));
+		Utils.dbg_msg(String.format("openPerspectiveByName '%s' via '%s'", name, localized_name));
 		if (!openMenu(localized_name)) {
 			return false;
 		}
@@ -235,6 +235,11 @@ public class Perspectives extends Common {
 				pressEscape();
 			} else {
 				pressEnter();
+			}
+			if (waitForWindowClose(".*Fehler*", 100)) {
+				AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "setup_fehler_window.png"); //$NON-NLS-1$
+				Utils.dbg_msg("Found Fehler images");
+				pressSpace();
 			}
 			if (waitForWindowClose(".*Multiple problems.*", 1000)) {
 				Utils.dbg_msg("closeMultipleProblems succeeded");

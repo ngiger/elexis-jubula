@@ -240,7 +240,5 @@ public class Smoketest {
 	public static void teardown() throws Exception{
 		Utils.dbg_msg("Smoketest.teardown"); //$NON-NLS-1$
 		Utils.dbg_msg(watchedLog);
-		AUT_run.stopAut(m_aut);
-		AUT_run.tearDown();
 	}
 }

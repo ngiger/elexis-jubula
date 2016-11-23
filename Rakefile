@@ -20,11 +20,16 @@ task :docker_run do
   fail "docker_run failed! #{cmd}" unless system(cmd)
 end
 
+desc 'Run Elexis inside docker'
+task :docker_elexis do
+  system('scripts/jubularunner.rb elexis_inside_docker')
+end
+
 if  ENV['VARIANT']
-  VARIANT = ENV['VARIANT']
+  VARIANT ||= ENV['VARIANT']
   desc "Install latest #{VARIANT} (as specified by env variable VARIANT) of OpenSource Elexis"
 else
-  VARIANT = 'snapshot'
+  VARIANT ||= 'snapshot'
   desc 'Install latest snapshot of OpenSource Elexis'
 end
 desc "Install Elexis Opensource. Branch default to snapshot, unless overriden via environment variable VARIANT #{ENV['VARIANT']}"

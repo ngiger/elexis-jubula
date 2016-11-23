@@ -290,6 +290,11 @@ public class Common {
 		m_aut.execute(m_app.externalKeyCombination(new Modifier[] {}, "Enter"), null);
 	}
 
+	public void pressSpace(){
+		Utils.dbg_msg("pressSpace");
+		m_aut.execute(m_app.externalKeyCombination(new Modifier[] {}, "Space"), null);
+	}
+
 	/**
 	 * Select a given tab, by passing the tabName as a match, e.g. Bl.cke will match Blöcke
 	 * @param cid

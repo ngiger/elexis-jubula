@@ -13,6 +13,7 @@ import org.junit.runners.Parameterized.Parameters;
 
 import ch.ngiger.jubula.helpers.AUT_run;
 import ch.ngiger.jubula.helpers.Perspectives;
+import ch.ngiger.jubula.helpers.Software;
 import ch.ngiger.jubula.helpers.Utils;
 
 @RunWith(Parameterized.class)
@@ -37,6 +38,11 @@ public class SuiteVisitAllPerspectives {
 			System.exit(3);
 		}
 		m_aut = AUT_run.startAUT();
+		Software software = new Software(AUT_run.m_aut, AUT_run.app);
+		software.showAbout("first", false);
+		if (!software.baseChIsInstalled()) {
+			software.installAllSW();
+		}
 		p = new Perspectives(m_aut, AUT_run.app);
 		p.initialSetup(); // Sonst haben wir Probleme mit den Leistungen!
 		java.util.List<String> names = p.get_all_perspective_name();
@@ -66,6 +72,5 @@ public class SuiteVisitAllPerspectives {
 	@AfterClass
 	public static void teardown() throws Exception{
 		Utils.dbg_msg("SuiteVisitAllPerspectives.teardown"); //$NON-NLS-1$
-		AUT_run.tearDown();
 	}
 }

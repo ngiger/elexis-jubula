@@ -216,11 +216,28 @@ public class Software extends Common {
 		return true;
 	}
 
+	public boolean installMedelexis() {
+		Utils.dbg_msg("AUT_EXE is medelexis" + AUT_run.config.get(Constants.AUT_EXE)
+		+ ". installMedelexis");
+		int seconds = 0;
+		while (seconds < 240 && (!waitForElexisMainWindow())) {
+			seconds ++;
+			if (waitForWindow("InstallError.*", 100)) {
+				pressEscape(); // to close it
+			}
+			if (waitForWindow("Progress Information.*", 100)) {
+				pressEscape(); // to close it
+			}
+		}
+		Utils.dbg_msg("installFeature medelexis succeeded after" + seconds + " res: " +
+				waitForElexisMainWindow());
+		AUT_run.restartApp(AUT_run.m_aut);
+		return true;
+	}
 	public void installFeature(String feature_name){
-		if (AUT_run.config.get(Constants.AUT_EXE) != null
-			&& AUT_run.config.get(Constants.AUT_EXE).toLowerCase().contains("medelexis")) {
-			Utils.dbg_msg("AUT_EXE is medelexis" + AUT_run.config.get(Constants.AUT_EXE)
-				+ ". Don't know howto install " + feature_name);
+		if (AUT_run.isMedelexis)
+		{
+			Utils.dbg_msg("skip installFeature " + feature_name + " as Medelexis");
 			return;
 		}
 		Utils.dbg_msg("installFeature " + feature_name);
@@ -260,29 +277,8 @@ public class Software extends Common {
 	 * @return true if restart required, else already everything installed
 	 */
 	public boolean installAllFeatures(){
-		if (AUT_run.config.get(Constants.AUT_EXE) != null
-			&& AUT_run.config.get(Constants.AUT_EXE).toLowerCase().contains("medelexis")) {
-			Utils.sleep1second();
-			Runnable r = new Runnable() {
-				@Override
-				public void run(){
-					Utils.dbg_msg("Calling Datei Beenden");
-					openMenu("Datei/Beenden");
-					Utils.dbg_msg("Wait for end");
-				}
-			};
-			Utils.dbg_msg("before t");
-			Thread t = new Thread(r);
-			Utils.dbg_msg("before run");
-			t.run();
-			Utils.dbg_msg("after run");
-			int j = 0;
-			while (j < 30 && AUT_run.m_aut.isConnected()) {
-				j++;
-				Utils.dbg_msg("Wait for installation ended " + j);
-				Utils.sleep1second();
-			}
-			return false;
+		if ( AUT_run.isMedelexis ) {
+			return installMedelexis();
 		}
 		Utils.dbg_msg("installAllFeatures finished");
 		swInitAll();
@@ -295,6 +291,9 @@ public class Software extends Common {
 			Utils.dbg_msg("AUT_EXE is medelexis: " + AUT_run.config.get(Constants.AUT_EXE));
 			openMenu("Datei/Beenden");
 			while (m_aut.isConnected()) {
+				if (waitForWindow("Install Error")) {
+					pressEscape();
+				}
 				Utils.sleep1second();
 				Utils.dbg_msg("AUT_EXE is medelexis waiting");
 			}

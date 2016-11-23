@@ -49,6 +49,10 @@ public class PreferencePages extends Common {
 
 	public boolean gotoPreferencPage(String position){
 		String window_title = Messages.getString("VisitAllPreferencePages.4"); //$NON-NLS-1$
+		if (waitForWindow("Could Not Accept Changes", 50)) {
+			pressSpace();
+			pressEscape(); // return to main
+		}
 		Assert.assertTrue(waitForWindowClose(window_title));
 		Assert.assertTrue(waitForElexisMainWindow(Constants.ONE_SECOND));
 		openMenu(Messages.getString("VisitAllPreferencePages.7")); //$NON-NLS-1$

@@ -25,9 +25,9 @@ import org.eclipse.jubula.toolkit.enums.ValueSets.AUTActivationMethod;
 import org.eclipse.jubula.toolkit.rcp.config.RCPAUTConfiguration;
 import org.eclipse.jubula.toolkit.swt.SwtComponents;
 import org.eclipse.jubula.tools.AUTIdentifier;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Test;
 
 public class AUT_run {
 	/** the AUT-Agent */
@@ -48,29 +48,52 @@ public class AUT_run {
 	private static java.nio.file.Path ElexisLog =
 		Paths.get(System.getProperty("user.home") + "/elexis/logs/elexis-3.log");
 	public static boolean isMedelexis = false;
+	private static String agent_port = "6333"; // Default
+	private static final String console_port = "8752";
 	private static boolean stopping_autagent = false;
 	private static boolean starting_autagent = false;
+	private static Path exe_file;
+	private static boolean setup_done = false;
 
+	/**
+	 * * Setups all the config constant for Elexis or Medelexis.
+	 *
+	 * * Checks whether they are overridden via properties or environment variables
+	 *
+	 * * Calculate load/dump commands for selecte database
+	 *
+	 */
 	private static void setupConfig(){
 		config.put(Constants.DB_CONNECTION, "h2");
 		config.put(Constants.DB_LOAD_SCRIPT, "");
-		config.put(Constants.AGENT_HOST, "localhost");
-		config.put(Constants.AGENT_PORT, "6333");
 		config.put(Constants.WORK_DIR, USER_DIR);
-		// TODO: For elexis in docker must find a way to pass directories correctly
+		config.put(Constants.AGENT_HOST, "localhost");
+		if  (System.getenv("agent_port") != null) {
+			agent_port =  System.getenv("agent_port");
+		}
+		config.put(Constants.AGENT_PORT, agent_port);
+		config.put(Constants.AUT_VM_ARGS, ""); //	"-Xdebug -Xrunjdwp:transport=dt_socket,server=y,address=8000");
 		Path elexis3 = Paths.get(USER_DIR + "/../work/Elexis3");
 		Path medelexis3 = null;
 		if (elexis3.toFile().canExecute()) {
 			// config.put(Constants.AUT_EXE, elexis3.toAbsolutePath().normalize().toString());
 			config.put(Constants.AUT_EXE, elexis3.toAbsolutePath().normalize().toString());
+			config.put(Constants.AUT_ARGS,	"");
+			exe_file = elexis3;
 		} else {
 			String variant = System.getenv("VARIANT");
-			medelexis3 = Paths.get(USER_DIR + "/../work/Medelexis");
+			if (variant == null || variant.equals("")) { variant = "snapshot"; }
+			medelexis3 = Paths.get(USER_DIR + "/../work/Medelexis").toAbsolutePath();
+			exe_file = medelexis3;
+			if (!medelexis3.toFile().canExecute())
+			{
+			  	String msg = "Could neither find Elexis3 nor Medelexis executable. Check config";
+			  	Utils.dbg_msg(msg);
+			  	Assert.fail(msg);
+			}
 			isMedelexis = true;
-			config.put(Constants.AUT_EXE, medelexis3.toAbsolutePath().normalize().toString());
-			config.put(Constants.AUT_VM_ARGS,
-				"-eclipse.password ~/.medelexis.dummy.password " + config.get(Constants.AUT_VM_ARGS)
-					+ " -Dprovisioning.UpdateRepository=" + variant);
+			config.put(Constants.AUT_ARGS,	" -eclipse.password ~/.medelexis.dummy.password ");
+			config.put(Constants.AUT_VM_ARGS, " -Dprovisioning.UpdateRepository=" + variant + " ");
 	    	Path prefs_dir = Paths.get(USER_DIR + "/../work/configuration/.settings");
 	    	Path prefs = Paths.get(prefs_dir + "/MedelexisDesk.prefs");
 			try {
@@ -108,27 +131,45 @@ public class AUT_run {
 				Utils.dbg_msg(msg);
 				Assert.fail(msg);
 			}
+			config.put(Constants.AUT_EXE, medelexis3.toString());
+			// Utils.install_sw_medelexis(medelexis3, variant, Utils.SAVE_RESULTS_DIR.toString());
 		}
 
 		config.put(Constants.AUT_RUN_FROM_SCRATCH, "");
 		config.put(Constants.AUT_LOCALE, "de_DE");
 		config.put(Constants.AUT_ID, "elexis");
-		config.put(Constants.AUT_PROGRAM_ARGS,
-			"-Xdebug -Xrunjdwp:transport=dt_socket,server=y,address=8000");
 		// with the following String I started on wheezy
 		// ./Medelexis -eclipse.password ~/.medelexis.dummy.password -clean
 		// -debug -consoleLog -vmargs -Delexis-run-mode=RunFromScratch
 		// -Dch.elexis.username=007 -Dch.elexis.password=topsecret
-		config.put(Constants.AUT_VM_ARGS,
-			"-nl " + config.get(Constants.AUT_LOCALE)
-				// TODO: For elexis in docker must pass -vm /usr/bin/java
-				+ " --clean -vmargs -Declipse.p2.unsignedPolicy=allow" + " -Dautagent_port="
+		Utils.dbg_msg(config.get(Constants.AUT_VM_ARGS));
+		// TODO: For elexis in docker must pass -vm /usr/bin/java
+		config.put(Constants.AUT_ARGS, "-clean -console " + console_port + " -nl " + config.get(Constants.AUT_LOCALE)
+			+ config.get(Constants.AUT_ARGS) + " -consoleLog -debug dropins/.options ");
+		config.put(Constants.AUT_VM_ARGS, " -Declipse.p2.unsignedPolicy=allow" + " -Dautagent_port="
 				+ config.get(Constants.AGENT_PORT) + " -Dautagent_host="
 				+ config.get(Constants.AGENT_HOST)
-				+ " -Dch.elexis.username=007 -Dch.elexis.password=topsecret "); //  osgi.locking=none
+				+ " -Dorg.eclipse.equinox.p2.reconciler.dropins.directory=dropins/ "
+				+ config.get(Constants.AUT_VM_ARGS)); //  osgi.locking=none
 		config.put(Constants.AUT_KEYBOARD, "de_DE");
 		overrideConfigWithEnvAndProperties();
 		AUT_db.checkAndLoadDatabase(config);
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+		    @Override
+			public void run() {
+		    	// at this point we cannot take any screenshot, as the
+		    	// communication with the Jubula Agent is already stopped
+				Utils.dbg_msg("ShutdownElexis began");
+				try {
+					tearDown();
+				} catch (Exception e) {
+					Utils.dbg_msg("ShutdownElexis Exception " + e.getMessage());
+				}
+				// The next lines does not appear in the log file!
+				Utils.dbg_msg("ShutdownElexis finished");
+
+		    }
+		});
 		dumpConfig("setupConfig finished");
 	}
 
@@ -181,11 +222,11 @@ public class AUT_run {
 					Utils.dbg_msg(rPath + " is not executable");
 				}
 				Assert.assertTrue(rPath.toFile().canExecute());
-				Utils.run_system_cmd(rPath.toString() + " -vm /usr/bin/java -l -p "
+				Utils.run_system_cmd(rPath.toString() + " -vm /usr/bin/java -v -l -p "
 					+ config.get(Constants.AGENT_PORT) + " ", "start_autagent");
 				if (!stopping_autagent & !starting_autagent) {
 					Utils.dbg_msg("Premature stop of autagent. Why?");
-					Assert.fail("Premature stop of autagent");
+					// Assert.fail("Premature stop of autagent");
 				}
 				Utils.dbg_msg("Autagent finished");
 			}
@@ -205,17 +246,23 @@ public class AUT_run {
 	}
 
 	public static AUT startAUT(){
-		starting_autagent = true;
 		if (m_aut != null && m_aut.isConnected()) {
-			stopAut(m_aut);
+			return m_aut; // Don't restart automatically!!
 		}
+		/*
+		if (isMedelexis){
+			jubula_rc_rcp_thread = new StartJubulaRcRcpThread();
+			jubula_rc_rcp_thread.start();
+		}
+		*/
+		starting_autagent = true;
 		AUTIdentifier aut_id = null;
 		AUT new_aut = null;
-		Utils.dbg_msg("Calling startAUT: aut_config" + aut_config);
+		Utils.dbg_msg("startAUT: aut_config" +  aut_config + " m_agent.isConnected " + m_agent.isConnected());
 		try {
 			int j = 0;
 			while (j < 120 && !m_agent.isConnected()) {
-				Utils.dbg_msg("Calling startAUT " + j + " m_agent.isConnected " + m_agent.isConnected());
+				Utils.dbg_msg("startAUT: calling startAUT " + j + " m_agent.isConnected " + m_agent.isConnected());
 				Utils.sleep1second();
 			}
 			Utils.sleep1second();
@@ -228,27 +275,27 @@ public class AUT_run {
 					Utils.dbg_msg("try " + j + ": startAUT. Got aut_id " + aut_id); //$NON-NLS-1$
 					break;
 				} catch (ActionException | CommunicationException e) {
-					Utils.dbg_msg("startAUT failed: " + e.getMessage()); //$NON-NLS-1$
+					Utils.dbg_msg("startAUT:  failed: " + e.getMessage()); //$NON-NLS-1$
 				}
 			}
-			Utils.dbg_msg("Calling startAUT returned " + aut_id);
+			Utils.dbg_msg("startAUT: Calling startAUT returned " + aut_id);
 			if (aut_id != null) {
-				Utils.dbg_msg("started AUT as " + aut_id.getID());
+				Utils.dbg_msg("startAUT: started AUT as " + aut_id.getID());
 				new_aut = m_agent.getAUT(aut_id, SwtComponents.getToolkitInformation());
-				Utils.dbg_msg("AUT will connect");
+				Utils.dbg_msg("startAUT: AUT will connect");
 				new_aut.connect();
-				Utils.dbg_msg("AUT connected");
+				Utils.dbg_msg("startAUT: AUT connected");
 			} else {
-				Assert.fail("AUT did not start as expected? Why"); //$NON-NLS-1$
+				Assert.fail("startAUT did not start as expected? Why"); //$NON-NLS-1$
 			}
-			Utils.dbg_msg("AUT activate via titlebar");
+			Utils.dbg_msg("startAUT: activate via titlebar");
 			activate(new_aut);
 
-			Utils.dbg_msg("AUT created and activated");
+			Utils.dbg_msg("startAUT: AUT created and activated");
 		} catch (ActionException | CommunicationException e) {
-			Utils.dbg_msg("Action Exception startAUT reason: " + e.getMessage()); //$NON-NLS-1$
+			Utils.dbg_msg("startAUT: Action Exception startAUT reason: " + e.getMessage()); //$NON-NLS-1$
 			takeScreenshot(m_aut, app, "start_aut_failed.png");
-			Assert.fail("unable to start AUT"); //$NON-NLS-1$
+			Assert.fail("startAUT: unable to start AUT"); //$NON-NLS-1$
 
 		}
 		m_aut = new_aut;
@@ -258,6 +305,7 @@ public class AUT_run {
 
 	@BeforeClass
 	public static void setUp() throws Exception{
+		if (setup_done) return;
 		Utils.setupResultDir();
 		try {
 			java.nio.file.Files.delete(ElexisLog);
@@ -292,24 +340,30 @@ public class AUT_run {
 				+ " does not exist or cannot be executed");
 		}
 		String[] args = {
-			config.get(Constants.AUT_VM_ARGS)
+			config.get(Constants.AUT_ARGS),
+			" -vmargs ",
+			config.get(Constants.AUT_VM_ARGS),
 		};
-		String args_as_string = config.get(Constants.AUT_VM_ARGS);
-		Utils.dbg_msg("Start AUT: aut_id  " + config.get(Constants.AUT_ID) + "\ncd "
-			+ config.get(Constants.WORK_DIR) + "\n" + "\n" + config.get(Constants.AUT_EXE) + " "
-			+ args_as_string);
+		String args_as_string = config.get(Constants.AUT_ARGS) +  " -vmargs "+ config.get(Constants.AUT_VM_ARGS);
+		Utils.dbg_msg("AUT_ARGS is " + config.get(Constants.AUT_ARGS));
+		Utils.dbg_msg("AUT_VM_ARGS is " + config.get(Constants.AUT_VM_ARGS));
+		Utils.dbg_msg("AUT_ID is " + config.get(Constants.AUT_ID));
+		Utils.dbg_msg("WORK_DIR3 is " + config.get(Constants.WORK_DIR) + " replaced by " + exe_file.getParent().toAbsolutePath().toString());
 		Utils.dbg_msg("Default is " + Locale.getDefault());
 		Utils.dbg_msg("German is " + Locale.GERMANY + " " + Locale.GERMAN);
 		Utils.dbg_msg("Swiss_German is " + Locale.forLanguageTag("de_CH"));
 		Utils.dbg_msg("Keyboard_Locale: " + Keyboard_Locale.toString());
-		Utils.dbg_msg("cmd: " + config.get(Constants.AUT_EXE) + " " + args[0]);
+		Utils.dbg_msg("cmd: " + config.get(Constants.AUT_EXE) + " " + args_as_string);
 		aut_config = new RCPAUTConfiguration("ch.elexis.core.application", //$NON-NLS-1$
 			config.get(Constants.AUT_ID), config.get(Constants.AUT_EXE),
-			config.get(Constants.WORK_DIR), args, Locale.US);
+			// config.get(Constants.WORK_DIR),
+			exe_file.getParent().toString(),
+			args, Locale.US);
 		Utils.dbg_msg("setup: Got aut_config as " + aut_config.getLaunchInformation());
 		Thread.sleep(1000);
 		Utils.dbg_msg("setup: createApplication");
 		app = SwtComponents.createApplication();
+		setup_done = true;
 	}
 
 	public static void takeScreenshotActiveWindow(AUT aut, Application app, String imageName){
@@ -365,26 +419,32 @@ public class AUT_run {
 		Utils.dbg_msg("stoppedAut " + aut);
 	}
 
+	@Test
+	/**
+	 * Add AUT_run as the last class to your TestSuite. Then the tearDown method will stop Elexis
+	 */
+	public void dummyUnitTest() {
+		Assert.assertTrue("Dummy Test to be able to use the AfterClass Teardown", true);
+	}
+
 	/** cleanup */
-	@AfterClass
 	public static void tearDown() throws Exception{
-		takeScreenshot(m_aut, app, "tearDown.png"); //$NON-NLS-1$;
 		stopping_autagent = true;
 		if (m_aut != null) {
 			Utils.dbg_msg("AUT_run.tearDown " + m_aut + " isCon " + m_aut.isConnected());
 		}
 		if (m_aut != null && m_aut.isConnected()) {
-			m_aut.disconnect();
 			m_agent.stopAUT(m_aut.getIdentifier());
+			m_aut.disconnect();
 		}
-		if (m_agent != null && m_agent.isConnected()) {
-			m_agent.disconnect();
-		}
+
 		if (agent_thread != null) {
 			Utils.dbg_msg("Stopping agent_thread");
 			agent_thread.interrupt();
 			// agent_thread.stop();
 			Utils.dbg_msg("Stopped agent_thread");
+		} else if (m_agent != null && m_agent.isConnected()) {
+			m_agent.disconnect();
 		}
 		AUT_db.dumpDatabase();
 		Utils.getWriter().close();

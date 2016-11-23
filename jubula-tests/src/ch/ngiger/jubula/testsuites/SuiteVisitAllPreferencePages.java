@@ -8,7 +8,6 @@ import org.eclipse.jubula.client.exceptions.ActionException;
 import org.eclipse.jubula.client.exceptions.ComponentNotFoundException;
 import org.eclipse.jubula.toolkit.swt.components.Button;
 import org.eclipse.jubula.tools.ComponentIdentifier;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -75,6 +74,12 @@ public class SuiteVisitAllPreferencePages {
 			Assert.fail("Unable to open PreferencePage " + this.index);
 
 		}
+		if (prefs.waitForWindow("Could Not Accept Changes", 50)) {
+			AUT_run.takeScreenshotActiveWindow(AUT_run.m_aut, AUT_run.app,
+				base_png_name + "_unaccepted.png"); //$NON-NLS-1$ //$NON-NLS-2$
+			prefs.pressSpace();
+			Assert.fail("Unable to accept PreferencePage " + this.index);
+		}
 		String name = prefs.create_named_preference_screenshot(this.index.replace("/", "_"));
 		String name2 = "";
 		try {
@@ -96,16 +101,16 @@ public class SuiteVisitAllPreferencePages {
 			+ " fails " + name + " name2: " + name2);
 		AUT_run.takeScreenshotActiveWindow(AUT_run.m_aut, AUT_run.app,
 			base_png_name + "_after_2nd_ok.png"); //$NON-NLS-1$ //$NON-NLS-2$
+		String error_mgs = "Okay-Button did not work: index " + this.index + " name2 " + name2 + " name " + name;
+		if (!name2.contains("Secure Storage") ) { // ignore this non Elexis problem
+			Utils.dbg_msg(error_mgs);
+		}
 		prefs.pressEscape(); // return to main
+		prefs.pressEscape(); // return to main
+		prefs.pressEnter(); // return to main
 		prefs.pressEscape(); // return to main
 		if (!name2.contains("Secure Storage") ) { // ignore this non Elexis problem
-			Assert.fail("Okay-Button did not work");
+			Assert.fail(error_mgs);
 		}
-	}
-
-	@AfterClass
-	public static void teardown() throws Exception{
-		Utils.dbg_msg("SuiteVisitAllPreferencePages.teardown"); //$NON-NLS-1$
-		AUT_run.tearDown();
 	}
 }

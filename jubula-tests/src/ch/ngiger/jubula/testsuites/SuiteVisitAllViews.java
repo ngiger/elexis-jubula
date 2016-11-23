@@ -76,6 +76,6 @@ public class SuiteVisitAllViews {
 	@AfterClass
 	public static void teardown() throws Exception{
 		Utils.dbg_msg("SuiteVisitAllViews.teardown"); //$NON-NLS-1$
-		AUT_run.tearDown();
+		// AUT_run.tearDown();
 	}
 }

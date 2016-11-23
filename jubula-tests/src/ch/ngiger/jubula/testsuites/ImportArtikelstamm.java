@@ -28,7 +28,7 @@ import ch.ngiger.jubula.helpers.Views;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ImportArtikelstamm {
 	public static String SAVE_RESULTS_DIR = null;
-	private static String watchedLog = "Started:\n";
+	public static String watchedLog = "Started:\n";
 	@Rule
 	public TestWatcher watchman = new TestWatcher() {
 		@Override
@@ -156,9 +156,7 @@ public class ImportArtikelstamm {
 
 	@AfterClass
 	public static void teardown() throws Exception{
-		Utils.dbg_msg("Smoketest.teardown"); //$NON-NLS-1$
+		Utils.dbg_msg("importArtikelstamm.teardown"); //$NON-NLS-1$
 		Utils.dbg_msg(watchedLog);
-		AUT_run.stopAut(m_aut);
-		AUT_run.tearDown();
 	}
 }
