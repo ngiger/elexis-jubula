@@ -1,4 +1,4 @@
 ---
 :exe_name:    Elexis3
 :test_to_run: ImportArtikelstamm
-:agent_port:  6305
+:agent_port:  6220

@@ -4,7 +4,7 @@
 :jubula_version: 8.3.0
 # Keep it somewhere in the 6xxx range. 10000 will be added if running under Medelexis, + 1000 for beta, + 2000 for prerelease + 3000 for release
 # Should be different for each test to allow various docker images to coexist
-:agent_port: 6333
+:agent_port: 6200
 :director_latest: http://mirror.switch.ch/eclipse/tools/buckminster/products/director_latest.zip
 :elexis_fsf:
    # :full_zip_url: http://download.elexis.info/elexis.3.core/3.0.0/ch.elexis.core.application.ElexisApp-linux.gtk.x86_64.zip

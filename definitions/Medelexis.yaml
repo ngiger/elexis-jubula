@@ -1,4 +1,4 @@
 ---
 :exe_name:    Medelexis
 :test_to_run: Medelexis
-:agent_port:  6300
+:agent_port:  6700

@@ -223,13 +223,15 @@ cp $0 /home/elexis/results
 du -shx /home/elexis/.m2/repository
 rm -rf /home/elexis/p2
 mkdir -p /home/elexis/elexis/GlobalInbox
-echo xxx `date` >  /home/elexis/.medelexis.dummy.password
-cp medelexis_jubula_license.xml /home/elexis/elexis/license.xml
+ps -ef
 #{@medelexis_script}
 /app/start_jubula.rb localhost 8752 2>&1 | /usr/bin/tee --append /home/elexis/results/start_jubula.log &
 date
+ps -ef
 #{@mvn_cmd} -DDISPLAY=#{@display}
 date
+env | sort
+ps -ef
 export status=$?
 echo saved status $status for #{@mvn_cmd}
 echo $status | tee /home/elexis/results/result_of_test_run

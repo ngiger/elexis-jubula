@@ -11,5 +11,9 @@ tests = [
 
 tests.each do |test|
   puts test
-  system("bundle exec rake jubula_docker[#{test}] 2>&1 | tee all_#{test}.log")
+  res = system("bundle exec scripts/jubularunner.rb #{test} --variant=prerelease 2>&1 | tee all_#{test}.log")
+  if test.eql?('Screenshot') && !res
+    puts "Screenshot failed, abort"
+    exit 2
+  end
 end

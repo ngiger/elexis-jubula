@@ -1,7 +1,7 @@
 ---
 :exe_name:    Elexis3
 :test_to_run: Screenshot
-:agent_port:  6305
+:agent_port:  6230
 :environment:
 # mysql läuft unter 3.1.0 nicht, da Dumpd für 3.2.0
   # db_connection: 'jdbc:mysql://mysql/elexistest'
