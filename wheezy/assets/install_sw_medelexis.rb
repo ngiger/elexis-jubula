@@ -4,7 +4,7 @@
 # Needs the following debian packages: x11-apps imagemagick xdotool scrot
 
 require 'fileutils'
-
+system('env')
 if ARGV.size != 3
   puts "Expecting three arguments: MEDELEXIS_EXE VARIANT RESULT_DIR"
   exit 3
@@ -38,8 +38,11 @@ end
 
 def create_snapshot(name, full = true)
   FileUtils.makedirs(RESULT_DIR, :verbose => true) unless File.directory?(RESULT_DIR)
-  unless system("scrot #{RESULT_DIR}/#{name}.png")
-    progress "create_snapshot via scrot failed"
+  cmd = "scrot --silent --border #{RESULT_DIR}/#{name.gsub(/\W/,'_')}.png"
+  if system(cmd)
+    progress "created snapshot: #{cmd}"
+  else
+    progress "create_snapshot via #{cmd} failed"
   end
 end
 
@@ -89,12 +92,11 @@ usageConditionAccepted=true
 end
 
 def send_escape_to_window(windowname)
-  @@counter ||= 0
   err_name=get_window_name(windowname)
   return unless err_name
   if err_name
     $sw_errors += 1
-    create_snapshot("#{@@counter}_#{err_name}")
+    create_snapshot("#{$sw_errors}_#{err_name}")
     cmd = "xdotool search --name #{windowname} windowactivate && xdotool key Escape"
     res = system(cmd)
     progress "Found error_window #{$sw_errors} rm res #{res} for #{cmd}"
