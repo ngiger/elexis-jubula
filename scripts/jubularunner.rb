@@ -193,7 +193,7 @@ class JubulaRunner
     cmd += %(export LANG=de_CH.UTF-8
 export LANGUAGE=de_CH
 export DISPLAY=#{@display}
-export VARIANT=#{@test_params[:variant]}}
+export VARIANT=#{ENV['VARIANT']}
 export AGENT_PORT=#{@test_params[:agent_port]}
 Xvfb :1 -screen 5 1600x1280x24 -nolisten tcp &
 
@@ -306,6 +306,13 @@ exit $status
     FileUtils.makedirs(@result_dir)
     # -offline does not work inside docker. Don't know why
     @mvn_cmd = "mvn clean integration-test -Dtest_to_run=#{@test_params[:test_to_run]}" # + ' -offline' #
+    trap("SIGINT") do
+      puts "\n\n----- ctrl_c catched-----\n\n"
+      sleep(1)
+      @docker.stop_docker
+      puts "ctrl_c catcher finished"
+      exit(3)
+    end
     @docker ? run_test_in_docker : run_test_exec
   ensure
     @docker.stop_docker if @docker
