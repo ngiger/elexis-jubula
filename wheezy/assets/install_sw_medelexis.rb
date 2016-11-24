@@ -59,11 +59,13 @@ def start_medelexis
   progress "Starting #{MEDELEXIS_EXE} for #{VARIANT.inspect}. pid #{Process.pid}"
   unless get_window_name
     File.open(PASSWORD_FILE, 'w+') {|f| f.puts 'dummy_password_from_'+ File.basename(__FILE__) }
+    progress "Created #{PASSWORD_FILE}"
     FileUtils.makedirs(File.dirname(ACCEPTED_LICENSE))
     File.open(ACCEPTED_LICENSE, 'w+') {|f| f.puts %(eclipse.preferences.version=1
 usageConditionAcceptanceDate=#{Time.now}
 usageConditionAccepted=true
 ) }
+    progress "Created #{ACCEPTED_LICENSE}"
     Dir.chdir(File.dirname(MEDELEXIS_EXE))
     cmd = "./#{File.basename(MEDELEXIS_EXE)} -nl de_CH -clean -eclipse-password #{PASSWORD_FILE} " +
       '-vmargs -Declipse.p2.unsignedPolicy=allow ' +
