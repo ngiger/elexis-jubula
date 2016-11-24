@@ -79,7 +79,7 @@ class DockerRunner
     $need_to_stop_docker = false
   end
 
-  def initialize(test_name, result_dir)
+  def initialize(test_name, result_dir, agent_port)
     @test_name = test_name
     @result_dir = result_dir
     # TODO: Fix running tests in parallel
@@ -87,7 +87,7 @@ class DockerRunner
     @container_home = File.join(RootDir, 'container_home')
     @m2_repo = File.join(RootDir, 'container_home_m2')
     FileUtils.makedirs(@m2_repo, :verbose => true)
-    @project_name = test_name.sub(/Suite/i, '').sub(/All/i,'').downcase+Process.pid.to_s
+    @project_name = 'jubula'+agent_port.to_s
     @start_with = "docker-compose -f #{RootDir}/wheezy/docker-compose.yml --project-name #{@project_name} "
     if @test_name.eql?('build_docker')
       @cleanup_networks = []
@@ -295,7 +295,7 @@ exit $status
     FileUtils.makedirs(WorkDir) unless File.directory?(WorkDir)
     if use_docker
       Dir.chdir(RootDir)
-      @docker = DockerRunner.new(@test_name, @result_dir)
+      @docker = DockerRunner.new(@test_name, @result_dir, @test_params[:agent_port])
       @elexis_log = "#{@docker.container_home}/elexis/logs/elexis-3.log"
     else
       @elexis_log = "#{Etc.getpwuid.dir}/elexis/logs/elexis-3.log"
@@ -312,7 +312,7 @@ exit $status
     destination =  @result_dir + '-' + @test_params[:test_to_run]
     FileUtils.rm_rf(destination, :verbose => true)
     FileUtils.cp_r(@result_dir, destination, verbose: true, noop: DRY_RUN, preserve: true) if File.exist?(@result_dir)
-    FileUtils.cp(@elexis_log, destination, verbose: true, noop: DRY_RUN, preserve: true)  if File.exist?(@elexis_log)
+    FileUtils.cp(@elexis_log, destination, verbose: true, noop: DRY_RUN, preserve: true)  if @elexis_log && File.exist?(@elexis_log)
     if @docker
       files = Dir.glob(File.join(@docker.container_home, '*/*/surefire-reports/*'))
       puts "Saving surefire-reports #{files.join("\n")}"
