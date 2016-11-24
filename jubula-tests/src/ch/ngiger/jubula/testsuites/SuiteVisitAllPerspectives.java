@@ -6,12 +6,15 @@ import java.util.Collection;
 import org.eclipse.jubula.client.AUT;
 import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import ch.ngiger.jubula.helpers.AUT_run;
+import ch.ngiger.jubula.helpers.AutTestWatcher;
 import ch.ngiger.jubula.helpers.Perspectives;
 import ch.ngiger.jubula.helpers.Software;
 import ch.ngiger.jubula.helpers.Utils;
@@ -22,6 +25,8 @@ public class SuiteVisitAllPerspectives {
 	private String name;
 	private static AUT m_aut = null;
 	private static Perspectives p = null;
+	@Rule
+    public TestWatcher watchman = new AutTestWatcher();
 
 	public SuiteVisitAllPerspectives(String name){
 		super();

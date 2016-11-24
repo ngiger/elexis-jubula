@@ -6,12 +6,15 @@ import java.util.Collection;
 import org.eclipse.jubula.client.AUT;
 import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import ch.ngiger.jubula.helpers.AUT_run;
+import ch.ngiger.jubula.helpers.AutTestWatcher;
 import ch.ngiger.jubula.helpers.Perspectives;
 import ch.ngiger.jubula.helpers.Utils;
 import ch.ngiger.jubula.helpers.Views;
@@ -27,10 +30,13 @@ public class SuiteVisitAllViews {
 	private final int restart_after = 25; // On my wheezy with a relatively small window I could open 37 view
 	   // With the Medelexis I had problems after 26 windows
 
-	public SuiteVisitAllViews(String name){
+	@Rule
+    public TestWatcher watchman = new AutTestWatcher();
+
+	public SuiteVisitAllViews(String index){
 		super();
-		Utils.dbg_msg("SuiteVisitAllViews.ParameterizedTest: " + name);
-		this.index = name;
+		Utils.dbg_msg("SuiteVisitAllViews.ParameterizedTest: " + index);
+		this.index = index;
 	}
 
 	@Parameters(name="{0}")

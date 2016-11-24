@@ -9,13 +9,16 @@ import org.eclipse.jubula.client.exceptions.ComponentNotFoundException;
 import org.eclipse.jubula.toolkit.swt.components.Button;
 import org.eclipse.jubula.tools.ComponentIdentifier;
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import ch.ngiger.jubula.elexiscore.OM;
 import ch.ngiger.jubula.helpers.AUT_run;
+import ch.ngiger.jubula.helpers.AutTestWatcher;
 import ch.ngiger.jubula.helpers.Perspectives;
 import ch.ngiger.jubula.helpers.PreferencePages;
 import ch.ngiger.jubula.helpers.Utils;
@@ -28,6 +31,9 @@ public class SuiteVisitAllPreferencePages {
 	private static Perspectives p = null;
 	private static int cur_PreferencePage_id = 0;
 	private static int nr_PreferencePages = 0;
+
+	@Rule
+    public TestWatcher watchman = new AutTestWatcher();
 
 	public SuiteVisitAllPreferencePages(String name){
 		super();

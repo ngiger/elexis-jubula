@@ -472,7 +472,10 @@ public class AUT_run {
 			aut = null;
 		}
 		Utils.sleep1second();
-		return startAUT();
+		AUT my_aut =  startAUT();
+		Utils.dbg_msg(
+			"AUT_run.restartApp successfull aut " + (aut != null ? aut.isConnected() : "null"));
+		return my_aut;
 	}
 
 }

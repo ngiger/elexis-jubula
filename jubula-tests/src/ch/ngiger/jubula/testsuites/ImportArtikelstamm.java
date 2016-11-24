@@ -11,11 +11,11 @@ import org.junit.FixMethodOrder;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
-import org.junit.runner.Description;
 import org.junit.runners.MethodSorters;
 
 import ch.ngiger.jubula.helpers.AUT_run;
 import ch.ngiger.jubula.helpers.Artikelstamm;
+import ch.ngiger.jubula.helpers.AutTestWatcher;
 import ch.ngiger.jubula.helpers.Common;
 import ch.ngiger.jubula.helpers.Eigenleistung;
 import ch.ngiger.jubula.helpers.Invoice;
@@ -30,30 +30,7 @@ public class ImportArtikelstamm {
 	public static String SAVE_RESULTS_DIR = null;
 	public static String watchedLog = "Started:\n";
 	@Rule
-	public TestWatcher watchman = new TestWatcher() {
-		@Override
-		protected void failed(Throwable e, Description description){
-			String msg = description + " failed\n";
-			watchedLog += msg;
-			Utils.dbg_msg("JUnitTest: " + msg);
-			e.printStackTrace(Utils.getWriter());
-
-		}
-
-		@Override
-		protected void succeeded(Description description){
-			String msg = description + " succeeded\n";
-			watchedLog += msg;
-			Utils.dbg_msg("JUnitTest: " + msg);
-		}
-
-		@Override
-		protected void starting(Description description){
-			String msg = description + " starting\n";
-			watchedLog += msg;
-			Utils.dbg_msg("JUnitTest: " + msg);
-		}
-	};
+    public TestWatcher watchman = new AutTestWatcher();
 
 	private static HashMap<String, Common> components = new HashMap<String, Common>() {
 		/**

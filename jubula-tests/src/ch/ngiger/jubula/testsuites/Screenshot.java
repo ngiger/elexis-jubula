@@ -2,12 +2,18 @@ package ch.ngiger.jubula.testsuites;
 
 import org.eclipse.jubula.client.AUT;
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
 
 import ch.ngiger.jubula.helpers.AUT_run;
+import ch.ngiger.jubula.helpers.AutTestWatcher;
 import ch.ngiger.jubula.helpers.Utils;
 
 public class Screenshot {
+
+	@Rule
+    public TestWatcher watchman = new AutTestWatcher();
 
 	/** test generating a snapshot of the currently active window */
 	@Test()
