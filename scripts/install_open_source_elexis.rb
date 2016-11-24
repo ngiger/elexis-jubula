@@ -35,7 +35,12 @@ if macos?
   inst_dir = File.expand_path(File.dirname(File.dirname(config_ini[0])))
 else
   config_ini = Dir.glob('**/configuration/config.ini')
-  candidates = Dir.glob(File.dirname(config_ini[0]) + '/../*.ini')
+  if DRY_RUN && config_ini.size == 0
+    puts "Cannot show commands to install RCP-Support and patch if no config.ini found"
+    candidates = [File.join(Dir.pwd, 'work/Elexis')]
+  else
+    candidates = Dir.glob(File.dirname(config_ini[0]) + '/../*.ini')
+  end
   Elexis = File.expand_path(candidates.first.sub('.ini', ''))
   inst_dir = File.dirname(Elexis)
 end
@@ -43,7 +48,7 @@ puts "elexis seems to be installed as #{File.basename(Elexis)} in #{inst_dir} "
 unless File.executable?(Elexis)
   puts "elexis: #{Elexis} is not executable. Why?"
   exit 3
-end
+end unless DRY_RUN
 install_rcp_support_for_jubula(inst_dir)
 patch_ini_file_for_jubula_rc(inst_dir)
 prepare_medelexis(inst_dir)

@@ -1,12 +1,40 @@
 #!/usr/bin/env ruby
 $LOAD_PATH.unshift File.dirname(__FILE__)
-require 'common'
 require 'socket'
 require 'tmpdir'
 require 'etc'
+require 'trollop'
 
-USE_X11 = !!ENV['USE_X11']
 $need_to_stop_docker = true
+
+def get_unused_agent_port(opts)
+  # Pick a random port for agent, which should not interfere with other parallel docker instances
+  port = opts[:agent_port] || 6888
+  port += 10000 if opts[:medelexis]
+  case opts[:variant]
+  when /snapshot/
+    port += 500
+  when /beta/
+    port += 400
+  when /prerelease/
+    port += 300
+  when /^release/
+    port += 200
+  else
+    port += 100
+  end
+  begin
+    server = TCPServer.new('127.0.0.1', port)
+  rescue Errno::EADDRINUSE
+    puts "port was used. Will try next one"
+    port = port +1
+    retry
+  end
+  server.close
+  server = nil # release port
+  puts "Using now #{port} for Jubula autagent from test options #{opts[:agent_port]} #{opts[:variant]} #{ opts[:medelexis]}"
+  port
+end
 
 # Helper class to use docker for the Jubula AUT
 class DockerRunner
@@ -35,7 +63,11 @@ class DockerRunner
       # added -T to work around bug https://github.com/docker/compose/pull/4059
       @start_with + "exec -T --user elexis #{@docker_name} #{cmd_in_docker}",
     ].each do |cmd|
-      res = system(cmd, MAY_FAIL)
+      if @test_name.eql?('build_docker')
+        res = system(cmd, MAY_FAIL) if /build/i.match(cmd)
+      else
+        res = system(cmd, MAY_FAIL)
+      end
       # binding.pry if cmd_in_docker.match(cmd) && !res
     end
   end
@@ -57,8 +89,13 @@ class DockerRunner
     FileUtils.makedirs(@m2_repo, :verbose => true)
     @project_name = test_name.sub(/Suite/i, '').sub(/All/i,'').downcase+Process.pid.to_s
     @start_with = "docker-compose -f #{RootDir}/wheezy/docker-compose.yml --project-name #{@project_name} "
-    @cleanup_networks =  "docker network rm  #{@project_name}_public; sleep 1; docker network rm  #{@project_name}_private"
-    @stop_commands = ["#{@start_with} stop", "#{@start_with} rm --force --all", @cleanup_networks]
+    if @test_name.eql?('build_docker')
+      @cleanup_networks = []
+      @stop_commands = []
+    else
+      @cleanup_networks =  "docker network rm  #{@project_name}_public; sleep 1; docker network rm  #{@project_name}_private"
+      @stop_commands = ["#{@start_with} stop", "#{@start_with} rm --force --all", @cleanup_networks]
+    end
     # cleanup stale docker containers
     @stop_commands.each do |cmd| res = system(cmd, MAY_FAIL) end
   end
@@ -91,7 +128,7 @@ class JubulaRunner
   def prepare_docker
     @docker.stop_docker # cleanup from previous runs if any
     $need_to_stop_docker = true
-    at_exit { @docker.stop_docker }
+    at_exit do  @docker.stop_docker end
     tmp_dest_dir = File.join(RootDir, 'tmp.to_be_deleted')
     puts "tmp_dest_dir is #{tmp_dest_dir}"
     FileUtils.makedirs(tmp_dest_dir)
@@ -102,9 +139,9 @@ class JubulaRunner
     end
     FileUtils.makedirs(@docker.container_home)
     [ 'pom.xml', 'jubula-target', 'jubula-tests', 'org.eclipse.jubula.product.autagent.start'].each do |item|
-      FileUtils.cp_r(File.join(RootDir, item), @docker.container_home, verbose: true, preserve: true)
+      FileUtils.cp_r(File.join(RootDir, item), @docker.container_home, verbose: true, noop: DRY_RUN, preserve: true)
     end
-    FileUtils.cp_r(WorkDir, File.join(@docker.container_home, 'work'), verbose: true, preserve: true)
+    FileUtils.cp_r(WorkDir, File.join(@docker.container_home, 'work'), verbose: true, noop: DRY_RUN, preserve: true)
   end
 
   def run_test_in_docker
@@ -139,10 +176,16 @@ class JubulaRunner
     end
     prepare_docker
     res = false
+    if RUN_MEDELEXIS
+      source = File.join(ENV['HOME'], 'medelexis_jubula_license.xml')
+      unless File.exist?(source)
+        puts "For Medelexis test we need a valid license file under #{source}"
+        exit 1
+      end
+      dest = File.join(@docker.container_home, 'medelexis_jubula_license.xml')
+      FileUtils.cp(source, dest, :verbose => true)
+    end
     puts "run_test_in_docker from #{Dir.pwd}"
-    source = File.join(ENV['HOME'], 'medelexis_jubula_license.xml')
-    dest = File.join(@docker.container_home, 'medelexis_jubula_license.xml')
-    FileUtils.cp(source, dest, :verbose => true) if File.exist?(source)
     FileUtils.rm_f('jubula-tests/AUT_run.log', verbose: true) if File.exist?('jubula-tests/AUT_run.log')
     cmd = "status=99\n"
     cmd_name = '/home/elexis/testexec.sh'
@@ -150,8 +193,8 @@ class JubulaRunner
     cmd += %(export LANG=de_CH.UTF-8
 export LANGUAGE=de_CH
 export DISPLAY=#{@display}
-export VARIANT=#{VARIANT}
-export agent_port=#{ENV['agent_port']}
+export VARIANT=#{@test_params[:variant]}}
+export AGENT_PORT=#{@test_params[:agent_port]}
 Xvfb :1 -screen 5 1600x1280x24 -nolisten tcp &
 
 # idea from https://gist.github.com/tullmann/476cc71169295d5c3fe6
@@ -247,7 +290,7 @@ exit $status
     puts "Testparams for #{@test_name} are:\n#{@test_params}"
   end
 
-  def run_test_suite(use_docker = false)
+  def run_test_suite(use_docker)
     @result_dir = File.join(RootDir, 'results')
     FileUtils.makedirs(WorkDir) unless File.directory?(WorkDir)
     if use_docker
@@ -268,26 +311,36 @@ exit $status
     @docker.stop_docker if @docker
     destination =  @result_dir + '-' + @test_params[:test_to_run]
     FileUtils.rm_rf(destination, :verbose => true)
-    FileUtils.cp_r(@result_dir, destination, verbose: true, preserve: true) if File.exist?(@result_dir)
-    FileUtils.cp(@elexis_log, destination, verbose: true, preserve: true)  if File.exist?(@elexis_log)
+    FileUtils.cp_r(@result_dir, destination, verbose: true, noop: DRY_RUN, preserve: true) if File.exist?(@result_dir)
+    FileUtils.cp(@elexis_log, destination, verbose: true, noop: DRY_RUN, preserve: true)  if File.exist?(@elexis_log)
     if @docker
       files = Dir.glob(File.join(@docker.container_home, '*/*/surefire-reports/*'))
       puts "Saving surefire-reports #{files.join("\n")}"
-      FileUtils.cp_r(files, destination, verbose: true, preserve: true)
+      FileUtils.cp_r(files, destination, verbose: true, noop: DRY_RUN, preserve: true)
     end
     diff_time = (Time.now - @start_time).to_i
-    puts "Total time #{diff_time / 60 }:#{sprintf('%02d', diff_time % 60)}. Result #{@exitValue == 0 ? 'SUCCESS' : 'FAILURE'}"
+    puts "Total time #{diff_time / 60 }:#{sprintf('%02d', diff_time % 60)}. Result #{@exitValue == 0 ? 'SUCCESS' : DRY_RUN ? 'DRY_RUN' : 'FAILURE'}"
   end
 
   def initialize(test2run)
     @test_name = test2run
     @start_time = Time.now
-    @test_params = YAML.load_file(File.join(RootDir, 'definitions', "#{@test_name}.yaml"))
-    ENV['agent_port'] = @test_params[:agent_port] ? @test_params[:agent_port].to_s : '6333'
+    @test_params = YAML.load_file(File.join(RootDir, 'definitions', "defaults.yaml"))
+    test_definitions = File.join(RootDir, 'definitions', "#{@test_name}.yaml")
+    @test_params.merge!(YAML.load_file(test_definitions)) if File.exist?(test_definitions)
+    @test_params[:test_to_run] ||= test2run
+    @test_params[:agent_port] = get_unused_agent_port(@test_params)
+    ENV['AGENT_PORT'] = @test_params[:agent_port].to_s # for docker-compose.yml
     show_configuration if $VERBOSE || DRY_RUN
-    if (medelexis = Dir.glob("*medelexis*application*.zip")) && medelexis.size > 0
+    if RUN_MEDELEXIS
+      glob_pattern = "*medelexis*application*.zip"
+      unless (medelexis = Dir.glob(glob_pattern)) && medelexis.size > 0
+        puts "Unable to find Medelexis zip file via #{glob_pattern}"
+        exit 1
+      end
       zip_file = File.expand_path(medelexis.first)
       puts "Unpacking Medelexs zip file #{medelexis}"
+      prepare_medelexis(Dir.pwd)
       @medelexis_script = "/app/install_sw_medelexis.rb /home/elexis/work/Medelexis #{VARIANT} /home/elexis/results 2>&1 | tee /home/elexis/results/install_sw_medelexis.log "
       FileUtils.rm_rf(WorkDir, :verbose => true)
       FileUtils.makedirs(WorkDir, :verbose => true)
@@ -298,12 +351,9 @@ exit $status
       ensure
         Dir.chdir(saved)
       end
+    else
+      require 'install_open_source_elexis.rb' unless File.directory?(File.join(WorkDir, 'plugins'))
     end
-    if /medelexis/i.match(test2run) && medelexis.size == 0
-      STDERR.puts "Could not find medelexis zip file in #{Dir.pwd} and test2run was #{test2run}"
-      exit 3
-    end
-    require 'install_open_source_elexis.rb' unless File.directory?(File.join(WorkDir, 'plugins'))
     @jubula_test_db_params = get_h2_db_params(File.join(WorkDir, 'database/embedded'))
     @jubula_test_data_dir  = File.join(WorkDir, 'database/data')
     install_rcp_support_for_jubula(WorkDir)
@@ -311,20 +361,42 @@ exit $status
   end
 end
 
-if $0.eql?(__FILE__)
-  if ARGV.index('docker_build')
-    docker_build
-    ARGV.delete('docker_build')
-    exit if ARGV.size == 0
-  end
+opts = Trollop::options do
+  version = "JubulaRunner 0.1 (c) by Niklaus Giger <niklaus.giger@member.fsf.org>"
+  banner <<-EOS
+Useage:
+  * Run Jubula  GUI tests for Elexis
+  * Run Elexis and/or Jubula AUT-agent inside the docker
+  * Specify one or more tests to be run (unless autagent, build_docker or elexis given)
+  * Parameters for each test are given in definitions/<testname>.yaml, overriding those from definitions/default.yaml
+EOS
+  opt :dry_run,       "Dry-Run. Show configuration and commands without exectuing them", :default => false
+  opt :use_x11,       "Force to use your display when running. Patches wheezy/docker-compose.yml, too. Handy to debug problems."
+  opt :build_docker,  "Build the docker image needed"
+  opt :elexis,        "Run Elexis inside the docker"
+  opt :aut_agent,     "Start autagent for Jubula inside the docker"
+  opt :run_in_docker, "Run maven inside docker, not on the command line", :default => true
+  opt :medelexis,     "Test Medelexis (not Elexis3) app"
+  opt :variant,       "Possible values are snapshot, beta, prerelease, release", :type => String, :default => 'snapshot'
+end
 
-  if ARGV.index('run_in_docker')
-    @run_in_docker = true
-    ARGV.delete('run_in_docker')
-  end
+DRY_RUN = opts[:dry_run]
+USE_X11 = opts[:use_x11]
+VARIANT = opts[:variant]
+RUN_MEDELEXIS = opts[:medelexis]
+RUN_AUT_AGENT = opts[:aut_agent]
+require 'common'
 
+puts "#{VARIANT} #{ARGV.join(' ')} DRY_RUN is #{DRY_RUN} USE_X11 #{USE_X11} RUN_IN_DOCKER #{opts[:run_in_docker]}"
+if opts[:aut_agent]
+  puts "aut_agent not yet realized"
+elsif opts[:build_docker]
+  docker_build
+elsif opts[:elexis]
+  puts "elexis not yet realized"
+else
   ARGV.each do |a_test|
     test = JubulaRunner.new(a_test)
-    test.run_test_suite(@run_in_docker)
+    test.run_test_suite(opts[:run_in_docker])
   end
 end

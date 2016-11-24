@@ -56,7 +56,7 @@ services:
     # Elexis user uid is 1200
     # user: '1200'
     ports:
-      - "${agent_port}:${agent_port}"
+      - "${AGENT_PORT}:${AGENT_PORT}"
     working_dir: /home/elexis
     # We want silently kill the docker after an hour
     entrypoint: '/app/create_elexis_user.sh'

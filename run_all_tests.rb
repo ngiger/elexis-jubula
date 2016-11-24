@@ -3,10 +3,10 @@
 tests = [
   'Screenshot',
   'Smoketest',
-  'ImportArtikelstamm',
   'SuiteVisitAllPerspectives',
   'SuiteVisitAllViews',
   'SuiteVisitAllPreferencePages',
+  'ImportArtikelstamm',
 ]
 
 tests.each do |test|

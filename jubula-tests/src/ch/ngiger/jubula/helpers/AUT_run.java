@@ -68,8 +68,8 @@ public class AUT_run {
 		config.put(Constants.DB_LOAD_SCRIPT, "");
 		config.put(Constants.WORK_DIR, USER_DIR);
 		config.put(Constants.AGENT_HOST, "localhost");
-		if  (System.getenv("agent_port") != null) {
-			agent_port =  System.getenv("agent_port");
+		if  (System.getenv("AGENT_PORT") != null) {
+			agent_port =  System.getenv("AGENT_PORT");
 		}
 		config.put(Constants.AGENT_PORT, agent_port);
 		config.put(Constants.AUT_VM_ARGS, ""); //	"-Xdebug -Xrunjdwp:transport=dt_socket,server=y,address=8000");

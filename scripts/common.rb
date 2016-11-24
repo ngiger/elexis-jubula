@@ -7,14 +7,14 @@ require 'byebug' if Gem::Specification.find_all_by_name('byebug').any?
 
 $LOAD_PATH.unshift File.dirname(__FILE__)
 require 'version'
-VARIANT = ENV['VARIANT'] ? ENV['VARIANT'] : 'snapshot'
+VARIANT = ENV['VARIANT'] ? ENV['VARIANT'] : 'snapshot' unless defined?(VARIANT)
 
 if ARGV.index('-n')
   DRY_RUN = true
   ARGV.delete('-n')
 else
   DRY_RUN = false
-end
+end unless defined?(DRY_RUN)
 MAY_FAIL = true
 
 def java_triplet
@@ -40,10 +40,8 @@ def java_triplet
   cfg
 end
 
-override = File.expand_path(File.join(File.dirname(File.dirname(__FILE__)), 'scripts', 'override', 'defaults.yaml'))
-default = File.expand_path(File.join(File.dirname(File.dirname(__FILE__)), 'scripts', 'defaults.yaml'))
+default = File.expand_path(File.join(File.dirname(File.dirname(__FILE__)), 'definitions', 'defaults.yaml'))
 Config = {}.merge(YAML.load_file(default))
-Config.merge(YAML.load_file(override)) if File.exist?(override)
 RootDir = File.expand_path(File.dirname(File.dirname(__FILE__)))
 WorkDir = File.expand_path(File.join(Dir.pwd, Config[:workdir]))
 FileUtils.makedirs(WorkDir) unless File.exist?(WorkDir)

@@ -1,7 +1,6 @@
 $LOAD_PATH.unshift File.dirname(__FILE__)
 require 'scripts/version'
 require 'scripts/common'
-require 'scripts/jubularunner'
 require 'rubocop/rake_task'
 RuboCop::RakeTask.new
 
@@ -9,7 +8,7 @@ our_directory = File.expand_path(File.dirname(__FILE__))
 
 desc 'Build the docker image'
 task :docker_build do
-  fail 'docker_build failed!' unless system('scripts/jubularunner.rb docker_build')
+  fail 'docker_build failed!' unless system('scripts/jubularunner.rb --build-docker')
 end
 
 desc 'Run an interactive bash shell inside docker'
@@ -54,14 +53,14 @@ task :jubula_test, [:test_to_run] => :elexis_install_os do |_target, args|
   test_to_run ||= 'Screenshot'
   # TODO: publish signed image and ensure that it can be
   system('scripts/jubularunner.rb docker_build') unless system('docker images #{ElexisJubula::NAME}', MAY_FAIL)
-  fail 'Running failed' unless system("scripts/jubularunner.rb #{test_to_run}")
+  fail 'Running failed' unless system("scripts/jubularunner.rb #{test_to_run} --no-run-in-docker")
 end
 
 desc 'Run Jubula-GUI test (default Screenshot) for Elexis OpenSource via docker'+ common_options
 task :jubula_docker, [:test_to_run] do |_target, args|
   test_to_run = args[:test_to_run]
   test_to_run ||= 'Screenshot'
-  fail 'Running failed' unless system("scripts/jubularunner.rb #{test_to_run} run_in_docker")
+  fail 'Running failed' unless system("scripts/jubularunner.rb #{test_to_run}")
 end
 
 desc 'Run Jubula-GUI test (default Screenshot) via Maven' + common_options
