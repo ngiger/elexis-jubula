@@ -8,8 +8,8 @@ import org.junit.runners.Suite;
 @Suite.SuiteClasses({
    Smoketest.class,
    SuiteVisitAllPerspectives.class,
-   SuiteVisitAllPreferencePages.class,
-   SuiteVisitAllViews.class
+   SuiteVisitAllViews.class,
+   SuiteVisitAllPreferencePages.class
 })
 
 public class Medelexis {
