@@ -11,7 +11,7 @@ if ARGV.size != 3
 end
 MEDELEXIS_EXE = ARGV[0]
 VARIANT=ARGV[1]
-RESULT_DIR = ARGV[2]
+RESULT_DIR = File.expand_path(ARGV[2])
 MAX_WAIT = 120
 FLAG_FILE = File.join(RESULT_DIR, File.basename(__FILE__, '.rb') + '.done')
 PASSWORD_FILE = File.expand_path('~') + '/.medelexis.dummy.password'
