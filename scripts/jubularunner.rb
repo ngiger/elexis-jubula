@@ -54,12 +54,12 @@ class DockerRunner
       # Only possibility to make it work under compose 1.8
       @start_with + 'build', # ensure that a changed Dockerfile gets rebuilt
       @start_with + 'up -d', # create and start do not create a network with compose 1.8, up -d does
-      'sleep 2',
       # TODO: How to run several instances of jenkinstest in parallel
       # using docker-compose scale and exec --index
       # added -T to work around bug https://github.com/docker/compose/pull/4059
       @start_with + "exec -T --user elexis #{@docker_name} #{cmd_in_docker}",
     ].each do |cmd|
+      sleep 2; puts "start_docker #{cmd}"
       if @test_name.eql?('build_docker')
         res = system(cmd, MAY_FAIL) if /build/i.match(cmd)
       else
