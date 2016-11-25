@@ -12,16 +12,14 @@ def get_unused_agent_port(opts)
   port = opts[:agent_port] || 6888
   port += 10000 if opts[:medelexis]
   case opts[:variant]
-  when /snapshot/
-    port += 500
   when /beta/
-    port += 400
-  when /prerelease/
     port += 300
-  when /^release/
+  when /prerelease/
     port += 200
-  else
+  when /^release/
     port += 100
+  else
+    # use default
   end
   begin
     server = TCPServer.new('127.0.0.1', port)
@@ -223,14 +221,15 @@ cp $0 /home/elexis/results
 du -shx /home/elexis/.m2/repository
 rm -rf /home/elexis/p2
 mkdir -p /home/elexis/elexis/GlobalInbox
-ps -ef
+env | sort
 #{@medelexis_script}
-/app/start_jubula.rb localhost 8752 2>&1 | /usr/bin/tee --append /home/elexis/results/start_jubula.log &
+#{@start_jubula}
 date
 ps -ef
 #{@mvn_cmd} -DDISPLAY=#{@display}
 date
-env | sort
+pwd
+find $PWD -name surefire-reports | xargs ls -lrt
 ps -ef
 export status=$?
 echo saved status $status for #{@mvn_cmd}
@@ -324,8 +323,11 @@ exit $status
     FileUtils.cp(@elexis_log, destination, verbose: true, noop: DRY_RUN, preserve: true)  if @elexis_log && File.exist?(@elexis_log)
     if @docker
       files = Dir.glob(File.join(@docker.container_home, '*/*/surefire-reports/*'))
-      puts "Saving surefire-reports #{files.join("\n")}"
-      FileUtils.cp_r(files, destination, verbose: true, noop: DRY_RUN, preserve: true)
+      sure_dest = File.join(destination, 'surefire-reports')
+      puts "Saving surefire-reports to #{sure_dest} #{files.join("\n")}"
+      FileUtils.makedirs(sure_dest)
+      FileUtils.cp_r(files, sure_dest, verbose: true, noop: DRY_RUN, preserve: true)
+      FileUtils.cp_r(files, @result_dir, verbose: true, noop: DRY_RUN, preserve: true)
     end
     diff_time = (Time.now - @start_time).to_i
     puts "Total time #{diff_time / 60 }:#{sprintf('%02d', diff_time % 60)}. Result #{@exitValue == 0 ? 'SUCCESS' : DRY_RUN ? 'DRY_RUN' : 'FAILURE'}"
@@ -351,6 +353,7 @@ exit $status
       puts "Unpacking Medelexs zip file #{medelexis}"
       prepare_medelexis(Dir.pwd)
       @medelexis_script = "/app/install_sw_medelexis.rb /home/elexis/work/Medelexis #{VARIANT} /home/elexis/results 2>&1 | tee /home/elexis/results/install_sw_medelexis.log "
+      @start_jubula = '/app/start_jubula.rb localhost 8752 2>&1 | /usr/bin/tee --append /home/elexis/results/start_jubula.log &'
       FileUtils.rm_rf(WorkDir, :verbose => true)
       FileUtils.makedirs(WorkDir, :verbose => true)
       saved = Dir.pwd
@@ -378,6 +381,7 @@ Useage:
   * Run Elexis and/or Jubula AUT-agent inside the docker
   * Specify one or more tests to be run (unless autagent, build_docker or elexis given)
   * Parameters for each test are given in definitions/<testname>.yaml, overriding those from definitions/default.yaml
+  * Results of each test are saved (with surefire reports) under results and results-<testname>
 EOS
   opt :dry_run,       "Dry-Run. Show configuration and commands without exectuing them", :default => false
   opt :use_x11,       "Force to use your display when running. Patches wheezy/docker-compose.yml, too. Handy to debug problems."
