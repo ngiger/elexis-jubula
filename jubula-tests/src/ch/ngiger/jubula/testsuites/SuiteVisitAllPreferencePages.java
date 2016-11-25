@@ -77,6 +77,11 @@ public class SuiteVisitAllPreferencePages {
 		if (!prefs.gotoPreferencPage(this.index)) {
 			AUT_run.takeScreenshotActiveWindow(AUT_run.m_aut, AUT_run.app,
 				base_png_name + "_failed.png"); //$NON-NLS-1$ //$NON-NLS-2$
+			Utils.dbg_msg("SuiteVisitAllPreferencePages.test_single_PreferencePage: " + this.index +
+					"restarting app");
+			AUT_run.restartApp(m_aut);
+			Utils.dbg_msg("SuiteVisitAllPreferencePages.test_single_PreferencePage: " + this.index +
+					" after restarting app. Will fail");
 			Assert.fail("Unable to open PreferencePage " + this.index);
 
 		}
