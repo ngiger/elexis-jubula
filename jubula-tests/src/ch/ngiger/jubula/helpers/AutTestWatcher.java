@@ -29,6 +29,7 @@ public class AutTestWatcher extends TestWatcher {
 	@Override
 	protected void starting(Description description){
 		String msg = description + " starting\n";
+		Utils.setupResultDir();
 		Utils.dbg_msg("JUnitTest: " + msg);
 	}
 }

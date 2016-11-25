@@ -249,12 +249,6 @@ public class AUT_run {
 		if (m_aut != null && m_aut.isConnected()) {
 			return m_aut; // Don't restart automatically!!
 		}
-		/*
-		if (isMedelexis){
-			jubula_rc_rcp_thread = new StartJubulaRcRcpThread();
-			jubula_rc_rcp_thread.start();
-		}
-		*/
 		starting_autagent = true;
 		AUTIdentifier aut_id = null;
 		AUT new_aut = null;

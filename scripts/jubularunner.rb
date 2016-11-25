@@ -66,13 +66,15 @@ class DockerRunner
       else
         res = system(cmd, MAY_FAIL)
       end
-      # binding.pry if cmd_in_docker.match(cmd) && !res
     end
   end
 
   def stop_docker
     # puts "stop_docker was called $need_to_stop_docker is #{$need_to_stop_docker}"
     return unless $need_to_stop_docker
+    cmd =  @start_with + "logs --no-color --timestamps > #{@result_dir}/containers.log"
+    puts "Saving container logs using #{cmd}"
+    system(cmd, MAY_FAIL)
     @stop_commands.each do |cmd| res = system(cmd, MAY_FAIL) end
     $need_to_stop_docker = false
   end
@@ -91,7 +93,7 @@ class DockerRunner
       @cleanup_networks = []
       @stop_commands = []
     else
-      @cleanup_networks =  "docker network rm  #{@project_name}_public; sleep 1; docker network rm  #{@project_name}_private"
+      @cleanup_networks =  "docker network rm  #{@project_name}_public 2>/dev/null; sleep 1; docker network rm  #{@project_name}_private 2>/dev/null"
       @stop_commands = ["#{@start_with} stop", "#{@start_with} rm --force --all", @cleanup_networks]
     end
     # cleanup stale docker containers
@@ -194,6 +196,7 @@ export DISPLAY=#{@display}
 export VARIANT=#{ENV['VARIANT']}
 export AGENT_PORT=#{@test_params[:agent_port]}
 Xvfb :1 -screen 5 1600x1280x24 -nolisten tcp &
+echo "I am" `whoami`: `id`
 
 # idea from https://gist.github.com/tullmann/476cc71169295d5c3fe6
 echo `date`: waiting for Xserver to be ready
@@ -253,6 +256,7 @@ exit $status
     # with startx this did not gow
     system('xhost local:root') if @docker && USE_X11
     begin
+      puts "Starting HOST_UID is #{ENV['HOST_UID']} AGENT_PORT #{ENV['AGENT_PORT']} cmd: #{cmd_name}"
       res = @docker.start_docker(cmd_name)
       sleep(0.5)
       result = File.join(@result_dir, 'result_of_test_run')
