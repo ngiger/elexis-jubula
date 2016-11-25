@@ -30,7 +30,7 @@ def get_unused_agent_port(opts)
   end
   server.close
   server = nil # release port
-  puts "Using now #{port} for Jubula autagent from test options #{opts[:agent_port]} #{opts[:variant]} #{ opts[:medelexis]}"
+  puts "Using now #{port} for Jubula autagent from test options #{opts[:agent_port]} #{opts[:variant]} RUN_MEDELEXIS #{opts[:medelexis].inspect}"
   port
 end
 
@@ -340,12 +340,13 @@ exit $status
     puts "Total time #{diff_time / 60 }:#{sprintf('%02d', diff_time % 60)}. Result #{@exitValue == 0 ? 'SUCCESS' : DRY_RUN ? 'DRY_RUN' : 'FAILURE'}"
   end
 
-  def initialize(test2run)
+  def initialize(test2run, opts)
     @test_name = test2run
     @start_time = Time.now
     @test_params = YAML.load_file(File.join(RootDir, 'definitions', "defaults.yaml"))
     test_definitions = File.join(RootDir, 'definitions', "#{@test_name}.yaml")
     @test_params.merge!(YAML.load_file(test_definitions)) if File.exist?(test_definitions)
+    @test_params.merge!(opts)
     @test_params[:test_to_run] ||= test2run
     @test_params[:agent_port] = get_unused_agent_port(@test_params)
     ENV['AGENT_PORT'] = @test_params[:agent_port].to_s # for docker-compose.yml
@@ -407,7 +408,8 @@ RUN_MEDELEXIS = opts[:medelexis]
 RUN_AUT_AGENT = opts[:aut_agent]
 require 'common'
 
-puts "#{VARIANT} #{ARGV.join(' ')} DRY_RUN is #{DRY_RUN} USE_X11 #{USE_X11} RUN_IN_DOCKER #{opts[:run_in_docker]}"
+puts "#{VARIANT} #{ARGV.join(' ')} DRY_RUN is #{DRY_RUN} USE_X11 #{USE_X11} RUN_IN_DOCKER #{opts[:run_in_docker]} RUN_MEDELEXIS #{RUN_MEDELEXIS}"
+
 if opts[:aut_agent]
   puts "aut_agent not yet realized"
 elsif opts[:build_docker]
@@ -416,7 +418,7 @@ elsif opts[:elexis]
   puts "elexis not yet realized"
 else
   ARGV.each do |a_test|
-    test = JubulaRunner.new(a_test)
+    test = JubulaRunner.new(a_test, opts)
     test.run_test_suite(opts[:run_in_docker])
   end
 end
