@@ -49,7 +49,6 @@ class DockerRunner
   end
 
   def start_docker(cmd_in_docker, env = nil, workdir = nil)
-    ENV['HOST_UID'] = Process.uid.to_s
     puts "cmd_in_docker #{cmd_in_docker} with uid #{ENV['HOST_UID']}"
     [ # instead of calling build, create, start we can use compose up -d
       # Only possibility to make it work under compose 1.8
@@ -80,6 +79,7 @@ class DockerRunner
   end
 
   def initialize(test_name, result_dir, agent_port)
+    ENV['HOST_UID'] = Process.uid.to_s
     @test_name = test_name
     @result_dir = result_dir
     # TODO: Fix running tests in parallel
@@ -259,7 +259,7 @@ exit $status
     # with startx this did not gow
     system('xhost local:root') if @docker && USE_X11
     begin
-      puts "Starting HOST_UID is #{ENV['HOST_UID']} AGENT_PORT #{ENV['AGENT_PORT']} cmd: #{cmd_name}"
+      puts "Starting HOST_UID is #{ENV['HOST_UID'].inspect} from process #{Process.uid.to_s} AGENT_PORT #{ENV['AGENT_PORT']} cmd: #{cmd_name}"
       res = @docker.start_docker(cmd_name)
       sleep(0.5)
       result = File.join(@result_dir, 'result_of_test_run')
