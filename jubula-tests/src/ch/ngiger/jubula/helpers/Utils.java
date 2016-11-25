@@ -85,20 +85,20 @@ public class Utils {
 
 	public static void dbg_msg(String msg){
 		String timeStamp = getTimeStamp();
+		if (SAVE_RESULTS_DIR == null) {
+			Utils.setupResultDir();
+		}
 		// log.info(msg);
 		if (Utils.writer == null) {
 			String log_name = null;
-			if (SAVE_RESULTS_DIR != null) {
-				String log_timestamp = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss")
-					.format(Calendar.getInstance().getTime());
-				log_name = SAVE_RESULTS_DIR + "/AUT_run_" + log_timestamp + ".log";
-			} else {
-				log_name = AUT_run.USER_DIR + "/AUT_run.log";
-			}
+			String log_timestamp = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss")
+				.format(Calendar.getInstance().getTime());
+			log_name = SAVE_RESULTS_DIR + "/AUT_run_" + log_timestamp + ".log";
 			try {
 				Utils.writer = new PrintWriter(log_name, "UTF-8");
 			} catch (FileNotFoundException | UnsupportedEncodingException e) {
 				e.printStackTrace();
+				Utils.writer = new PrintWriter(System.out);
 			}
 			System.out.println("log_name writer is: " + log_name);
 		}
