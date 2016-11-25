@@ -14,28 +14,32 @@ VARIANT=ARGV[1]
 RESULT_DIR = File.expand_path(ARGV[2])
 MAX_WAIT = 120
 FLAG_FILE = File.join(RESULT_DIR, File.basename(__FILE__, '.rb') + '.done')
+ERROR_FILE = File.join(RESULT_DIR, File.basename(__FILE__, '.rb') + '.errors')
 PASSWORD_FILE = File.expand_path('~') + '/.medelexis.dummy.password'
 ACCEPTED_LICENSE  =  File.dirname(MEDELEXIS_EXE)+ '/configuration/.settings/MedelexisDesk.prefs'
 LICENSE_ORIGIN    =  File.expand_path('~') +'/medelexis_jubula_license.xml'
 LICENSE_INSTALLED =  File.expand_path('~') +'/elexis/license.xml'
-
-$errors = 0
+ERROR_WINDOW  = 'Problem Occurred'  # eg. 'Additional p2 locations' has encounter a problem
 $sw_errors = 0
 
 PROBLEMATIC_WINDOW_TITLES = [
   'InfoBox not proper private key', # eg. priaid
   'Install',
   'Update', # Update Error prerelease -> altes release updaten
-  'Problem Occurred', # eg. 'Additional p2 locations' has encounter a problem
+  ERROR_WINDOW,
   'Multiple problems have occurred', # eg. Several Installing
 ]
 
 
-def progress(msg)
+def progress(msg, error = false)
   msg = "#{Time.now.strftime('%Y.%m.%d %H:%M:%S:%L')} install_sw_medelexis: #{msg}"
   @@msgs ||= []
   @@msgs << msg
   puts msg
+end
+
+def report_error
+  File.open(ERROR_FILE, 'w+' ) { |f| f.puts("Handled #{$sw_errors.to_s} error") }
 end
 
 def create_snapshot(name, full = true)
@@ -93,14 +97,15 @@ def start_medelexis
       "-Dprovisioning.UpdateRepository=#{VARIANT}"
     progress cmd
     pid = Process.spawn cmd
-    $sw_errors = 0
+    count = 0
     while true
       sleep 1
-      $sw_errors += 1
+      count += 1
       name=get_window_name
       break if name
-      if $sw_errors >= 120
-        progress "Failed starting Elexis after 120 seconds"
+      if count >= 120
+        progress "Failed starting Elexis after 120 errors"
+        report_error
         exit 3
       end
     end
@@ -160,5 +165,6 @@ ensure
   progress("done #{diff} seconds")
 end
 File.open(FLAG_FILE, 'w+' ) {|f| f.puts @@msgs.join("\n") }
+report_error
 puts @@msgs.join("\n")
 
