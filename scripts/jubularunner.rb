@@ -182,8 +182,11 @@ class JubulaRunner
         puts "For Medelexis test we need a valid license file under #{source}"
         exit 1
       end
+      prepare_docker
       dest = File.join(@docker.container_home, 'medelexis_jubula_license.xml')
       FileUtils.cp(source, dest, :verbose => true)
+    else
+      prepare_docker
     end
     puts "run_test_in_docker from #{Dir.pwd}"
     FileUtils.rm_f('jubula-tests/AUT_run.log', verbose: true) if File.exist?('jubula-tests/AUT_run.log')

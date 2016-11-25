@@ -4,7 +4,7 @@
 # Needs the following debian packages: x11-apps imagemagick xdotool scrot
 
 require 'fileutils'
-system('env')
+
 if ARGV.size != 3
   puts "Expecting three arguments: MEDELEXIS_EXE VARIANT RESULT_DIR"
   exit 3
@@ -15,7 +15,9 @@ RESULT_DIR = ARGV[2]
 MAX_WAIT = 120
 FLAG_FILE = File.join(RESULT_DIR, File.basename(__FILE__, '.rb') + '.done')
 PASSWORD_FILE = File.expand_path('~') + '/.medelexis.dummy.password'
-ACCEPTED_LICENSE =  File.dirname(MEDELEXIS_EXE)+ '/configuration/.settings/MedelexisDesk.prefs'
+ACCEPTED_LICENSE  =  File.dirname(MEDELEXIS_EXE)+ '/configuration/.settings/MedelexisDesk.prefs'
+LICENSE_ORIGIN    =  File.expand_path('~') +'/medelexis_jubula_license.xml'
+LICENSE_INSTALLED =  File.expand_path('~') +'/elexis/license.xml'
 
 $errors = 0
 $sw_errors = 0
@@ -54,18 +56,36 @@ def get_window_name(name = 'Elexis [[:digit:]].[[:digit:]].[[:digit:]]')
   end
 end
 
+def prepare_medelexis
+  progress "preparing medelexis #{MEDELEXIS_EXE} for #{VARIANT.inspect}"
+  # Output some debugging info
+  system('env')
+  system("echo 'I am' `whoami`: `id`")
+  system("ls -l #{File.expand_path('~')}")
+  unless (File.readable?(LICENSE_ORIGIN) || File.readable?(LICENSE_INSTALLED))
+    puts "Either #{LICENSE_ORIGIN} or  #{LICENSE_INSTALLED} must be readable"
+    exit 1
+  end
+  FileUtils.cp(LICENSE_ORIGIN, LICENSE_INSTALLED, :verbose => true) unless File.exist?(LICENSE_INSTALLED)
+  unless  File.readable?(LICENSE_INSTALLED)
+    puts "Could not read #{LICENSE_INSTALLED}"
+    exit 1
+  end
+  progress "prepared #{LICENSE_INSTALLED} #{File.size(LICENSE_INSTALLED)}ng8"
+  File.open(PASSWORD_FILE, 'w+') {|f| f.puts 'dummy_password_from_'+ File.basename(__FILE__) }
+  progress "prepared #{PASSWORD_FILE}"
+  FileUtils.makedirs(File.dirname(ACCEPTED_LICENSE))
+  File.open(ACCEPTED_LICENSE, 'w+') {|f| f.puts %(eclipse.preferences.version=1
+usageConditionAcceptanceDate=#{Time.now}
+usageConditionAccepted=true
+) }
+  progress "prepared medelexis #{ACCEPTED_LICENSE}"
+end
 
 def start_medelexis
   progress "Starting #{MEDELEXIS_EXE} for #{VARIANT.inspect}. pid #{Process.pid}"
   unless get_window_name
-    File.open(PASSWORD_FILE, 'w+') {|f| f.puts 'dummy_password_from_'+ File.basename(__FILE__) }
-    progress "Created #{PASSWORD_FILE}"
-    FileUtils.makedirs(File.dirname(ACCEPTED_LICENSE))
-    File.open(ACCEPTED_LICENSE, 'w+') {|f| f.puts %(eclipse.preferences.version=1
-usageConditionAcceptanceDate=#{Time.now}
-usageConditionAccepted=true
-) }
-    progress "Created #{ACCEPTED_LICENSE}"
+    @medelexis_script
     Dir.chdir(File.dirname(MEDELEXIS_EXE))
     cmd = "./#{File.basename(MEDELEXIS_EXE)} -nl de_CH -clean -eclipse-password #{PASSWORD_FILE} " +
       '-vmargs -Declipse.p2.unsignedPolicy=allow ' +
@@ -113,12 +133,13 @@ def install_sw
   create_snapshot('install_sw_pressed_quit')
   progress "Waiting for Elexis to quit"
   while name = get_window_name
-    sleep 1
+    sleep 10
     progress "Elexis #{name} still alive"
     PROBLEMATIC_WINDOW_TITLES.each{ |name| send_escape_to_window(name) }
   end
 end
 
+prepare_medelexis
 if File.exist?(FLAG_FILE)
   puts "File #{FLAG_FILE} exists. Skip"
   exit 0

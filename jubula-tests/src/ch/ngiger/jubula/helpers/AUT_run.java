@@ -6,10 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.Hashtable;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -94,43 +91,6 @@ public class AUT_run {
 			isMedelexis = true;
 			config.put(Constants.AUT_ARGS,	" -eclipse.password ~/.medelexis.dummy.password ");
 			config.put(Constants.AUT_VM_ARGS, " -Dprovisioning.UpdateRepository=" + variant + " ");
-	    	Path prefs_dir = Paths.get(USER_DIR + "/../work/configuration/.settings");
-	    	Path prefs = Paths.get(prefs_dir + "/MedelexisDesk.prefs");
-			try {
-				Utils.dbg_msg("setupConfig: prefs are " +prefs);
-				if (!Files.isDirectory(prefs_dir, LinkOption.NOFOLLOW_LINKS))
-		    	{
-		    		Files.createDirectory(prefs_dir);
-		    	}
-				List<String> lines = Arrays.asList(new String[] {
-					"eclipse.preferences.version=1",
-					"usageConditionAcceptanceDate=" + LocalDateTime.now().toString(),
-					"usageConditionAccepted=true"
-				});
-				Files.write(prefs, lines);
-				Utils.dbg_msg("setupConfig created " + prefs.toAbsolutePath());
-			} catch (IOException e) {
-				Utils.dbg_msg("setupConfig: failed to create " + prefs);
-			}
-
-	    	Path source  = Paths.get(System.getProperty("user.home") + "/medelexis_jubula_license.xml");
-		    try {
-		    	Path elexis_dir = Paths.get(System.getProperty("user.home") + "/elexis");
-		    	Path license = Paths.get(elexis_dir + "/license.xml");
-		    	if (!Files.isDirectory(elexis_dir, LinkOption.NOFOLLOW_LINKS))
-		    	{
-		    		Files.createDirectory(elexis_dir);
-		    	}
-		    	if (!Files.isReadable(license))
-		    	{
-		    		Files.copy(source, license);
-		    	}
-				Utils.dbg_msg("setupConfig: "+license + " file is present");
-			} catch (IOException e) {
-				String msg = "setupConfig: Could not create elexis/license.xml. Missing? " + source;
-				Utils.dbg_msg(msg);
-				Assert.fail(msg);
-			}
 			config.put(Constants.AUT_EXE, medelexis3.toString());
 			// Utils.install_sw_medelexis(medelexis3, variant, Utils.SAVE_RESULTS_DIR.toString());
 		}
