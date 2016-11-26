@@ -22,6 +22,7 @@ LICENSE_INSTALLED =  File.expand_path('~') +'/elexis/license.xml'
 ERROR_WINDOW  = 'Problem Occurred'  # eg. 'Additional p2 locations' has encounter a problem
 $sw_errors = 0
 
+NEEDED_APPS = [ 'xdotool', 'scrot', 'wmctrl']
 PROBLEMATIC_WINDOW_TITLES = [
   'InfoBox not proper private key', # eg. priaid
   'Install',
@@ -30,6 +31,12 @@ PROBLEMATIC_WINDOW_TITLES = [
   'Multiple problems have occurred', # eg. Several Installing
 ]
 
+NEEDED_APPS.each do | tool|
+  unless system("which #{tool}")
+    puts "Missing tool  #{tool}"
+    exit 2
+  end
+end
 
 def progress(msg, error = false)
   msg = "#{Time.now.strftime('%Y.%m.%d %H:%M:%S:%L')} install_sw_medelexis: #{msg}"

@@ -261,6 +261,11 @@ public class Common {
 
 	public boolean openMenu(String menu){
 		Utils.dbg_msg(String.format("openMenu: %s %s", menu, mbr.toString())); //$NON-NLS-1$ //$NON-NLS-2$
+		if (!AUT_run.m_agent.isConnected())
+		{
+			Utils.dbg_msg("Lost connection to m_agent. Why?");
+			Assert.fail("Lost connection to m_agent");
+		}
 		try {
 			m_aut.execute(
 				mbr.waitForComponent(Constants.ONE_SECOND * 120, Constants.NR_MS_WAIT_AFTER_ACTION),
@@ -282,16 +287,31 @@ public class Common {
 
 	public void pressEscape(){
 		Utils.dbg_msg("press Escape");
+		if (!AUT_run.m_agent.isConnected())
+		{
+			Utils.dbg_msg("Lost connection to m_agent. Why?");
+			Assert.fail("Lost connection to m_agent");
+		}
 		AUT_run.m_aut.execute(m_app.externalKeyCombination(new Modifier[] {}, "Escape"), null);
 	}
 
 	public void pressEnter(){
 		Utils.dbg_msg("pressEnter");
+		if (!AUT_run.m_agent.isConnected())
+		{
+			Utils.dbg_msg("Lost connection to m_agent. Why?");
+			Assert.fail("Lost connection to m_agent");
+		}
 		m_aut.execute(m_app.externalKeyCombination(new Modifier[] {}, "Enter"), null);
 	}
 
 	public void pressSpace(){
 		Utils.dbg_msg("pressSpace");
+		if (!AUT_run.m_agent.isConnected())
+		{
+			Utils.dbg_msg("Lost connection to m_agent. Why?");
+			Assert.fail("Lost connection to m_agent");
+		}
 		m_aut.execute(m_app.externalKeyCombination(new Modifier[] {}, "Space"), null);
 	}
 
