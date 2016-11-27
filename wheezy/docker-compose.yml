@@ -57,7 +57,7 @@ services:
     ports:
       - "${AGENT_PORT}:${AGENT_PORT}"
       # Force an error if HOST_UID is not given!
-      - "63333:${HOST_UID}"
+      - "127.0.0.1::${HOST_UID}"
     working_dir: /home/elexis
     # We want silently kill the docker after an hour
     entrypoint: '/app/create_elexis_user.sh'
