@@ -142,7 +142,7 @@ class JubulaRunner
     FileUtils.cp_r(WorkDir, File.join(@docker.container_home, 'work'), verbose: true, noop: DRY_RUN, preserve: true)
   end
 
-  def run_test_in_docker
+  def check_compose_for_x11
     checks = [ '/tmp/.X11-unix', '/dev/snd' ]
     if USE_X11 # needs also changes in docker-compose.yml!
       # Thanks to jess Fraznelle https://blog.jessfraz.com/post/docker-containers-on-the-desktop/
@@ -154,6 +154,7 @@ class JubulaRunner
           puts "If you want to make USE_X11 work correctly, you must add definitions"
           puts "for #{checks} into docker-compose.yaml"
           puts "\n\n-----------\n\n"
+          binding.pry
           exit 4
         end
       end
@@ -170,10 +171,30 @@ class JubulaRunner
           exit 4
         end
       end
+    end
+  end
+  def adapt_compose_for_x11
+    compose_yaml = File.join(RootDir, 'wheezy', 'docker-compose.yml')
+    inhalt = IO.readlines(compose_yaml); 3
+    if USE_X11 # needs also changes in docker-compose.yml!
+      inhalt.each{|line|line.sub!(/^(\s+)# (.+)(#.+USE_X11\n)/, '\1\2\3')}.compact; 3
+      File.open(compose_yaml, 'w+'){|f| f.write(inhalt.join("")) }
+      system('git diff -w wheezy')
+      @display = ENV['DISPLAY']
+      puts "Activating USE_X11 for DISPLAY #{@display}"
+    else
+      puts "rollback"
+      inhalt.each{|line| line.sub!(/^(\s+)([^#].*USE_X11\n)/,'\1# \2') unless /\s+#.+(#.+USE_X11\n)/.match(line)};2
+      File.open(compose_yaml, 'w+'){|f| f.write(inhalt.join("")) }
+      system('git diff -w wheezy')
       @display = ':1.5' # as defined below for Xvfb
     end
+  end
+  def run_test_in_docker
     prepare_docker
     res = false
+    adapt_compose_for_x11
+    check_compose_for_x11
     if RUN_MEDELEXIS
       source = File.join(ENV['HOME'], 'medelexis_jubula_license.xml')
       unless File.exist?(source)
