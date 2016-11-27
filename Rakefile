@@ -9,6 +9,7 @@ our_directory = File.expand_path(File.dirname(__FILE__))
 desc 'Build the docker image'
 task :docker_build do
   fail 'docker_build failed!' unless system('scripts/jubularunner.rb --build-docker')
+  Kernel.system("git tag -f #{ElexisJubula::VERSION}")
 end
 
 desc 'Run an interactive bash shell inside docker'
@@ -113,10 +114,9 @@ end
 
 desc 'Build, commit, tag, push && docker push the current state'
 task docker_publish: :docker_build do
-  # commit pending changes and tag our repository with the same tag
   Kernel.system('git commit .') # will prompt for a message
   Kernel.system("git tag #{ElexisJubula::VERSION}")
-
+  # commit pending changes and tag our repository with the same tag
   fail 'login to docker failed' unless system('docker login')
   puts "Publishing #{ElexisJubula::VERSION} to docker"
   [ElexisJubula::VERSION, 'latest'].each do |version|

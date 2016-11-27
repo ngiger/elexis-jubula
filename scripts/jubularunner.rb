@@ -52,7 +52,6 @@ class DockerRunner
     puts "cmd_in_docker #{cmd_in_docker} with uid #{ENV['HOST_UID']}"
     [ # instead of calling build, create, start we can use compose up -d
       # Only possibility to make it work under compose 1.8
-      @start_with + 'build', # ensure that a changed Dockerfile gets rebuilt
       @start_with + 'up -d', # create and start do not create a network with compose 1.8, up -d does
       # TODO: How to run several instances of jenkinstest in parallel
       # using docker-compose scale and exec --index
@@ -79,7 +78,6 @@ class DockerRunner
   end
 
   def initialize(test_name, result_dir, agent_port)
-    ENV['HOST_UID'] = Process.uid.to_s
     @test_name = test_name
     @result_dir = result_dir
     # TODO: Fix running tests in parallel
@@ -408,7 +406,9 @@ RUN_MEDELEXIS = opts[:medelexis]
 RUN_AUT_AGENT = opts[:aut_agent]
 require 'common'
 
-puts "#{VARIANT} #{ARGV.join(' ')} DRY_RUN is #{DRY_RUN} USE_X11 #{USE_X11} RUN_IN_DOCKER #{opts[:run_in_docker]} RUN_MEDELEXIS #{RUN_MEDELEXIS}"
+ENV['HOST_UID'] = Process.uid.to_s
+ENV['JUBULA_RUNNER_VERSION'] = ElexisJubula::VERSION
+puts "#{VARIANT} #{ARGV.join(' ')} DRY_RUN is #{DRY_RUN} USE_X11 #{USE_X11} RUN_IN_DOCKER #{opts[:run_in_docker]} RUN_MEDELEXIS #{RUN_MEDELEXIS} tag #{ENV['JUBULA_RUNNER_VERSION']}"
 
 if opts[:aut_agent]
   puts "aut_agent not yet realized"

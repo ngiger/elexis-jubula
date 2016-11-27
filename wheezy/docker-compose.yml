@@ -49,7 +49,8 @@ services:
       POSTGRES_PASSWORD: elexisTestPassword
 
   jenkinstest:
-    build: .
+    # build: .
+    image: ngiger/jubula_runner:${JUBULA_RUNNER_VERSION}
     networks:
       private:
       public:

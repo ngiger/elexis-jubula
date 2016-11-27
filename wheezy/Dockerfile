@@ -1,5 +1,5 @@
-# Use Debian Wheezy update 8
-FROM debian:7.8
+# Use Debian Wheezy update 11
+FROM debian:7.11
 MAINTAINER Niklaus Giger "niklaus.giger@member.fsf.org"
 
 #    apt-get install -y libreoffice-writer # to be able to use ODF documents

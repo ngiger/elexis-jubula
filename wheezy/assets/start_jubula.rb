@@ -56,7 +56,7 @@ sleep(1)
 progress "#{count}/#{MAX}"
 while true
   status, id  = get_status
-  progress "#{count}/#{MAX}: Status for #{PORT} on #{HOST} for #{id.inspect} was #{status.inspect}" if count > 0
+  progress "#{count}/#{MAX}: Status for #{PORT} on #{HOST} for #{id.inspect} was #{status.inspect}" if count > 0 && $VERBOSE
   if status && status.eql?('ACTIVE')
     progress "#{count}/#{MAX}: exit as status ACTIVE #{status.inspect}" if count > 0
     count = -5
