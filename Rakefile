@@ -8,8 +8,17 @@ our_directory = File.expand_path(File.dirname(__FILE__))
 
 desc 'Build the docker image'
 task :docker_build do
-  fail 'docker_build failed!' unless system('scripts/jubularunner.rb --build-docker')
-  Kernel.system("git tag -f #{ElexisJubula::VERSION}")
+  unless system('scripts/jubularunner.rb --build-docker', MAY_FAIL)
+    fail 'docker_build failed!'
+  end
+  something_to_commit = `git status -uno --porcelain wheezy`
+  if something_to_commit.length > 0
+    puts "We will force the tag  #{ElexisJubula::VERSION}"
+    system('git commit wheezy')
+    Kernel.system("git tag -f #{ElexisJubula::VERSION}")
+  else
+    puts "build of #{ElexisJubula::NAME}:#{ElexisJubula::VERSION} is uptodate"
+  end
 end
 
 desc 'Run an interactive bash shell inside docker'
@@ -114,16 +123,20 @@ end
 
 desc 'Build, commit, tag, push && docker push the current state'
 task docker_publish: :docker_build do
-  Kernel.system('git commit .') # will prompt for a message
-  Kernel.system("git tag #{ElexisJubula::VERSION}")
-  # commit pending changes and tag our repository with the same tag
-  fail 'login to docker failed' unless system('docker login')
-  puts "Publishing #{ElexisJubula::VERSION} to docker"
-  [ElexisJubula::VERSION, 'latest'].each do |version|
-    cmd = "docker push #{ElexisJubula::NAME}:#{version}"
-    puts cmd
-    fail "Pushing to docker failed for #{cmd}" unless Kernel.system(cmd)
+  fullname = "#{ElexisJubula::NAME}:#{ElexisJubula::VERSION}"
+  cmds = [
+    "docker push #{fullname}",
+    "docker tag  #{fullname} #{ElexisJubula::NAME}:latest",
+    "docker push #{ElexisJubula::NAME}:latest",
+    ]
+  cmds.each do |cmd|
+    unless system(cmd, MAY_FAIL)
+      puts "To build. we use the following commands:\n  " + cmds.join("\n  ")
+      puts "we failed in #{cmd}"
+      fail
+    end
   end
+  puts "Pushed #{fullname} to docker"
 end
 require 'rake/clean'
 CLEAN.include FileList['work/**']
