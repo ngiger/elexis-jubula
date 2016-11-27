@@ -53,10 +53,10 @@ services:
     networks:
       private:
       public:
-    # Elexis user uid is 1200
-    # user: '1200'
     ports:
       - "${AGENT_PORT}:${AGENT_PORT}"
+      # Force an error if HOST_UID is not given!
+      - "63333:${HOST_UID}"
     working_dir: /home/elexis
     # We want silently kill the docker after an hour
     entrypoint: '/app/create_elexis_user.sh'
@@ -74,7 +74,8 @@ services:
         - postgres
         - mysql
     environment:
-      HOST_UID: # We want to map 1200 as our HOST_ID using create_elexis_user
+    # an empty HOST_UID while creating the jenkinstest gives at least a warning
+      HOST_UID: "${HOST_UID}" # We want to map the host_uid as our HOST_ID using create_elexis_user
       DOCKER_OPTS: "-H tcp://0.0.0.0:4243 -H unix:///var/run/docker.sock"
       PGUSER: elexistest
       PGHOST: postgres
