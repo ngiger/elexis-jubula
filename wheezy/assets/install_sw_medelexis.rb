@@ -2,7 +2,10 @@
 # Copyright (c) Niklaus Giger, 2016
 # License EPL v1.0
 # Needs the following debian packages: x11-apps imagemagick xdotool scrot
-
+# On windows we could use http://www.nirsoft.net/utils/nircmd.html
+#   nircmd.exe cmdwait 2000 savescreenshot "f:\temp\shot.png" Wait 2 seconds, and then save the current screen to shot.png
+#   Close all your Internet Explorer windows  nircmd.exe win close class "IEFrame"
+#   Answer 'Yes' to a standard Windows message-box.   nircmd.exe dlg "" "" click yes
 require 'fileutils'
 
 if ARGV.size != 3

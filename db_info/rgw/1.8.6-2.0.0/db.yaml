@@ -1,0 +1,282 @@
+---
+:db_label: rgw
+:sql_dump: "/opt/db_dumps/rgw_1.8.6.sql"
+:sql_dump_size: 187 MB
+:db_type: mysql
+:db_client:
+  :id: 50553
+  :version: 5.5.53
+  :header_version: 5.5.53
+:db_version: 1.8.6
+:elexis_version: 2.0.0
+:tables:
+  :agntermine:
+    :nr_rows: 18859
+    :last_update:
+    - 2009-01-14 12:32:15.000000000 +01:00
+    - 2010-10-28 18:37:38.000000000 +02:00
+  :artikel:
+    :nr_rows: 120210
+    :last_update:
+    - 2009-02-04 08:28:57.000000000 +01:00
+    - 2010-10-27 17:46:52.000000000 +02:00
+  :artikel_details:
+    :nr_rows: 0
+  :auf:
+    :nr_rows: 3264
+  :bbs:
+    :nr_rows: 19
+  :behandlungen:
+    :nr_rows: 29331
+  :behdl_dg_joint:
+    :nr_rows: 20152
+  :bildanzeige:
+    :nr_rows: 17
+    :last_update:
+    - 2009-01-20 08:47:00.000000000 +01:00
+    - 2009-01-20 08:47:00.000000000 +01:00
+  :briefe:
+    :nr_rows: 34590
+  :ch_berchtold_privatrechnung:
+    :nr_rows: 248
+    :last_update:
+    - 2009-02-05 09:26:19.000000000 +01:00
+    - 2010-04-06 15:40:19.000000000 +02:00
+  :ch_elexis_agenda_daymsg:
+    :nr_rows: 202
+    :last_update:
+    - 1970-01-01 01:00:00.000000000 +01:00
+    - 2010-10-25 14:26:55.000000000 +02:00
+  :ch_elexis_arzttarif_ch_rfe:
+    :nr_rows: 59
+    :last_update:
+    - 2010-07-02 11:46:16.000000000 +02:00
+    - 2010-09-01 16:52:17.000000000 +02:00
+  :ch_elexis_arzttarife_ch_physio:
+    :nr_rows: 19
+    :last_update:
+    - 2009-02-17 09:07:48.000000000 +01:00
+    - 2009-02-17 11:20:52.000000000 +01:00
+  :ch_elexis_developer_resources_sampletable:
+    :nr_rows: 8
+    :last_update:
+    - 2010-02-11 12:24:38.000000000 +01:00
+    - 2010-02-13 10:52:34.000000000 +01:00
+  :ch_elexis_eigendiagnosen:
+    :nr_rows: 15
+    :last_update:
+    - 2009-01-14 14:31:55.000000000 +01:00
+    - 2009-01-14 14:31:55.000000000 +01:00
+  :ch_elexis_icpc:
+    :nr_rows: 1371
+    :last_update:
+    - 
+    - 
+  :ch_elexis_icpc_encounter:
+    :nr_rows: 286
+    :last_update:
+    - 2009-02-10 10:55:36.000000000 +01:00
+    - 2010-10-13 18:36:37.000000000 +02:00
+  :ch_elexis_icpc_episodes:
+    :nr_rows: 445
+    :last_update:
+    - 2009-01-17 08:03:54.000000000 +01:00
+    - 2010-10-13 18:36:19.000000000 +02:00
+  :ch_elexis_icpc_episodes_diagnoses_link:
+    :nr_rows: 40
+    :last_update:
+    - 
+    - 
+  :ch_elexis_impfplan_vaccination_types:
+    :nr_rows: 1
+    :last_update:
+    - 
+    - 
+  :ch_elexis_impfplan_vaccinations:
+    :nr_rows: 1
+    :last_update:
+    - 
+    - 
+  :ch_elexis_kassenbuch:
+    :nr_rows: 443
+    :last_update:
+    - 2009-01-20 10:31:33.000000000 +01:00
+    - 2010-10-22 14:28:10.000000000 +02:00
+  :ch_elexis_medikamente_bag_ext:
+    :nr_rows: 11684
+    :last_update:
+    - 2009-09-08 12:00:40.000000000 +02:00
+    - 2009-09-08 12:00:40.000000000 +02:00
+  :ch_elexis_medikamente_bag_interactions:
+    :nr_rows: 16
+  :ch_elexis_medikamente_bag_joint:
+    :nr_rows: 19365
+  :ch_elexis_medikamente_bag_substance:
+    :nr_rows: 3806
+    :last_update:
+    - 2009-01-20 18:26:21.000000000 +01:00
+    - 2010-10-27 12:27:26.000000000 +02:00
+  :ch_elexis_messages:
+    :nr_rows: 209
+    :last_update:
+    - 2009-01-19 16:14:08.000000000 +01:00
+    - 2010-10-27 12:24:46.000000000 +02:00
+  :ch_elexis_messwerte_messwerte:
+    :nr_rows: 70
+    :last_update:
+    - 2009-06-23 09:30:04.000000000 +02:00
+    - 2009-06-23 09:49:55.000000000 +02:00
+  :ch_elexis_molemax:
+    :nr_rows: 193
+  :ch_elexis_notes:
+    :nr_rows: 87
+    :last_update:
+    - 2009-01-14 15:42:50.000000000 +01:00
+    - 2010-10-25 10:41:28.000000000 +02:00
+  :ch_elexis_omnivore_data:
+    :nr_rows: 1
+    :last_update:
+    - 1970-01-01 01:00:00.000000000 +01:00
+    - 1970-01-01 01:00:00.000000000 +01:00
+  :ch_elexis_privatrechnung:
+    :nr_rows: 34
+    :last_update:
+    - 2009-01-14 12:44:43.000000000 +01:00
+    - 2009-01-14 12:44:43.000000000 +01:00
+  :ch_elexis_stickynotes:
+    :nr_rows: 1324
+    :last_update:
+    - 2009-07-04 16:41:59.000000000 +02:00
+    - 2010-05-17 15:47:57.000000000 +02:00
+  :ch_medelexis_labortarif2009:
+    :nr_rows: 1671
+    :last_update:
+    - 2009-12-23 09:17:10.000000000 +01:00
+    - 2009-12-23 09:17:16.000000000 +01:00
+  :ch_medelexis_therapieplan_dispenses:
+    :nr_rows: 206
+    :last_update:
+    - 
+    - 
+  :ch_medelexis_therapieplan_medication:
+    :nr_rows: 168
+    :last_update:
+    - 2010-09-25 10:36:42.000000000 +02:00
+    - 2010-10-28 17:36:59.000000000 +02:00
+  :com_hilotec_elexis_messwerte_messungen:
+    :nr_rows: 24
+    :last_update:
+    - 2009-06-23 12:31:51.000000000 +02:00
+    - 2010-07-26 10:47:06.000000000 +02:00
+  :com_hilotec_elexis_messwerte_messwerte:
+    :nr_rows: 160
+    :last_update:
+    - 2009-06-23 12:31:51.000000000 +02:00
+    - 2010-07-26 10:47:03.000000000 +02:00
+  :config:
+    :nr_rows: 168
+  :dbimage:
+    :nr_rows: 22
+  :diagnosen:
+    :nr_rows: 327
+  :eigenleistungen:
+    :nr_rows: 46
+  :ek_preise:
+    :nr_rows: 0
+  :elexisbefunde:
+    :nr_rows: 2045
+    :last_update:
+    - 2009-01-14 16:11:59.000000000 +01:00
+    - 2010-10-27 14:23:04.000000000 +02:00
+  :esrrecords:
+    :nr_rows: 7441
+    :last_update:
+    - 2009-01-14 13:37:26.000000000 +01:00
+    - 2010-10-26 15:15:41.000000000 +02:00
+  :etiketten:
+    :nr_rows: 21
+  :etiketten_objclass_link:
+    :nr_rows: 16
+  :etiketten_object_link:
+    :nr_rows: 293
+  :faelle:
+    :nr_rows: 4092
+  :heap:
+    :nr_rows: 3
+    :last_update:
+    - 2010-10-28 18:04:13.000000000 +02:00
+    - 2010-10-28 18:04:13.000000000 +02:00
+  :heap2:
+    :nr_rows: 33
+    :last_update:
+    - 2009-02-06 15:24:23.000000000 +01:00
+    - 2010-10-26 13:40:50.000000000 +02:00
+  :iatrix_problem:
+    :nr_rows: 5
+  :iatrix_problem_behdl_joint:
+    :nr_rows: 11
+  :iatrix_problem_dauermedikation_joint:
+    :nr_rows: 1
+  :iatrix_problem_dg_joint:
+    :nr_rows: 4
+  :icd10:
+    :nr_rows: 12288
+    :last_update:
+    - 2009-01-14 13:12:40.000000000 +01:00
+    - 2009-01-14 13:12:40.000000000 +01:00
+  :kontakt:
+    :nr_rows: 3910
+  :kontakt_adress_joint:
+    :nr_rows: 224
+  :konto:
+    :nr_rows: 23672
+  :labgroup_item_joint:
+    :nr_rows: 0
+  :labgroups:
+    :nr_rows: 0
+  :laboritems:
+    :nr_rows: 568
+  :laborwerte:
+    :nr_rows: 126362
+  :leistungen:
+    :nr_rows: 86232
+  :leistungsblock:
+    :nr_rows: 52
+  :logs:
+    :nr_rows: 17713
+  :output_log:
+    :nr_rows: 2180
+    :last_update:
+    - 2010-02-03 14:19:27.000000000 +01:00
+    - 2010-10-27 15:09:56.000000000 +02:00
+  :patient_artikel_joint:
+    :nr_rows: 34455
+  :rechnungen:
+    :nr_rows: 12731
+  :reminders:
+    :nr_rows: 277
+  :reminders_responsible_link:
+    :nr_rows: 155
+  :rezepte:
+    :nr_rows: 14015
+  :tarmed:
+    :nr_rows: 5726
+    :last_update:
+    - 2010-04-07 15:04:32.000000000 +02:00
+    - 2010-04-07 15:11:42.000000000 +02:00
+  :tarmed_daten:
+    :nr_rows: 0
+  :tarmed_definitionen:
+    :nr_rows: 434
+  :tarmed_extension:
+    :nr_rows: 5725
+  :traces:
+    :nr_rows: 0
+  :userconfig:
+    :nr_rows: 413
+  :vk_preise:
+    :nr_rows: 23
+  :xid:
+    :nr_rows: 2189
+  :zahlungen:
+    :nr_rows: 12063

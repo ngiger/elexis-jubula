@@ -21,7 +21,7 @@ DEFAULT_DB_DUMP = '/opt/db_dumps/rgw_1.8.6.sql' # takes 14 seconds to load, 188 
 # /opt/db_dumps/vecellio_anonym.sql 13 GB
 # For Postgres /opt/db_dumps/postgres/db_dump_schoebu_anonym # Takes minutes to load, 2.2 GB
 
-def dump_schema_to_migration(database: DB, outfile: File.join(INFO_ROOT, 'db.schema'))
+def dump_schema_to_migration(database: DB, outfile: File.join(INFO_TODAY, 'db.schema'))
   system("sequel --dump-migration #{database} > #{outfile}")
 end
 
@@ -69,19 +69,22 @@ def start_pry
 end
 
 def elexis_database_info(database: DB)
-  FileUtils.makedirs(INFO_ROOT)
-  schema = File.join(INFO_ROOT, 'db.mysql')
-  cmd = "#{DB_ROOT_CMD} --no-data #{DB_NAME} > #{schema}".sub('mysql', 'mysqldump')
-  system(cmd)
-  info = File.join(INFO_ROOT, 'db.yaml')
   STDOUT.write("Creating elexis_database_info."); STDOUT.sync = true
 
   db  = Sequel.connect(database)
+  db_info = {}
+  db_info[:db_label]       = File.basename(OPTS[:db_dump]).split('_').first
+  db_info[:sql_dump]       = OPTS[:db_dump]
+  db_info[:sql_dump_size]  = (File.size(OPTS[:db_dump])/1024/1024).to_s + ' MB' if File.exist?(OPTS[:db_dump])
+  db_info[:db_type]        = 'mysql'
+  db_info[:db_client]      = Mysql2::Client.info
+  db_info[:db_version]     = db[:config].filter[:param => 'dbversion'][:wert]
+  db_info[:elexis_version] = db[:config].filter[:param => 'ElexisVersion'][:wert]
   all_tables = {}
-  all_tables[:db_type]        = 'mysql'
-  all_tables[:db_client]      = Mysql2::Client.info
-  all_tables[:db_version]     = db[:config].filter[:param => 'dbversion'][:wert]
-  all_tables[:elexis_version] = db[:config].filter[:param => 'ElexisVersion'][:wert]
+
+  new_db_elexis = File.join(INFO_ROOT, db_info[:db_label], db_info[:db_version] + '-' + db_info[:elexis_version])
+  my_root = File.exist?(new_db_elexis) ? INFO_TODAY : new_db_elexis
+  FileUtils.makedirs(my_root)
 
   # TODO: append output of the following MySQL commands
   # SHOW GLOBAL VARIABLES LIKE '%version%';
@@ -98,10 +101,20 @@ def elexis_database_info(database: DB)
     end
     all_tables[tablename] = this_table
   end
-  File.open(info, 'w') {|f| f.write all_tables.to_yaml } #Store
+  db_info[:tables] = all_tables
+  db_yaml = File.join(my_root, 'db.yaml')
+  File.open(db_yaml, 'w') {|f| f.write db_info.to_yaml } #Store
   puts
-  dump_schema_to_migration
-  puts "Stored info under #{INFO_ROOT}"
+  db_schema = File.join(my_root, 'db.schema')
+  dump_schema_to_migration(database: database,  outfile: db_schema)
+  sql_schema = File.join(my_root, 'db.mysql')
+  cmd = "#{DB_ROOT_CMD} --no-data #{DB_NAME} > #{sql_schema}".sub('mysql', 'mysqldump')
+  system(cmd)
+  puts "Stored info under #{my_root}"
+  if my_root.eql?(new_db_elexis)
+    # add it to git
+    system("git add #{sql_schema} #{db_yaml} #{db_schema}")
+  end
 end
 
 
@@ -128,7 +141,8 @@ DB = OPTS[:jdbc].sub('jdbc:','').sub('mysql:', 'mysql2://' + OPTS[:user_pw].sub(
 DB_NAME = DB.split('/').last
 DB_ROOT_CMD = "mysql -u root --password=#{OPTS[:root_pw]}"
 START_TIME = Time.now
-INFO_ROOT = File.expand_path(File.join(__FILE__, '..', '..', 'db_info', DB_NAME, START_TIME.strftime('%Y%m%d.%H%M%S')))
+INFO_ROOT = File.expand_path(File.join(__FILE__, '..', '..', 'db_info'))
+INFO_TODAY = File.join(INFO_ROOT, DB_NAME, START_TIME.strftime('%Y%m%d.%H%M%S'))
 
 # $ docker run -it --link some-mysql:mysql --rm mysql sh -c 'exec mysql -h"$MYSQL_PORT_3306_TCP_ADDR" -P"$MYSQL_PORT_3306_TCP_PORT" -uroot -p"$MYSQL_ENV_MYSQL_ROOT_PASSWORD"'
 # Initializing a fresh instance
