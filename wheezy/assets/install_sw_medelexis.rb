@@ -8,12 +8,16 @@
 #   Answer 'Yes' to a standard Windows message-box.   nircmd.exe dlg "" "" click yes
 require 'fileutils'
 
-if ARGV.size != 3
-  puts "Expecting three arguments: MEDELEXIS_EXE VARIANT RESULT_DIR"
+ELEXIS_DB_DEFAULTS = '-Dch.elexis.username=007 -Dch.elexis.password=topsecret -Delexis-run-mode=RunFromScratch '
+
+if ARGV.size < 3
+  puts "Expecting at three arguments: MEDELEXIS_EXE VARIANT RESULT_DIR [ELEXIS_DB_PARAMS]"
+  puts "ELEXIS_DB_PARAMS default to #{ELEXIS_DB_DEFAULTS}"
   exit 3
 end
 MEDELEXIS_EXE = ARGV[0]
 VARIANT=ARGV[1]
+ELEXIS_DB_PARAMS = ARGV.size > 3 ? ARGV[3] : ELEXIS_DB_DEFAULTS
 RESULT_DIR = File.expand_path(ARGV[2])
 MAX_WAIT = 120
 FLAG_FILE = File.join(RESULT_DIR, File.basename(__FILE__, '.rb') + '.done')
@@ -103,14 +107,19 @@ def start_medelexis
     Dir.chdir(File.dirname(MEDELEXIS_EXE))
     cmd = "./#{File.basename(MEDELEXIS_EXE)} -nl de_CH -clean -eclipse-password #{PASSWORD_FILE} " +
       '-vmargs -Declipse.p2.unsignedPolicy=allow ' +
-      '-Dch.elexis.username=007 -Dch.elexis.password=topsecret -Delexis-run-mode=RunFromScratch ' +
-      "-Dprovisioning.UpdateRepository=#{VARIANT}"
+      ELEXIS_DB_PARAMS + ' ' + "-Dprovisioning.UpdateRepository=#{VARIANT}"
     progress cmd
     pid = Process.spawn cmd
+    Thread.new do
+      Process.wait(pid)
+      res = $?.clone
+      puts "Thread: Medelexis unexpected exit #{pid} finished with #{res.exitstatus}"
+    end
     count = 0
     while true
       sleep 1
       count += 1
+      puts "Medelexis running #{count} pid #{pid}" if $VERBOSE
       name=get_window_name
       break if name
       if count >= 120
@@ -118,6 +127,8 @@ def start_medelexis
         report_error
         exit 3
       end
+
+      fail "#{MEDELEXIS_EXE} died. Why?" unless Process.getpgid( pid )
     end
     send_escape_to_window('InfoBox')
     progress "Waiting for Medelexis to be fully active"
@@ -170,7 +181,7 @@ begin
   create_snapshot('install_sw_before')
   install_sw
 ensure
-  create_snapshot("install_sw_done", true)
+  create_snapshot("install_finished", true)
   diff = (Time.now - StartTime).to_i
   progress("done #{diff} seconds")
 end
