@@ -31,15 +31,17 @@ Useage:
   * Test upgrade from an old (Med-)Elexis version to a newer one
 EOS
   opt :clean,         "Drops the database, the results and install directories", :default => false
+  opt :definition,    "If given, the value from the definition/<definition>.yaml will override the defaults", :type => String, :default => nil
+  opt :drop,          "Drop the database"
   opt :dry_run,       "Dry-Run. Show configuration and commands without executing them", :default => false
   opt :medelexis,     "Use the medelexis variant", :default => true
   opt :jdbc,          "The jdbc parameter to connect to e.g.", :type => String, :default => DEFAULT_JDBC
-  opt :user_pw,       'Username/Password for Elexis', :type => String, :default => 'elexis/elexisTest'
+  opt :elexis_user,    'Username for Elexis', :type => String, :default => 'elexis'
+  opt :elexis_password, 'Username for Elexis', :type => String, :default => 'elexisTest'
   opt :root_pw,       'Password for mysql/postgres root user', :type => String, :default => 'elexisTest'
   opt :db_dump,       'The full path for the sql_dump to load', :type => String, :default => DEFAULT_DB_DUMP
   opt :variant,       "Possible values are snapshot, beta, prerelease, release", :type => String, :default => 'prerelease'
   opt :info,          "Open (load if not yet exist) database and save DB-Info (inkl. elexis/db-version, nr_rows, max/min lastupdate)"
-  opt :drop,          "Drop the database"
   opt :pry,           "Open a pry debug session with sequel"
   opt :upgrade,       "Download (cached in #{CACHE_BASE}) (Med-)Elexis,
   start it twice and
@@ -47,6 +49,12 @@ EOS
   opt :license_file,  'License file to use for Medelexis', :type => String, :default => nil
 end
 
+
+if OPTS[:definition]
+  name = "definitions/#{OPTS[:definition]}.yaml"
+  fail "Could not find definition file #{name}" unless File.exist?(name)
+  OPTS.merge! YAML.load_file(name)
+end
 OPTS.merge! DbHelpers.jdbc_to_hash(OPTS[:jdbc])
 DB_ROOT_CMD = "mysql  --host #{OPTS[:db_host]} -u root --password=#{OPTS[:root_pw]}"
 puts "DB_ROOT_CMD is #{DB_ROOT_CMD}"

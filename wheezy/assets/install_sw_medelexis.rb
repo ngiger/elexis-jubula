@@ -154,12 +154,16 @@ end
 def install_sw
   send_escape_to_window('InfoBox')
   progress "Installing SW #{get_window_name}  after #{(Time.now - StartTime).to_i} seconds"
+  if wichtig = get_window_name("Wichtige Reminder")
+    send_escape_to_window("Wichtige") # Sending "Wichtige Reminder" will fail
+    sleep 0.5
+  end
   system("wmctrl -c '#{get_window_name}'")
   sleep 5
   create_snapshot('install_sw_pressed_quit')
   progress "Waiting for Elexis to quit"
   while name = get_window_name
-    sleep 10
+    sleep 3
     progress "Elexis #{name} still alive"
     PROBLEMATIC_WINDOW_TITLES.each{ |name| send_escape_to_window(name) }
   end

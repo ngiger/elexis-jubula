@@ -1,0 +1,7 @@
+---
+# Here we define the parameter which are the same when using
+# the database from Gerry for the different variants/varsions and licenses
+  :db_dump: /opt/db_dumps/rgw_1.8.6.sql
+  :elexis_user: test
+  :elexis_password: test
+  :jdbc: mysql://elexis:elexisTest@localhost/test_elexis
