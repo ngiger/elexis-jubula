@@ -38,7 +38,7 @@ module DbHelpers
       info[:db_host] ='localhost'
     end
     info[:db_password] = /[:](\w+)[@\/]/.match(jdbc)[1]
-    info[:db_elexis_params] = "-Dch.elexis.username=#{OPTS[:user_pw].split('/').first} -Dch.elexis.password=#{OPTS[:user_pw].split('/').last} " +
+    info[:db_elexis_params] = "-Dch.elexis.username=#{OPTS[:elexis_user]} -Dch.elexis.password=#{OPTS[:elexis_password]} " +
         " -Dch.elexis.dbUser=#{info[:db_user]} -Dch.elexis.dbPw=#{info[:db_password]}  -Dch.elexis.dbFlavor=#{info[:db_type]}" +
         " -Dch.elexis.dbSpec=jdbc:#{info[:db_type]}://#{info[:db_host]}/#{info[:db_name]}"
     info
