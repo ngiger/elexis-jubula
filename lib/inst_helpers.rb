@@ -106,7 +106,7 @@ module InstHelpers
     dest = File.join(Dir.pwd, variant)
 
     extract_medelexis_exe(variant, cache, dest) unless File.exist?(File.join(dest, 'plugins'))
-    install_variant(url, cache, dest) unless Dir.glob("#{dest}/plugins/org.iatrix*.jar").size > 0
+    # install_variant(url, cache, dest) unless Dir.glob("#{dest}/plugins/org.iatrix*.jar").size > 0
     result_dir1 = "results-#{variant}-1"
     start_and_install_sw(dest, variant, result_dir1, true) unless File.exist?(result_dir1)
     result_dir2 = "results-#{variant}-2"
