@@ -77,9 +77,11 @@ end
 def prepare_medelexis
   progress "preparing medelexis #{MEDELEXIS_EXE} for #{VARIANT.inspect}"
   # Output some debugging info
-  system('env')
-  system("echo 'I am' `whoami`: `id`")
-  system("ls -l #{File.expand_path('~')}")
+  if $VERBOSE
+    system('env')
+    system("echo 'I am' `whoami`: `id`")
+    system("ls -l #{File.expand_path('~')}")
+  end
   unless (File.readable?(LICENSE_ORIGIN) || File.readable?(LICENSE_INSTALLED))
     puts "Either #{LICENSE_ORIGIN} or  #{LICENSE_INSTALLED} must be readable"
     exit 1

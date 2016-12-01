@@ -53,12 +53,18 @@ module InstHelpers
     # https://sbe.medelexis.ch/jenkins/view/3.0/job/Medelexis-3-Application/lastSuccessfulBuild/artifact/ch.medelexis.application.p2site/target/products/ch.medelexis.application.product.Medelexis-linux.gtk.x86_64.zip
   end
 
-  def self.start_and_install_sw(dest, variant, result_dir, first_run)
+  def self.prepare_license
     license = OPTS[:license_file]
     if license
       fail "No file #{license} found" unless File.exist?(license)
+      dest = File.expand_path(File.join("~/elexis/license.xml"))
+      puts dest
+      FileUtils.makedirs(File.dirname(dest), :verbose => true) unless File.exist?(File.dirname(dest))
       FileUtils.cp(license, File.expand_path(File.join("~/elexis/license.xml")), :verbose => true)
+      system("ls -la #{dest}")
     end
+  end
+  def self.start_and_install_sw(dest, variant, result_dir, first_run)
     exefile = nil
     candidates = [ File.join(dest, 'Elexis3'),
       File.join(dest, 'Medelexis')]
@@ -88,7 +94,9 @@ module InstHelpers
   end
 
   def self.upgrade
-    unless OPTS[:medelexis]
+    if OPTS[:medelexis]
+      prepare_license
+    else
       puts "Download of elexis open source not yet supported, as there we have to join elexis-3-base and elexis-3-core"
     end
     variant = OPTS[:variant]
