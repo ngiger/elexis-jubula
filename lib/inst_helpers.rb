@@ -49,7 +49,12 @@ module InstHelpers
     download("#{root}/#{variant}/products/ch.medelexis.application.product.Medelexis-linux.gtk.x86_64.zip", cache)
     FileUtils.makedirs(dest, :verbose => true, :noop => opts[:noop])
     Dir.chdir(dest) unless opts[:noop]
-    cmd = "unzip -qo #{Dir.glob("#{cache}/products/*.zip").first}"
+    puts File.expand_path(saved)
+    candidates = Dir.glob("#{saved}/*elexis*.zip")+Dir.glob("#{cache}/products/*.zip")
+    unless candidates.size > 0
+      fail "Must find at least one zip file to unpack in #{saved} or #{cache}"
+    end
+    cmd = "unzip -qo #{candidates.first}"
     unless system(cmd)
       puts "Unable to unzip exe via #{cache} using #{cmd}"
       return false
@@ -117,7 +122,7 @@ module InstHelpers
       prepare_license
     else
       puts "Download of elexis open source not yet supported, as there we have to join elexis-3-base and elexis-3-core"
-    end
+    end unless run_in_docker?
     variant = opts[:variant]
 
     cache = File.join(UpgradeOptions::CACHE_BASE, opts[:medelexis] ? 'medelexis' : 'elexis', variant)
@@ -126,11 +131,29 @@ module InstHelpers
     result_dir1 = "results-#{variant}-1"
     result_dir2 = "results-#{variant}-2"
 
-    exe = extract_medelexis_exe(variant, cache, dest) unless File.exist?(File.join(dest, 'plugins'))
-    install_variant(url, cache, dest) unless Dir.glob("#{dest}/plugins/org.iatrix*.jar").size > 0 if false
-    if exe && res = (File.exist?(result_dir1) || start_and_install_sw(dest, variant, result_dir1, true))
-      return start_and_install_sw(dest, variant, result_dir2, false)
+    if File.exist?(File.join(dest, 'plugins'))
+      puts "Skip extract_medelexis_exe as #{cache}/plugins exists"
+    else
+      exe = extract_medelexis_exe(variant, cache, dest)
     end
+    if false
+      install_variant(url, cache, dest) unless Dir.glob("#{dest}/plugins/org.iatrix*.jar").size > 0
+    else
+      puts "Skip install_variant. We think it is better to instal"
+    end
+    res = true
+    if File.exist?(result_dir1) && !opts[:clean]
+      puts "Skipping first install as we found #{result_dir1} and not clean demanded"
+    else
+      res = start_and_install_sw(dest, variant, result_dir1, true)
+      unless res
+          puts "first start_and_install_sw failed"
+        return false
+      end
+    end
+    puts "start second start_and_install_sw"
+    res = start_and_install_sw(dest, variant, result_dir2, false)
+    puts "start second start_and_install_sw returned #{res}"
     return res
   end
 

@@ -1,0 +1,1941 @@
+-- MySQL dump 10.13  Distrib 5.5.53, for debian-linux-gnu (x86_64)
+--
+-- Host: mysql    Database: elexis
+-- ------------------------------------------------------
+-- Server version	5.7.16
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Table structure for table `agntermine`
+--
+
+DROP TABLE IF EXISTS `agntermine`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `agntermine` (
+  `ID` varchar(127) NOT NULL,
+  `PatID` varchar(80) DEFAULT NULL,
+  `Bereich` varchar(25) DEFAULT NULL,
+  `Tag` char(8) DEFAULT NULL,
+  `Beginn` char(4) DEFAULT NULL,
+  `Dauer` char(4) DEFAULT NULL,
+  `Grund` longtext,
+  `TerminTyp` varchar(50) DEFAULT NULL,
+  `TerminStatus` varchar(50) DEFAULT NULL,
+  `ErstelltVon` varchar(25) DEFAULT NULL,
+  `angelegt` varchar(10) DEFAULT NULL,
+  `lastedit` varchar(10) DEFAULT NULL,
+  `PalmID` int(11) DEFAULT '0',
+  `flags` varchar(10) DEFAULT NULL,
+  `deleted` char(2) DEFAULT '0',
+  `Extension` longtext,
+  `linkgroup` varchar(20) DEFAULT NULL,
+  `lastupdate` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`ID`),
+  KEY `it` (`Tag`,`Beginn`,`Bereich`),
+  KEY `pattern` (`PatID`),
+  KEY `agnbereich` (`Bereich`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `artikel`
+--
+
+DROP TABLE IF EXISTS `artikel`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `artikel` (
+  `id` varchar(25) CHARACTER SET latin1 NOT NULL DEFAULT '',
+  `subid` varchar(20) CHARACTER SET latin1 DEFAULT '""',
+  `lieferantid` varchar(25) CHARACTER SET latin1 DEFAULT NULL,
+  `name` varchar(127) CHARACTER SET latin1 DEFAULT NULL,
+  `Name_intern` varchar(127) CHARACTER SET latin1 DEFAULT NULL,
+  `maxbestand` varchar(4) CHARACTER SET latin1 DEFAULT NULL,
+  `minbestand` varchar(4) CHARACTER SET latin1 DEFAULT NULL,
+  `istbestand` varchar(4) CHARACTER SET latin1 DEFAULT NULL,
+  `ek_preis` varchar(8) CHARACTER SET latin1 DEFAULT NULL,
+  `vk_preis` varchar(8) CHARACTER SET latin1 DEFAULT NULL,
+  `typ` varchar(15) CHARACTER SET latin1 DEFAULT NULL,
+  `codeclass` varchar(10) CHARACTER SET latin1 DEFAULT NULL,
+  `extid` varchar(25) CHARACTER SET latin1 DEFAULT NULL,
+  `extinfo` blob,
+  `Klasse` varchar(80) CHARACTER SET latin1 DEFAULT NULL,
+  `deleted` char(1) CHARACTER SET latin1 DEFAULT '0',
+  `EAN` varchar(15) CHARACTER SET latin1 DEFAULT NULL,
+  `lastupdate` bigint(20) DEFAULT NULL,
+  `ValidFrom` char(8) CHARACTER SET latin1 DEFAULT NULL,
+  `ValidTo` char(8) CHARACTER SET latin1 DEFAULT NULL,
+  `ATC_code` varchar(255) COLLATE latin1_german1_ci DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `i5` (`name`),
+  KEY `art2` (`typ`),
+  KEY `art3` (`codeclass`),
+  KEY `art1` (`subid`) USING HASH
+) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_german1_ci MIN_ROWS=50000 PACK_KEYS=1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `artikel_details`
+--
+
+DROP TABLE IF EXISTS `artikel_details`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `artikel_details` (
+  `ARTICLE_ID` varchar(25) DEFAULT NULL,
+  `notes` longtext,
+  `image` longblob
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `auf`
+--
+
+DROP TABLE IF EXISTS `auf`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `auf` (
+  `id` varchar(25) NOT NULL DEFAULT '',
+  `patientid` varchar(25) DEFAULT NULL,
+  `fallid` varchar(25) DEFAULT NULL,
+  `prozent` char(3) DEFAULT NULL,
+  `datumvon` varchar(8) DEFAULT NULL,
+  `datumbis` varchar(8) DEFAULT NULL,
+  `Grund` varchar(50) DEFAULT NULL,
+  `AUFZusatz` varchar(80) DEFAULT NULL,
+  `BriefID` varchar(25) DEFAULT NULL,
+  `deleted` char(1) DEFAULT '0',
+  `DatumAUZ` char(8) DEFAULT NULL,
+  `LASTUPDATE` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `auf1` (`patientid`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `bbs`
+--
+
+DROP TABLE IF EXISTS `bbs`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `bbs` (
+  `id` varchar(25) NOT NULL DEFAULT '',
+  `reference` varchar(25) DEFAULT NULL,
+  `topic` varchar(80) DEFAULT NULL,
+  `date` varchar(8) DEFAULT NULL,
+  `time` varchar(4) DEFAULT NULL,
+  `authorid` varchar(25) DEFAULT NULL,
+  `message` text,
+  `deleted` char(1) DEFAULT '0',
+  `LASTUPDATE` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `bbs1` (`reference`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `behandlungen`
+--
+
+DROP TABLE IF EXISTS `behandlungen`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `behandlungen` (
+  `id` varchar(25) NOT NULL DEFAULT '',
+  `fallid` varchar(25) DEFAULT NULL,
+  `mandantid` varchar(25) DEFAULT NULL,
+  `rechnungsid` varchar(25) DEFAULT NULL,
+  `datum` varchar(8) DEFAULT NULL,
+  `diagnosen` varchar(25) DEFAULT NULL,
+  `leistungen` varchar(25) DEFAULT NULL,
+  `eintrag` blob,
+  `deleted` char(1) DEFAULT '0',
+  `LASTUPDATE` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `i4` (`fallid`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `behdl_dg_joint`
+--
+
+DROP TABLE IF EXISTS `behdl_dg_joint`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `behdl_dg_joint` (
+  `id` varchar(25) NOT NULL DEFAULT '',
+  `behandlungsid` varchar(25) DEFAULT NULL,
+  `diagnoseid` varchar(25) DEFAULT NULL,
+  `deleted` char(1) DEFAULT '0',
+  `LASTUPDATE` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `bdg1` (`behandlungsid`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `bildanzeige`
+--
+
+DROP TABLE IF EXISTS `bildanzeige`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `bildanzeige` (
+  `ID` varchar(25) NOT NULL,
+  `PatID` varchar(25) DEFAULT NULL,
+  `Datum` char(8) DEFAULT NULL,
+  `Title` varchar(30) DEFAULT NULL,
+  `Info` text,
+  `Keywords` varchar(80) DEFAULT NULL,
+  `isRef` char(2) DEFAULT NULL,
+  `Bild` longblob,
+  `deleted` char(1) DEFAULT '0',
+  `lastupdate` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`ID`),
+  KEY `BANZ1` (`PatID`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `briefe`
+--
+
+DROP TABLE IF EXISTS `briefe`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `briefe` (
+  `id` varchar(25) NOT NULL DEFAULT '',
+  `betreff` varchar(80) DEFAULT NULL,
+  `datum` varchar(8) DEFAULT NULL,
+  `modifiziert` varchar(8) DEFAULT NULL,
+  `gedruckt` varchar(8) DEFAULT NULL,
+  `geloescht` char(2) DEFAULT NULL,
+  `absenderid` varchar(25) DEFAULT NULL,
+  `destid` varchar(25) DEFAULT NULL,
+  `behandlungsid` varchar(25) DEFAULT NULL,
+  `patientid` varchar(25) DEFAULT NULL,
+  `typ` varchar(30) DEFAULT NULL,
+  `MimeType` varchar(80) DEFAULT NULL,
+  `Path` longtext,
+  `deleted` char(1) DEFAULT '0',
+  `LASTUPDATE` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `i8` (`behandlungsid`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ch_berchtold_privatrechnung`
+--
+
+DROP TABLE IF EXISTS `ch_berchtold_privatrechnung`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ch_berchtold_privatrechnung` (
+  `ID` varchar(25) NOT NULL,
+  `deleted` char(1) DEFAULT '0',
+  `parent` varchar(80) DEFAULT NULL,
+  `name` varchar(499) DEFAULT NULL,
+  `short` varchar(80) DEFAULT NULL,
+  `cost` char(8) DEFAULT NULL,
+  `price` char(8) DEFAULT NULL,
+  `time` char(4) DEFAULT NULL,
+  `subsystem` varchar(25) DEFAULT NULL,
+  `valid_from` char(8) DEFAULT NULL,
+  `valid_until` char(8) DEFAULT NULL,
+  `ExtInfo` longblob,
+  `lastupdate` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`ID`),
+  KEY `chelpr_idx1` (`parent`,`name`),
+  KEY `chelpr_idx2` (`valid_from`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ch_elexis_agenda_daymsg`
+--
+
+DROP TABLE IF EXISTS `ch_elexis_agenda_daymsg`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ch_elexis_agenda_daymsg` (
+  `ID` char(8) NOT NULL,
+  `Kurz` varchar(80) DEFAULT NULL,
+  `Msg` longtext,
+  `deleted` char(1) DEFAULT '0',
+  `lastupdate` bigint(20) DEFAULT '0',
+  PRIMARY KEY (`ID`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ch_elexis_arzttarif_ch_rfe`
+--
+
+DROP TABLE IF EXISTS `ch_elexis_arzttarif_ch_rfe`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ch_elexis_arzttarif_ch_rfe` (
+  `ID` varchar(25) NOT NULL,
+  `deleted` char(1) DEFAULT '0',
+  `lastupdate` bigint(20) DEFAULT NULL,
+  `type` char(2) DEFAULT NULL,
+  `konsID` varchar(25) DEFAULT NULL,
+  PRIMARY KEY (`ID`),
+  KEY `ch_elexis_arzttarif_ch_rfe_idx` (`konsID`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ch_elexis_arzttarife_ch_physio`
+--
+
+DROP TABLE IF EXISTS `ch_elexis_arzttarife_ch_physio`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ch_elexis_arzttarife_ch_physio` (
+  `ID` varchar(25) CHARACTER SET latin1 NOT NULL,
+  `lastupdate` bigint(20) DEFAULT NULL,
+  `deleted` char(1) CHARACTER SET latin1 DEFAULT '0',
+  `validFrom` char(8) CHARACTER SET latin1 DEFAULT NULL,
+  `validUntil` char(8) CHARACTER SET latin1 DEFAULT NULL,
+  `TP` char(8) CHARACTER SET latin1 DEFAULT NULL,
+  `ziffer` varchar(6) CHARACTER SET latin1 DEFAULT NULL,
+  `titel` varchar(255) CHARACTER SET latin1 DEFAULT NULL,
+  `description` longtext CHARACTER SET latin1,
+  PRIMARY KEY (`ID`),
+  KEY `cheacp` (`ziffer`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ch_elexis_developer_resources_sampletable`
+--
+
+DROP TABLE IF EXISTS `ch_elexis_developer_resources_sampletable`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ch_elexis_developer_resources_sampletable` (
+  `ID` varchar(25) NOT NULL,
+  `lastupdate` bigint(20) DEFAULT NULL,
+  `deleted` char(1) DEFAULT '0',
+  `PatientID` varchar(25) DEFAULT NULL,
+  `Title` varchar(50) DEFAULT NULL,
+  `FunFactor` varchar(6) DEFAULT NULL,
+  `BoreFactor` varchar(6) DEFAULT NULL,
+  `Date` char(8) DEFAULT NULL,
+  `Remarks` longtext,
+  `FunnyStuff` longblob,
+  PRIMARY KEY (`ID`),
+  KEY `ch_elexis_developer_resources_sampletableidx1` (`FunFactor`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ch_elexis_eigendiagnosen`
+--
+
+DROP TABLE IF EXISTS `ch_elexis_eigendiagnosen`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ch_elexis_eigendiagnosen` (
+  `ID` varchar(25) NOT NULL,
+  `deleted` char(1) DEFAULT '0',
+  `parent` varchar(20) DEFAULT NULL,
+  `code` varchar(20) DEFAULT NULL,
+  `title` varchar(80) DEFAULT NULL,
+  `comment` longtext,
+  `ExtInfo` longblob,
+  `lastupdate` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`ID`),
+  KEY `CH_ELEXIS_EIGENDIAGNOSEN_idx1` (`parent`,`code`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ch_elexis_icpc`
+--
+
+DROP TABLE IF EXISTS `ch_elexis_icpc`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ch_elexis_icpc` (
+  `ID` char(3) NOT NULL,
+  `lastupdate` bigint(20) DEFAULT NULL,
+  `deleted` char(1) DEFAULT '0',
+  `component` char(2) DEFAULT NULL,
+  `short` varchar(80) DEFAULT NULL,
+  `synonyms` varchar(250) DEFAULT NULL,
+  `icd10` longtext,
+  `txt` longtext,
+  `criteria` longtext,
+  `inclusion` longtext,
+  `exclusion` longtext,
+  `consider` longtext,
+  `note` longtext,
+  PRIMARY KEY (`ID`),
+  KEY `CH_ELEXIS_ICPC_IDX1` (`component`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ch_elexis_icpc_encounter`
+--
+
+DROP TABLE IF EXISTS `ch_elexis_icpc_encounter`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ch_elexis_icpc_encounter` (
+  `ID` varchar(25) DEFAULT NULL,
+  `KONS` varchar(25) DEFAULT NULL,
+  `EPISODE` varchar(25) DEFAULT NULL,
+  `RFE` char(4) DEFAULT NULL,
+  `DIAG` char(4) DEFAULT NULL,
+  `PROC` char(4) DEFAULT NULL,
+  `ExtInfo` longblob,
+  `deleted` char(1) DEFAULT '0',
+  `lastupdate` bigint(20) DEFAULT NULL,
+  KEY `CH_ELEXIS_ICPC_ENCOUNTER1` (`KONS`),
+  KEY `CH_ELEXIS_ICPC_ENCOUNTER2` (`EPISODE`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ch_elexis_icpc_episodes`
+--
+
+DROP TABLE IF EXISTS `ch_elexis_icpc_episodes`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ch_elexis_icpc_episodes` (
+  `ID` varchar(25) DEFAULT NULL,
+  `PatientID` varchar(25) DEFAULT NULL,
+  `Title` varchar(256) DEFAULT NULL,
+  `deleted` char(1) DEFAULT '0',
+  `StartDate` varchar(20) DEFAULT NULL,
+  `Number` varchar(10) DEFAULT NULL,
+  `Status` char(1) DEFAULT '1',
+  `ExtInfo` longblob,
+  `lastupdate` bigint(20) DEFAULT NULL,
+  KEY `CH_ELEXIS_ICPC_EPISODES1` (`PatientID`),
+  KEY `CH_ELEXIS_ICPC_EPISODES2` (`Title`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ch_elexis_icpc_episodes_diagnoses_link`
+--
+
+DROP TABLE IF EXISTS `ch_elexis_icpc_episodes_diagnoses_link`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ch_elexis_icpc_episodes_diagnoses_link` (
+  `ID` varchar(25) DEFAULT NULL,
+  `deleted` char(1) DEFAULT '0',
+  `Episode` varchar(25) DEFAULT NULL,
+  `Diagnosis` varchar(80) DEFAULT NULL,
+  `lastupdate` bigint(20) DEFAULT NULL
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ch_elexis_impfplan_vaccination_types`
+--
+
+DROP TABLE IF EXISTS `ch_elexis_impfplan_vaccination_types`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ch_elexis_impfplan_vaccination_types` (
+  `ID` varchar(25) NOT NULL,
+  `deleted` char(1) DEFAULT '0',
+  `lastupdate` bigint(20) DEFAULT NULL,
+  `name` varchar(80) DEFAULT NULL,
+  `product` varchar(80) DEFAULT NULL,
+  `delay_1to2` varchar(10) DEFAULT NULL,
+  `delay_2to3` varchar(10) DEFAULT NULL,
+  `delay_3to4` varchar(10) DEFAULT NULL,
+  `delay_4to5` varchar(10) DEFAULT NULL,
+  `delay_rep` varchar(10) DEFAULT NULL,
+  `recommendedAge` varchar(10) DEFAULT NULL,
+  `remarks` longtext,
+  PRIMARY KEY (`ID`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ch_elexis_impfplan_vaccinations`
+--
+
+DROP TABLE IF EXISTS `ch_elexis_impfplan_vaccinations`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ch_elexis_impfplan_vaccinations` (
+  `ID` varchar(25) NOT NULL,
+  `deleted` char(1) DEFAULT '0',
+  `lastupdate` bigint(20) DEFAULT NULL,
+  `patientID` varchar(25) DEFAULT NULL,
+  `vaccinationType` varchar(25) DEFAULT NULL,
+  `date` char(8) DEFAULT NULL,
+  `observations` longtext,
+  PRIMARY KEY (`ID`),
+  KEY `CH_ELEXIS_IMPFPLAN_VACCINATIONS_IDX1` (`patientID`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ch_elexis_kassenbuch`
+--
+
+DROP TABLE IF EXISTS `ch_elexis_kassenbuch`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ch_elexis_kassenbuch` (
+  `ID` varchar(25) NOT NULL,
+  `Nr` varchar(25) DEFAULT NULL,
+  `Date` char(8) DEFAULT NULL,
+  `Amount` char(8) DEFAULT NULL,
+  `Total` char(8) DEFAULT NULL,
+  `Entry` varchar(80) DEFAULT NULL,
+  `deleted` char(1) DEFAULT '0',
+  `Category` varchar(80) DEFAULT NULL,
+  `lastupdate` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ch_elexis_medikamente_bag_ext`
+--
+
+DROP TABLE IF EXISTS `ch_elexis_medikamente_bag_ext`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ch_elexis_medikamente_bag_ext` (
+  `ID` varchar(25) NOT NULL,
+  `deleted` char(1) DEFAULT '0',
+  `keywords` varchar(80) DEFAULT NULL,
+  `prescription` longtext,
+  `KompendiumText` longtext,
+  `lastupdate` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ch_elexis_medikamente_bag_interactions`
+--
+
+DROP TABLE IF EXISTS `ch_elexis_medikamente_bag_interactions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ch_elexis_medikamente_bag_interactions` (
+  `ID` varchar(25) NOT NULL,
+  `deleted` char(1) DEFAULT '0',
+  `Subst1` varchar(25) DEFAULT NULL,
+  `Subst2` varchar(25) DEFAULT NULL,
+  `Type` varchar(20) DEFAULT NULL,
+  `Relevance` char(1) DEFAULT NULL,
+  `Contributor` varchar(25) DEFAULT NULL,
+  `ContribDate` char(8) DEFAULT NULL,
+  `Description` longtext,
+  PRIMARY KEY (`ID`),
+  KEY `CEMBI1` (`Subst1`),
+  KEY `CEMBI2` (`Subst2`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ch_elexis_medikamente_bag_joint`
+--
+
+DROP TABLE IF EXISTS `ch_elexis_medikamente_bag_joint`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ch_elexis_medikamente_bag_joint` (
+  `ID` varchar(25) NOT NULL,
+  `product` varchar(25) DEFAULT NULL,
+  `substance` varchar(25) DEFAULT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ch_elexis_medikamente_bag_substance`
+--
+
+DROP TABLE IF EXISTS `ch_elexis_medikamente_bag_substance`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ch_elexis_medikamente_bag_substance` (
+  `ID` varchar(25) NOT NULL,
+  `deleted` char(1) DEFAULT '0',
+  `gruppe` varchar(10) DEFAULT NULL,
+  `name` varchar(250) DEFAULT NULL,
+  `lastupdate` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`ID`),
+  KEY `CEMBS1` (`gruppe`),
+  KEY `CEMBS2` (`name`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ch_elexis_messages`
+--
+
+DROP TABLE IF EXISTS `ch_elexis_messages`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ch_elexis_messages` (
+  `ID` varchar(25) NOT NULL,
+  `deleted` char(1) DEFAULT '0',
+  `origin` varchar(25) DEFAULT NULL,
+  `destination` varchar(25) DEFAULT NULL,
+  `dateTime` char(14) DEFAULT NULL,
+  `msg` longtext,
+  `lastupdate` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ch_elexis_messwerte_messwerte`
+--
+
+DROP TABLE IF EXISTS `ch_elexis_messwerte_messwerte`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ch_elexis_messwerte_messwerte` (
+  `ID` varchar(25) NOT NULL,
+  `lastupdate` bigint(20) DEFAULT NULL,
+  `deleted` char(1) DEFAULT '0',
+  `MessungID` varchar(25) DEFAULT NULL,
+  `Name` varchar(25) DEFAULT NULL,
+  `Wert` varchar(25) DEFAULT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ch_elexis_molemax`
+--
+
+DROP TABLE IF EXISTS `ch_elexis_molemax`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ch_elexis_molemax` (
+  `ID` varchar(25) NOT NULL,
+  `deleted` char(1) DEFAULT '0',
+  `patientID` varchar(25) DEFAULT NULL,
+  `date` char(8) DEFAULT NULL,
+  `slot` char(3) DEFAULT NULL,
+  `koord` varchar(40) DEFAULT NULL,
+  `ExtInfo` longblob,
+  `parentID` varchar(25) DEFAULT NULL,
+  PRIMARY KEY (`ID`),
+  KEY `MLMX1` (`patientID`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ch_elexis_notes`
+--
+
+DROP TABLE IF EXISTS `ch_elexis_notes`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ch_elexis_notes` (
+  `ID` varchar(25) DEFAULT NULL,
+  `Parent` varchar(25) DEFAULT NULL,
+  `Title` varchar(80) DEFAULT NULL,
+  `Date` char(8) DEFAULT NULL,
+  `Contents` longblob,
+  `refs` longtext,
+  `deleted` char(1) DEFAULT '0',
+  `keywords` varchar(255) DEFAULT NULL,
+  `mimetype` varchar(80) DEFAULT NULL,
+  `lastupdate` bigint(20) DEFAULT NULL
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ch_elexis_omnivore_data`
+--
+
+DROP TABLE IF EXISTS `ch_elexis_omnivore_data`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ch_elexis_omnivore_data` (
+  `ID` varchar(25) NOT NULL,
+  `PatID` varchar(25) DEFAULT NULL,
+  `Datum` char(8) DEFAULT NULL,
+  `Title` varchar(255) DEFAULT NULL,
+  `Mimetype` varchar(255) DEFAULT NULL,
+  `Keywords` varchar(255) DEFAULT NULL,
+  `Path` varchar(255) DEFAULT NULL,
+  `Doc` longblob,
+  `deleted` char(1) DEFAULT '0',
+  `Category` varchar(80) DEFAULT NULL,
+  `lastupdate` bigint(20) DEFAULT '0',
+  PRIMARY KEY (`ID`),
+  KEY `OMN1` (`PatID`),
+  KEY `OMN2` (`Keywords`),
+  KEY `OMN3` (`Category`),
+  KEY `OMN4` (`Mimetype`),
+  KEY `OMN5` (`deleted`),
+  KEY `OMN6` (`Title`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ch_elexis_privatrechnung`
+--
+
+DROP TABLE IF EXISTS `ch_elexis_privatrechnung`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ch_elexis_privatrechnung` (
+  `ID` varchar(25) NOT NULL,
+  `deleted` char(1) DEFAULT '0',
+  `parent` varchar(80) DEFAULT NULL,
+  `name` varchar(499) DEFAULT NULL,
+  `short` varchar(80) DEFAULT NULL,
+  `cost` char(8) DEFAULT NULL,
+  `price` char(8) DEFAULT NULL,
+  `time` char(4) DEFAULT NULL,
+  `subsystem` varchar(25) DEFAULT NULL,
+  `valid_from` char(8) DEFAULT NULL,
+  `valid_until` char(8) DEFAULT NULL,
+  `ExtInfo` longblob,
+  `lastupdate` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`ID`),
+  KEY `chelpr_idx1` (`parent`,`name`),
+  KEY `chelpr_idx2` (`valid_from`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ch_elexis_stickynotes`
+--
+
+DROP TABLE IF EXISTS `ch_elexis_stickynotes`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ch_elexis_stickynotes` (
+  `ID` varchar(25) DEFAULT NULL,
+  `lastupdate` bigint(20) DEFAULT NULL,
+  `deleted` char(1) DEFAULT '0',
+  `PatientID` varchar(25) DEFAULT NULL,
+  `contents` longblob,
+  KEY `CH_ELEXIS_STICKYNOTES1` (`PatientID`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ch_medelexis_labortarif2009`
+--
+
+DROP TABLE IF EXISTS `ch_medelexis_labortarif2009`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ch_medelexis_labortarif2009` (
+  `ID` varchar(25) NOT NULL,
+  `lastupdate` bigint(20) DEFAULT NULL,
+  `deleted` char(1) DEFAULT '0',
+  `chapter` varchar(10) DEFAULT NULL,
+  `code` varchar(12) DEFAULT NULL,
+  `tp` varchar(10) DEFAULT NULL,
+  `name` varchar(255) DEFAULT NULL,
+  `limitatio` longtext,
+  `fachbereich` varchar(10) DEFAULT NULL,
+  `praxistyp` varchar(2) DEFAULT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ch_medelexis_therapieplan_dispenses`
+--
+
+DROP TABLE IF EXISTS `ch_medelexis_therapieplan_dispenses`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ch_medelexis_therapieplan_dispenses` (
+  `ID` varchar(25) NOT NULL,
+  `deleted` char(1) DEFAULT '0',
+  `lastupdate` bigint(20) DEFAULT NULL,
+  `medicationID` varchar(25) DEFAULT NULL,
+  `dispenseDate` char(8) DEFAULT NULL,
+  `dispenseType` char(2) DEFAULT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ch_medelexis_therapieplan_medication`
+--
+
+DROP TABLE IF EXISTS `ch_medelexis_therapieplan_medication`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ch_medelexis_therapieplan_medication` (
+  `ID` varchar(25) NOT NULL,
+  `deleted` char(1) DEFAULT '0',
+  `lastupdate` bigint(20) DEFAULT NULL,
+  `patientID` varchar(25) DEFAULT NULL,
+  `article` varchar(80) DEFAULT NULL,
+  `packSize` varchar(5) DEFAULT NULL,
+  `dosage` varchar(20) DEFAULT NULL,
+  `startDate` char(8) DEFAULT NULL,
+  `endDate` char(8) DEFAULT NULL,
+  `remarks` varchar(80) DEFAULT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `com_hilotec_elexis_messwerte_messungen`
+--
+
+DROP TABLE IF EXISTS `com_hilotec_elexis_messwerte_messungen`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `com_hilotec_elexis_messwerte_messungen` (
+  `ID` varchar(25) NOT NULL,
+  `lastupdate` bigint(20) DEFAULT NULL,
+  `deleted` char(1) DEFAULT '0',
+  `PatientID` varchar(25) DEFAULT NULL,
+  `TypName` varchar(25) DEFAULT NULL,
+  `Datum` char(8) DEFAULT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `com_hilotec_elexis_messwerte_messwerte`
+--
+
+DROP TABLE IF EXISTS `com_hilotec_elexis_messwerte_messwerte`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `com_hilotec_elexis_messwerte_messwerte` (
+  `ID` varchar(25) NOT NULL,
+  `lastupdate` bigint(20) DEFAULT NULL,
+  `deleted` char(1) DEFAULT '0',
+  `MessungID` varchar(25) DEFAULT NULL,
+  `Name` varchar(25) DEFAULT NULL,
+  `Wert` varchar(25) DEFAULT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `config`
+--
+
+DROP TABLE IF EXISTS `config`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `config` (
+  `param` varchar(80) NOT NULL DEFAULT '',
+  `wert` text,
+  `LASTUPDATE` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`param`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `dbimage`
+--
+
+DROP TABLE IF EXISTS `dbimage`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `dbimage` (
+  `ID` varchar(25) NOT NULL,
+  `deleted` char(1) DEFAULT '0',
+  `Datum` char(8) DEFAULT NULL,
+  `Title` varchar(80) DEFAULT NULL,
+  `Bild` longblob,
+  `LASTUPDATE` bigint(20) DEFAULT NULL,
+  `Prefix` varchar(80) DEFAULT NULL,
+  PRIMARY KEY (`ID`),
+  KEY `DBIMAGE1` (`Title`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `diagnosen`
+--
+
+DROP TABLE IF EXISTS `diagnosen`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `diagnosen` (
+  `id` varchar(25) NOT NULL DEFAULT '',
+  `dg_txt` varchar(255) DEFAULT NULL,
+  `dg_code` varchar(25) DEFAULT NULL,
+  `klasse` varchar(80) DEFAULT NULL,
+  `deleted` char(1) DEFAULT '0',
+  `LASTUPDATE` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `dg1` (`klasse`,`dg_code`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `eigenleistungen`
+--
+
+DROP TABLE IF EXISTS `eigenleistungen`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `eigenleistungen` (
+  `ID` varchar(25) NOT NULL DEFAULT '',
+  `Code` varchar(20) DEFAULT NULL,
+  `Bezeichnung` varchar(80) DEFAULT NULL,
+  `EK_PREIS` varchar(6) DEFAULT NULL,
+  `VK_PREIS` varchar(6) DEFAULT NULL,
+  `ZEIT` varchar(4) DEFAULT NULL,
+  `deleted` char(1) DEFAULT '0',
+  `LASTUPDATE` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ek_preise`
+--
+
+DROP TABLE IF EXISTS `ek_preise`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ek_preise` (
+  `typ` varchar(80) DEFAULT NULL,
+  `id` varchar(25) DEFAULT NULL,
+  `datum_von` varchar(8) DEFAULT NULL,
+  `datum_bis` varchar(8) DEFAULT NULL,
+  `MULTIPLIKATOR` varchar(8) DEFAULT NULL,
+  `LASTUPDATE` bigint(20) DEFAULT NULL,
+  KEY `ekp1` (`typ`),
+  KEY `ekp2` (`datum_von`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `elexisbefunde`
+--
+
+DROP TABLE IF EXISTS `elexisbefunde`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `elexisbefunde` (
+  `id` varchar(25) NOT NULL DEFAULT '',
+  `patientid` varchar(25) DEFAULT NULL,
+  `Name` varchar(80) DEFAULT NULL,
+  `datum` varchar(8) DEFAULT NULL,
+  `befunde` blob,
+  `deleted` char(1) DEFAULT '0',
+  `lastupdate` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_elbf1` (`datum`),
+  KEY `idx_elbf2` (`patientid`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `esrrecords`
+--
+
+DROP TABLE IF EXISTS `esrrecords`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `esrrecords` (
+  `ID` varchar(25) NOT NULL DEFAULT '',
+  `DATUM` varchar(8) DEFAULT NULL,
+  `EINGELESEN` varchar(8) DEFAULT NULL,
+  `VERARBEITET` varchar(8) DEFAULT NULL,
+  `GUTSCHRIFT` varchar(8) DEFAULT NULL,
+  `BETRAGINRP` varchar(8) DEFAULT NULL,
+  `CODE` char(3) DEFAULT NULL,
+  `RECHNUNGSID` varchar(25) DEFAULT NULL,
+  `PATIENTID` varchar(25) DEFAULT NULL,
+  `MANDANTID` varchar(25) DEFAULT NULL,
+  `REJECTCODE` char(3) DEFAULT NULL,
+  `KOSTEN` varchar(4) DEFAULT NULL,
+  `GEBUCHT` varchar(8) DEFAULT NULL,
+  `FILE` varchar(80) DEFAULT NULL,
+  `deleted` char(1) DEFAULT '0',
+  `lastupdate` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`ID`),
+  KEY `ESR1` (`DATUM`),
+  KEY `ESR2` (`PATIENTID`),
+  KEY `ESR3` (`REJECTCODE`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `etiketten`
+--
+
+DROP TABLE IF EXISTS `etiketten`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `etiketten` (
+  `ID` varchar(25) NOT NULL,
+  `Image` varchar(25) DEFAULT NULL,
+  `deleted` char(1) DEFAULT '0',
+  `importance` varchar(7) DEFAULT NULL,
+  `Name` varchar(40) DEFAULT NULL,
+  `foreground` char(6) DEFAULT NULL,
+  `background` char(6) DEFAULT NULL,
+  `classes` varchar(255) DEFAULT NULL,
+  `LASTUPDATE` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`ID`),
+  KEY `ETIKETTE1` (`Name`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `etiketten_objclass_link`
+--
+
+DROP TABLE IF EXISTS `etiketten_objclass_link`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `etiketten_objclass_link` (
+  `objclass` varchar(80) DEFAULT NULL,
+  `sticker` varchar(25) DEFAULT NULL,
+  KEY `eol1` (`objclass`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `etiketten_object_link`
+--
+
+DROP TABLE IF EXISTS `etiketten_object_link`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `etiketten_object_link` (
+  `obj` varchar(25) DEFAULT NULL,
+  `etikette` varchar(25) DEFAULT NULL,
+  `LASTUPDATE` bigint(20) DEFAULT NULL,
+  KEY `ETIKETTE2` (`obj`),
+  KEY `ETIKETTE3` (`etikette`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `faelle`
+--
+
+DROP TABLE IF EXISTS `faelle`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `faelle` (
+  `id` varchar(25) NOT NULL DEFAULT '',
+  `patientid` varchar(25) DEFAULT NULL,
+  `garantid` varchar(25) DEFAULT NULL,
+  `kostentrid` varchar(25) DEFAULT NULL,
+  `versnummer` varchar(25) DEFAULT NULL,
+  `fallnummer` varchar(25) DEFAULT NULL,
+  `betriebsnummer` varchar(25) DEFAULT NULL,
+  `diagnosen` varchar(25) DEFAULT NULL,
+  `datumvon` varchar(8) DEFAULT NULL,
+  `datumbis` varchar(8) DEFAULT NULL,
+  `bezeichnung` varchar(20) DEFAULT NULL,
+  `grund` varchar(20) DEFAULT NULL,
+  `gesetz` varchar(10) DEFAULT NULL,
+  `EXTINFO` blob,
+  `Status` varchar(80) DEFAULT NULL,
+  `deleted` char(1) DEFAULT '0',
+  `LASTUPDATE` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `i3` (`patientid`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `heap`
+--
+
+DROP TABLE IF EXISTS `heap`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `heap` (
+  `ID` varchar(80) NOT NULL DEFAULT '',
+  `inhalt` longblob,
+  `datum` char(8) DEFAULT NULL,
+  `deleted` char(1) DEFAULT '0',
+  `lastupdate` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `heap2`
+--
+
+DROP TABLE IF EXISTS `heap2`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `heap2` (
+  `ID` varchar(80) NOT NULL DEFAULT '',
+  `Contents` blob,
+  `deleted` char(1) DEFAULT '0',
+  `datum` char(8) DEFAULT NULL,
+  `lastupdate` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `iatrix_problem`
+--
+
+DROP TABLE IF EXISTS `iatrix_problem`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `iatrix_problem` (
+  `ID` varchar(25) NOT NULL,
+  `PatientID` varchar(25) DEFAULT NULL,
+  `Bezeichnung` varchar(50) DEFAULT NULL,
+  `Nummer` varchar(10) DEFAULT NULL,
+  `Datum` varchar(10) DEFAULT NULL,
+  `Procedere` varchar(80) DEFAULT NULL,
+  `Status` char(1) DEFAULT '1',
+  `ExtInfo` blob,
+  PRIMARY KEY (`ID`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `iatrix_problem_behdl_joint`
+--
+
+DROP TABLE IF EXISTS `iatrix_problem_behdl_joint`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `iatrix_problem_behdl_joint` (
+  `ID` varchar(25) NOT NULL,
+  `ProblemID` varchar(25) DEFAULT NULL,
+  `BehandlungsID` varchar(25) DEFAULT NULL,
+  PRIMARY KEY (`ID`),
+  KEY `problembehdl1` (`ProblemID`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `iatrix_problem_dauermedikation_joint`
+--
+
+DROP TABLE IF EXISTS `iatrix_problem_dauermedikation_joint`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `iatrix_problem_dauermedikation_joint` (
+  `ID` varchar(25) NOT NULL,
+  `ProblemID` varchar(25) DEFAULT NULL,
+  `DauermedikationID` varchar(25) DEFAULT NULL,
+  PRIMARY KEY (`ID`),
+  KEY `problemdauermedikation1` (`ProblemID`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `iatrix_problem_dg_joint`
+--
+
+DROP TABLE IF EXISTS `iatrix_problem_dg_joint`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `iatrix_problem_dg_joint` (
+  `ID` varchar(25) NOT NULL,
+  `ProblemID` varchar(25) DEFAULT NULL,
+  `DiagnoseID` varchar(25) DEFAULT NULL,
+  PRIMARY KEY (`ID`),
+  KEY `problemdg1` (`ProblemID`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `icd10`
+--
+
+DROP TABLE IF EXISTS `icd10`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `icd10` (
+  `id` varchar(25) NOT NULL DEFAULT '',
+  `parent` varchar(25) DEFAULT NULL,
+  `icdcode` varchar(10) DEFAULT NULL,
+  `encoded` text,
+  `icdtxt` text,
+  `extinfo` blob,
+  `deleted` char(1) DEFAULT '0',
+  `lastupdate` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `icd1` (`parent`),
+  KEY `icd2` (`icdcode`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `kontakt`
+--
+
+DROP TABLE IF EXISTS `kontakt`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `kontakt` (
+  `id` varchar(25) CHARACTER SET latin1 NOT NULL DEFAULT '',
+  `istorganisation` char(1) CHARACTER SET latin1 DEFAULT '0',
+  `istperson` char(1) CHARACTER SET latin1 DEFAULT '0',
+  `istpatient` char(1) CHARACTER SET latin1 DEFAULT '0',
+  `istanwender` char(1) CHARACTER SET latin1 DEFAULT '0',
+  `istmandant` char(1) CHARACTER SET latin1 DEFAULT '0',
+  `istlabor` char(1) CHARACTER SET latin1 DEFAULT '0',
+  `land` char(3) CHARACTER SET latin1 DEFAULT NULL,
+  `geburtsdatum` varchar(8) CHARACTER SET latin1 DEFAULT NULL,
+  `geschlecht` char(1) CHARACTER SET latin1 DEFAULT NULL,
+  `Titel` varchar(255) COLLATE latin1_german1_ci DEFAULT NULL,
+  `Bezeichnung1` varchar(255) COLLATE latin1_german1_ci DEFAULT NULL,
+  `Bezeichnung2` varchar(255) COLLATE latin1_german1_ci DEFAULT NULL,
+  `Bezeichnung3` varchar(255) COLLATE latin1_german1_ci DEFAULT NULL,
+  `Strasse` varchar(255) COLLATE latin1_german1_ci DEFAULT NULL,
+  `plz` varchar(6) CHARACTER SET latin1 DEFAULT NULL,
+  `Ort` varchar(255) COLLATE latin1_german1_ci DEFAULT NULL,
+  `telefon1` varchar(20) CHARACTER SET latin1 DEFAULT NULL,
+  `telefon2` varchar(20) CHARACTER SET latin1 DEFAULT NULL,
+  `fax` varchar(20) CHARACTER SET latin1 DEFAULT NULL,
+  `natelnr` varchar(15) CHARACTER SET latin1 DEFAULT NULL,
+  `Email` varchar(255) COLLATE latin1_german1_ci DEFAULT NULL,
+  `Website` varchar(255) COLLATE latin1_german1_ci DEFAULT NULL,
+  `gruppe` varchar(10) CHARACTER SET latin1 DEFAULT NULL,
+  `patientnr` varchar(50) CHARACTER SET latin1 DEFAULT NULL,
+  `anschrift` text CHARACTER SET latin1,
+  `bemerkung` text CHARACTER SET latin1,
+  `diagnosen` blob,
+  `persanamnese` blob,
+  `sysanamnese` blob,
+  `famanamnese` blob,
+  `risiken` text CHARACTER SET latin1,
+  `allergien` text CHARACTER SET latin1,
+  `extinfo` blob,
+  `deleted` char(1) CHARACTER SET latin1 DEFAULT '0',
+  `LASTUPDATE` bigint(20) DEFAULT NULL,
+  `TitelSuffix` varchar(255) COLLATE latin1_german1_ci DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `k0` (`Bezeichnung1`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_german1_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `kontakt_adress_joint`
+--
+
+DROP TABLE IF EXISTS `kontakt_adress_joint`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `kontakt_adress_joint` (
+  `id` varchar(25) NOT NULL DEFAULT '',
+  `myid` varchar(25) DEFAULT NULL,
+  `otherid` varchar(25) DEFAULT NULL,
+  `Bezug` varchar(80) DEFAULT NULL,
+  `deleted` char(1) DEFAULT '0',
+  `LASTUPDATE` bigint(20) DEFAULT NULL,
+  `myRType` char(4) DEFAULT NULL,
+  `otherRType` char(4) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `aij1` (`myid`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `konto`
+--
+
+DROP TABLE IF EXISTS `konto`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `konto` (
+  `id` varchar(25) NOT NULL DEFAULT '',
+  `patientid` varchar(25) DEFAULT NULL,
+  `betrag` varchar(8) DEFAULT NULL,
+  `datum` varchar(8) DEFAULT NULL,
+  `bemerkung` varchar(80) DEFAULT NULL,
+  `RechnungsID` varchar(25) DEFAULT NULL,
+  `ZahlungsID` varchar(25) DEFAULT NULL,
+  `deleted` char(1) DEFAULT '0',
+  `LASTUPDATE` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `konto1` (`datum`),
+  KEY `konto2` (`patientid`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `labgroup_item_joint`
+--
+
+DROP TABLE IF EXISTS `labgroup_item_joint`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `labgroup_item_joint` (
+  `GroupID` varchar(25) NOT NULL,
+  `ItemID` varchar(25) DEFAULT NULL,
+  `Comment` text,
+  `LASTUPDATE` bigint(20) DEFAULT NULL
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `labgroups`
+--
+
+DROP TABLE IF EXISTS `labgroups`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `labgroups` (
+  `ID` varchar(25) NOT NULL,
+  `name` varchar(30) DEFAULT NULL,
+  `deleted` char(1) DEFAULT '0',
+  `LASTUPDATE` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `laboritems`
+--
+
+DROP TABLE IF EXISTS `laboritems`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `laboritems` (
+  `id` varchar(25) NOT NULL DEFAULT '',
+  `kuerzel` varchar(80) DEFAULT NULL,
+  `titel` varchar(80) DEFAULT NULL,
+  `laborid` varchar(25) DEFAULT NULL,
+  `RefMann` varchar(256) DEFAULT NULL,
+  `RefFrauOrTx` varchar(256) DEFAULT NULL,
+  `Einheit` varchar(20) DEFAULT NULL,
+  `typ` char(1) DEFAULT NULL,
+  `gruppe` varchar(25) DEFAULT NULL,
+  `prio` char(3) DEFAULT NULL,
+  `deleted` char(1) DEFAULT '0',
+  `LASTUPDATE` bigint(20) DEFAULT NULL,
+  `billingcode` varchar(128) DEFAULT NULL,
+  `EXPORT` varchar(100) DEFAULT NULL,
+  `loinccode` varchar(128) DEFAULT NULL,
+  `visible` varchar(1) DEFAULT NULL,
+  `digits` varchar(16) DEFAULT NULL,
+  `formula` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `labit1` (`kuerzel`),
+  KEY `labit2` (`laborid`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `laborwerte`
+--
+
+DROP TABLE IF EXISTS `laborwerte`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `laborwerte` (
+  `id` varchar(25) NOT NULL DEFAULT '',
+  `patientid` varchar(25) DEFAULT NULL,
+  `datum` varchar(8) DEFAULT NULL,
+  `itemid` varchar(25) DEFAULT NULL,
+  `resultat` varchar(255) DEFAULT NULL,
+  `kommentar` text,
+  `Flags` varchar(10) DEFAULT NULL,
+  `deleted` char(1) DEFAULT '0',
+  `Origin` varchar(30) DEFAULT NULL,
+  `zeit` char(6) DEFAULT NULL,
+  `LASTUPDATE` bigint(20) DEFAULT NULL,
+  `ExtInfo` longblob,
+  `unit` varchar(255) DEFAULT NULL,
+  `analysetime` varchar(24) DEFAULT NULL,
+  `observationtime` varchar(24) DEFAULT NULL,
+  `transmissiontime` varchar(24) DEFAULT NULL,
+  `refmale` varchar(255) DEFAULT NULL,
+  `reffemale` varchar(255) DEFAULT NULL,
+  `OriginID` varchar(25) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `labor1` (`patientid`),
+  KEY `labor2` (`datum`),
+  KEY `labor3` (`itemid`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `leistungen`
+--
+
+DROP TABLE IF EXISTS `leistungen`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `leistungen` (
+  `id` varchar(25) NOT NULL DEFAULT '',
+  `behandlung` varchar(25) DEFAULT NULL,
+  `leistg_txt` varchar(255) DEFAULT NULL,
+  `leistg_code` varchar(25) DEFAULT NULL,
+  `klasse` varchar(80) DEFAULT NULL,
+  `zahl` char(3) DEFAULT NULL,
+  `ek_kosten` varchar(6) DEFAULT NULL,
+  `VK_TP` varchar(8) DEFAULT NULL,
+  `VK_SCALE` varchar(8) DEFAULT NULL,
+  `vk_preis` varchar(6) DEFAULT NULL,
+  `SCALE` varchar(4) DEFAULT '100',
+  `DETAIL` blob,
+  `deleted` char(1) DEFAULT '0',
+  `SCALE2` char(4) DEFAULT NULL,
+  `LASTUPDATE` bigint(20) DEFAULT NULL,
+  `userID` varchar(25) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `lst1` (`behandlung`),
+  KEY `lst2` (`klasse`,`leistg_code`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `leistungsblock`
+--
+
+DROP TABLE IF EXISTS `leistungsblock`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `leistungsblock` (
+  `id` varchar(25) NOT NULL DEFAULT '',
+  `mandantid` varchar(25) DEFAULT NULL,
+  `name` varchar(30) DEFAULT NULL,
+  `leistungen` blob,
+  `deleted` char(1) DEFAULT '0',
+  `LASTUPDATE` bigint(20) DEFAULT NULL,
+  `Macro` varchar(30) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `block1` (`name`),
+  KEY `block2` (`mandantid`),
+  KEY `block3` (`Macro`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `logs`
+--
+
+DROP TABLE IF EXISTS `logs`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `logs` (
+  `ID` varchar(25) NOT NULL,
+  `OID` varchar(255) DEFAULT NULL,
+  `datum` char(8) DEFAULT NULL,
+  `typ` varchar(20) DEFAULT NULL,
+  `userID` varchar(25) DEFAULT NULL,
+  `station` varchar(255) DEFAULT NULL,
+  `ExtInfo` longblob,
+  `LASTUPDATE` bigint(20) DEFAULT NULL,
+  `deleted` char(1) DEFAULT '0',
+  PRIMARY KEY (`ID`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `output_log`
+--
+
+DROP TABLE IF EXISTS `output_log`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `output_log` (
+  `ID` varchar(25) NOT NULL,
+  `lastupdate` bigint(20) DEFAULT NULL,
+  `deleted` char(1) DEFAULT '0',
+  `ObjectID` varchar(25) DEFAULT NULL,
+  `ObjectType` varchar(80) DEFAULT NULL,
+  `Datum` char(8) DEFAULT NULL,
+  `Outputter` varchar(80) DEFAULT NULL,
+  `ExtInfo` longblob,
+  PRIMARY KEY (`ID`),
+  KEY `bal_i1` (`ObjectID`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `patient_artikel_joint`
+--
+
+DROP TABLE IF EXISTS `patient_artikel_joint`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `patient_artikel_joint` (
+  `artikelid` varchar(25) DEFAULT NULL,
+  `Dosis` varchar(255) DEFAULT NULL,
+  `Bemerkung` varchar(255) DEFAULT NULL,
+  `id` varchar(25) DEFAULT NULL,
+  `patientid` varchar(25) DEFAULT NULL,
+  `REZEPTID` varchar(25) DEFAULT NULL,
+  `DATEFROM` char(8) DEFAULT NULL,
+  `DATEUNTIL` char(8) DEFAULT NULL,
+  `ANZAHL` char(3) DEFAULT NULL,
+  `ExtInfo` longblob,
+  `deleted` char(1) DEFAULT '0',
+  `LASTUPDATE` bigint(20) DEFAULT NULL,
+  `Artikel` varchar(255) DEFAULT NULL,
+  `prescType` char(2) DEFAULT NULL,
+  `sortOrder` char(3) DEFAULT NULL,
+  `prescDate` char(8) DEFAULT NULL,
+  `prescriptor` varchar(25) DEFAULT NULL,
+  KEY `paj1` (`patientid`),
+  KEY `PAJ2` (`REZEPTID`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `rechnungen`
+--
+
+DROP TABLE IF EXISTS `rechnungen`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `rechnungen` (
+  `id` varchar(25) NOT NULL DEFAULT '',
+  `rnnummer` varchar(8) DEFAULT NULL,
+  `fallid` varchar(25) DEFAULT NULL,
+  `mandantid` varchar(25) DEFAULT NULL,
+  `rndatum` varchar(8) DEFAULT NULL,
+  `rnstatus` varchar(20) DEFAULT NULL,
+  `rndatumvon` varchar(8) DEFAULT NULL,
+  `rndatumbis` varchar(8) DEFAULT NULL,
+  `betrag` varchar(8) DEFAULT NULL,
+  `extinfo` blob,
+  `STATUSDATUM` char(8) DEFAULT NULL,
+  `deleted` char(1) DEFAULT '0',
+  `LASTUPDATE` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `i9` (`fallid`),
+  KEY `i10` (`mandantid`),
+  KEY `Rn3` (`rnstatus`),
+  KEY `Rn4` (`rndatumvon`),
+  KEY `Rn5` (`rndatumbis`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `reminders`
+--
+
+DROP TABLE IF EXISTS `reminders`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `reminders` (
+  `id` varchar(25) NOT NULL DEFAULT '',
+  `identid` varchar(25) DEFAULT NULL,
+  `datedue` varchar(8) DEFAULT NULL,
+  `status` char(1) DEFAULT NULL,
+  `typ` char(1) DEFAULT NULL,
+  `params` text,
+  `message` text,
+  `RESPONSIBLE` varchar(25) DEFAULT NULL,
+  `OriginID` varchar(25) DEFAULT NULL,
+  `deleted` char(1) DEFAULT '0',
+  `LASTUPDATE` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `rem1` (`identid`),
+  KEY `rem2` (`datedue`),
+  KEY `rem3` (`RESPONSIBLE`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `reminders_responsible_link`
+--
+
+DROP TABLE IF EXISTS `reminders_responsible_link`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `reminders_responsible_link` (
+  `ID` varchar(25) NOT NULL,
+  `ReminderID` varchar(25) DEFAULT NULL,
+  `ResponsibleID` varchar(25) DEFAULT NULL,
+  `deleted` char(1) DEFAULT '0',
+  `LASTUPDATE` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`ID`),
+  KEY `rrl1` (`ReminderID`),
+  KEY `rrl2` (`ResponsibleID`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `rezepte`
+--
+
+DROP TABLE IF EXISTS `rezepte`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `rezepte` (
+  `id` varchar(25) NOT NULL DEFAULT '',
+  `patientid` varchar(25) DEFAULT NULL,
+  `mandantid` varchar(25) DEFAULT NULL,
+  `datum` varchar(8) DEFAULT NULL,
+  `rptxt` text,
+  `RpZusatz` varchar(80) DEFAULT NULL,
+  `BriefID` varchar(25) DEFAULT NULL,
+  `deleted` char(1) DEFAULT '0',
+  `LASTUPDATE` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `rp1` (`patientid`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `right_`
+--
+
+DROP TABLE IF EXISTS `right_`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `right_` (
+  `ID` varchar(25) NOT NULL,
+  `LASTUPDATE` bigint(20) DEFAULT NULL,
+  `DELETED` char(1) DEFAULT '0',
+  `LOG_EXECUTION` char(1) DEFAULT NULL,
+  `NAME` varchar(256) DEFAULT NULL,
+  `PARENTID` varchar(25) DEFAULT NULL,
+  `I18N_NAME` varchar(256) DEFAULT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Temporary table structure for view `rights_per_role`
+--
+
+DROP TABLE IF EXISTS `rights_per_role`;
+/*!50001 DROP VIEW IF EXISTS `rights_per_role`*/;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+/*!50001 CREATE TABLE `rights_per_role` (
+  `ROLE_ID` tinyint NOT NULL,
+  `RIGHT_ID` tinyint NOT NULL
+) ENGINE=MyISAM */;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Temporary table structure for view `rights_per_user`
+--
+
+DROP TABLE IF EXISTS `rights_per_user`;
+/*!50001 DROP VIEW IF EXISTS `rights_per_user`*/;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+/*!50001 CREATE TABLE `rights_per_user` (
+  `USER_ID` tinyint NOT NULL,
+  `RIGHT_ID` tinyint NOT NULL,
+  `RIGHT_NAME` tinyint NOT NULL
+) ENGINE=MyISAM */;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `role`
+--
+
+DROP TABLE IF EXISTS `role`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `role` (
+  `ID` varchar(25) NOT NULL,
+  `LASTUPDATE` bigint(20) DEFAULT NULL,
+  `DELETED` char(1) DEFAULT '0',
+  `EXTINFO` longblob,
+  `ISSYSTEMROLE` char(1) DEFAULT '0',
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `role_right_joint`
+--
+
+DROP TABLE IF EXISTS `role_right_joint`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `role_right_joint` (
+  `ID` varchar(25) NOT NULL,
+  `LASTUPDATE` bigint(20) DEFAULT NULL,
+  `DELETED` char(1) DEFAULT NULL,
+  `ROLE_ID` varchar(25) NOT NULL,
+  PRIMARY KEY (`ID`,`ROLE_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `tarmed`
+--
+
+DROP TABLE IF EXISTS `tarmed`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `tarmed` (
+  `ID` varchar(14) NOT NULL DEFAULT '',
+  `deleted` char(1) DEFAULT '0',
+  `Parent` varchar(14) DEFAULT NULL,
+  `DigniQuanti` char(5) DEFAULT NULL,
+  `DigniQuali` char(4) DEFAULT NULL,
+  `Sparte` char(4) DEFAULT NULL,
+  `GueltigVon` char(8) DEFAULT NULL,
+  `GueltigBis` char(8) DEFAULT NULL,
+  `Nickname` varchar(25) DEFAULT NULL,
+  `tx255` varchar(255) DEFAULT NULL,
+  `lastupdate` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`ID`) USING BTREE,
+  KEY `tarmed2` (`Parent`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `tarmed_daten`
+--
+
+DROP TABLE IF EXISTS `tarmed_daten`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `tarmed_daten` (
+  `Parameter` varchar(80) DEFAULT NULL,
+  `DatumVon` char(8) DEFAULT NULL,
+  `DatumBis` char(8) DEFAULT NULL,
+  `Wert` varchar(10) DEFAULT NULL,
+  KEY `tarmed5` (`Parameter`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `tarmed_definitionen`
+--
+
+DROP TABLE IF EXISTS `tarmed_definitionen`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `tarmed_definitionen` (
+  `Spalte` varchar(20) DEFAULT NULL,
+  `Kuerzel` varchar(5) DEFAULT NULL,
+  `titel` varchar(255) DEFAULT NULL,
+  KEY `tarmed3` (`Spalte`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `tarmed_extension`
+--
+
+DROP TABLE IF EXISTS `tarmed_extension`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `tarmed_extension` (
+  `Code` varchar(14) DEFAULT NULL,
+  `limits` longblob,
+  `med_interpret` longtext,
+  `tech_interpret` longtext,
+  KEY `tarmed4` (`Code`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `traces`
+--
+
+DROP TABLE IF EXISTS `traces`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `traces` (
+  `logtime` bigint(20) DEFAULT NULL,
+  `workstation` varchar(30) DEFAULT NULL,
+  `username` varchar(30) DEFAULT NULL,
+  `action` text,
+  KEY `trace1` (`logtime`),
+  KEY `trace2` (`username`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `user_`
+--
+
+DROP TABLE IF EXISTS `user_`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `user_` (
+  `ID` varchar(25) NOT NULL,
+  `DELETED` char(1) DEFAULT '0',
+  `KONTAKT_ID` varchar(25) DEFAULT NULL,
+  `LASTUPDATE` bigint(20) DEFAULT NULL,
+  `HASHED_PASSWORD` varchar(64) DEFAULT NULL,
+  `SALT` varchar(64) DEFAULT NULL,
+  `IS_ACTIVE` char(1) DEFAULT '1',
+  `IS_ADMINISTRATOR` char(1) DEFAULT '0',
+  `KEYSTORE` longtext,
+  `EXTINFO` longblob,
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `user_role_joint`
+--
+
+DROP TABLE IF EXISTS `user_role_joint`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `user_role_joint` (
+  `ID` varchar(25) NOT NULL,
+  `LASTUPDATE` bigint(20) DEFAULT NULL,
+  `DELETED` char(1) DEFAULT NULL,
+  `USER_ID` varchar(25) NOT NULL,
+  PRIMARY KEY (`ID`,`USER_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `userconfig`
+--
+
+DROP TABLE IF EXISTS `userconfig`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `userconfig` (
+  `UserID` varchar(25) DEFAULT NULL,
+  `Param` varchar(80) DEFAULT NULL,
+  `Value` longtext,
+  `LASTUPDATE` bigint(20) DEFAULT NULL,
+  KEY `UCFG` (`Param`),
+  KEY `UCFG2` (`UserID`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `vk_preise`
+--
+
+DROP TABLE IF EXISTS `vk_preise`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `vk_preise` (
+  `typ` varchar(80) DEFAULT NULL,
+  `id` varchar(25) DEFAULT NULL,
+  `datum_von` varchar(8) DEFAULT NULL,
+  `datum_bis` varchar(8) DEFAULT NULL,
+  `MULTIPLIKATOR` varchar(8) DEFAULT NULL,
+  `LASTUPDATE` bigint(20) DEFAULT NULL,
+  KEY `vkp1` (`typ`),
+  KEY `vkp2` (`datum_von`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `xid`
+--
+
+DROP TABLE IF EXISTS `xid`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `xid` (
+  `ID` varchar(25) NOT NULL,
+  `deleted` char(1) DEFAULT '0',
+  `type` varchar(80) DEFAULT NULL,
+  `object` varchar(25) DEFAULT NULL,
+  `domain` varchar(255) DEFAULT NULL,
+  `domain_id` varchar(255) DEFAULT NULL,
+  `quality` char(1) DEFAULT '0',
+  `LASTUPDATE` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`ID`),
+  KEY `XIDIDX1` (`domain`),
+  KEY `XIDIDX2` (`domain_id`),
+  KEY `XIDIDX3` (`object`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `zahlungen`
+--
+
+DROP TABLE IF EXISTS `zahlungen`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `zahlungen` (
+  `id` varchar(25) NOT NULL DEFAULT '',
+  `rechnungsid` varchar(25) DEFAULT NULL,
+  `betrag` varchar(8) DEFAULT NULL,
+  `datum` varchar(8) DEFAULT NULL,
+  `bemerkung` varchar(80) DEFAULT NULL,
+  `deleted` char(1) DEFAULT '0',
+  `LASTUPDATE` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `zahl1` (`rechnungsid`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Final view structure for view `rights_per_role`
+--
+
+/*!50001 DROP TABLE IF EXISTS `rights_per_role`*/;
+/*!50001 DROP VIEW IF EXISTS `rights_per_role`*/;
+/*!50001 SET @saved_cs_client          = @@character_set_client */;
+/*!50001 SET @saved_cs_results         = @@character_set_results */;
+/*!50001 SET @saved_col_connection     = @@collation_connection */;
+/*!50001 SET character_set_client      = utf8mb4 */;
+/*!50001 SET character_set_results     = utf8mb4 */;
+/*!50001 SET collation_connection      = utf8mb4_general_ci */;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=`elexis`@`%` SQL SECURITY DEFINER */
+/*!50001 VIEW `rights_per_role` AS select `r`.`ID` AS `ROLE_ID`,`ri`.`ID` AS `RIGHT_ID` from ((`role` `r` left join `role_right_joint` `rrj` on((`r`.`ID` = `rrj`.`ROLE_ID`))) left join `right_` `ri` on((`rrj`.`ID` = `ri`.`ID`))) order by `r`.`ID` */;
+/*!50001 SET character_set_client      = @saved_cs_client */;
+/*!50001 SET character_set_results     = @saved_cs_results */;
+/*!50001 SET collation_connection      = @saved_col_connection */;
+
+--
+-- Final view structure for view `rights_per_user`
+--
+
+/*!50001 DROP TABLE IF EXISTS `rights_per_user`*/;
+/*!50001 DROP VIEW IF EXISTS `rights_per_user`*/;
+/*!50001 SET @saved_cs_client          = @@character_set_client */;
+/*!50001 SET @saved_cs_results         = @@character_set_results */;
+/*!50001 SET @saved_col_connection     = @@collation_connection */;
+/*!50001 SET character_set_client      = utf8mb4 */;
+/*!50001 SET character_set_results     = utf8mb4 */;
+/*!50001 SET collation_connection      = utf8mb4_general_ci */;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=`elexis`@`%` SQL SECURITY DEFINER */
+/*!50001 VIEW `rights_per_user` AS select `u`.`ID` AS `USER_ID`,`ri`.`ID` AS `RIGHT_ID`,`ri`.`NAME` AS `RIGHT_NAME` from ((((`user_` `u` left join `user_role_joint` `urj` on((`u`.`ID` = `urj`.`USER_ID`))) left join `role` `r` on((`urj`.`ID` = `r`.`ID`))) left join `role_right_joint` `rrj` on((`r`.`ID` = `rrj`.`ROLE_ID`))) left join `right_` `ri` on((`rrj`.`ID` = `ri`.`ID`))) order by `u`.`ID` */;
+/*!50001 SET character_set_client      = @saved_cs_client */;
+/*!50001 SET character_set_results     = @saved_cs_results */;
+/*!50001 SET collation_connection      = @saved_col_connection */;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2016-12-02 20:39:33

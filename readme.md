@@ -92,6 +92,8 @@ It took my quite a few hours to overcome the following problems
 * If you want to watch the screen output inside the docker, you have
 ** set environment variable USE_X11
 ** uncomment the 3 lines in wheezy/docker-compose ending with USE_X11
+** To start a new X server from within an already running X session, you need to run 'dpkg-reconfigure x11-common' and choose option 'anybody'.
+
 
 ### Object mapping
 

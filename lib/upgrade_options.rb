@@ -8,8 +8,9 @@ class UpgradeOptions < Hash
   CACHE_BASE = '/opt/downloads' # will be populated with downloads from download.elexis.info or medelexis
   def initialize(options = ARGV)
     p = Trollop::Parser.new do
-      version "JubulaRunner 0.2 (c) by Niklaus Giger <niklaus.giger@member.fsf.org>"
+      version "JubulaRunner #{ElexisJubula::VERSION} (c) by Niklaus Giger <niklaus.giger@member.fsf.org>"
       banner <<-EOS
+      #{version}
     Useage:
       * Test upgrade from an old (Med-)Elexis version to a newer one
     EOS
@@ -26,14 +27,17 @@ class UpgradeOptions < Hash
       opt :variant,       "Possible values are snapshot, beta, prerelease, release", :type => String, :default => 'prerelease'
       opt :info,          "Open (load if not yet exist) database and save DB-Info (inkl. elexis/db-version, nr_rows, max/min lastupdate)"
       opt :pry,           "Open a pry debug session with sequel and the defined database"
+      opt :run_in_docker, "Run (only --clean --upgrade supported) inside docker, not on the command line", :default => true
       opt :upgrade,       "Download (cached in #{CACHE_BASE}) (Med-)Elexis,
       start it twice and
       visit all views to catch possible errors, NPE, etc"
+      opt :use_x11,       "Force to use your display when running. Patches wheezy/docker-compose.yml, too. Handy to debug problems."
       opt :license_file,  'License file to use for Medelexis', :type => String, :default => nil
     end
     result = Trollop::with_standard_exception_handling p do
       p.parse options
     end
+    result[:need_to_stop_docker] = true
     self.merge! result
   end
 end

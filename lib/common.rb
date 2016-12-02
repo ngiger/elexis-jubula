@@ -177,8 +177,9 @@ def docker_build(docker_dir = File.join(RootDir, 'wheezy'))
   FileUtils.cp(File.join(RootDir, 'Gemfile'), docker_dir, verbose: true)
   docker_name = Config[:docker_name] || ElexisJubula::NAME
   cmd = "docker build -t #{docker_name}:#{ElexisJubula::VERSION} #{docker_dir}"
-  system(cmd)
-  puts "Built using #{cmd}"
+  res = system(cmd)
+  puts "Built using #{cmd} res #{res}"
+  res
 end
 
 def patch_ruby(cmd)
@@ -207,7 +208,7 @@ def system(cmd, opts = { :may_fail => false, :noop => @noop} )
   res = Kernel.system(full_cmd)
   return true if res
   puts Dir.pwd
-  puts "Dir.cmd #{Dir.pwd} and #{res} may fail #{opts[:may_fail]}"
+  puts "Dir.cmd #{Dir.pwd} and res #{res} may fail #{opts[:may_fail]}  for #{cmd}"
   fail(cmd) unless opts[:may_fail]
 end
 

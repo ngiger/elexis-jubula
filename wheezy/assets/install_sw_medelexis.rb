@@ -67,9 +67,13 @@ def create_snapshot(name, full = true)
 end
 
 def get_window_name(name = 'Elexis [[:digit:]].[[:digit:]].[[:digit:]]')
-  elexis_windows = `wmctrl -l | grep -e '#{name}' 2>/dev/null`
+  elexis_windows = `wmctrl -l | grep -e '#{name}' `# 2>/dev/null`
   if elexis_windows.size > 10
-    elexis_windows.split(/\s+/)[-2..-1].join(' ')else
+    res = elexis_windows.split(/\s+/)[-2..-1].join(' ')
+    puts "get_window_name #{name} returns #{res}" if $VERBOSE
+    res
+  else
+    puts "get_window_name #{name} returns nil" if $VERBOSE
     nil
   end
 end
@@ -130,7 +134,8 @@ def start_medelexis
         exit 3
       end
 
-      fail "#{MEDELEXIS_EXE} died. Why?" unless Process.getpgid( pid )
+      puts "#{MEDELEXIS_EXE} died. Why?" unless Process.getpgid( pid )
+      return
     end
     send_escape_to_window('InfoBox')
     progress "Waiting for Medelexis to be fully active"
@@ -141,16 +146,24 @@ def start_medelexis
   end
 end
 
+def increment_sw_error_and_snapshot(msg, err_name)
+  $sw_errors += 1
+  create_snapshot("#{$sw_errors}_#{err_name}")
+  cmd = "xdotool search --name #{windowname} windowactivate && xdotool key Escape"
+  res = system(cmd)
+  progress "#{msg} rm res #{res} for #{cmd}"
+end
+
 def send_escape_to_window(windowname)
   err_name=get_window_name(windowname)
   return unless err_name
   if err_name
-    $sw_errors += 1
-    create_snapshot("#{$sw_errors}_#{err_name}")
-    cmd = "xdotool search --name #{windowname} windowactivate && xdotool key Escape"
-    res = system(cmd)
-    progress "Found error_window #{$sw_errors} rm res #{res} for #{cmd}"
+    increment_sw_error_and_snapshot("Found error_window #{$sw_errors}", err_name)
   end
+end
+
+def send_quit
+  system("wmctrl -c '#{get_window_name}'")
 end
 
 def install_sw
@@ -160,14 +173,18 @@ def install_sw
     send_escape_to_window("Wichtige") # Sending "Wichtige Reminder" will fail
     sleep 0.5
   end
-  system("wmctrl -c '#{get_window_name}'")
+  send_quit
   sleep 5
   create_snapshot('install_sw_pressed_quit')
   progress "Waiting for Elexis to quit"
   while name = get_window_name
     sleep 3
-    progress "Elexis #{name} still alive"
+    progress "Elexis #{name} still alive after #{(Time.now - StartTime).to_i} seconds"
     PROBLEMATIC_WINDOW_TITLES.each{ |name| send_escape_to_window(name) }
+    send_quit # why
+    if (Time.now - StartTime).to_i > 600 # wait maximal 10 minutes
+      increment_sw_error_and_snapshot("Timout expired (600 seconds) #{$sw_errors}", 'timeout_installation')
+    end
   end
 end
 
@@ -189,9 +206,10 @@ begin
 ensure
   create_snapshot("install_finished", true)
   diff = (Time.now - StartTime).to_i
-  progress("done #{diff} seconds")
+  progress("done #{diff} seconds. We have #{$sw_errors} error")
 end
 File.open(FLAG_FILE, 'w+' ) {|f| f.puts @@msgs.join("\n") }
 report_error
 puts @@msgs.join("\n")
+exit $sw_errors
 

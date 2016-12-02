@@ -27,7 +27,7 @@ class JubulaRunner
       puts "aut_agent not yet realized"
       res = -1
     elsif opts[:build_docker]
-      docker_build
+      res = docker_build
     elsif opts[:elexis]
       puts "elexis not yet realized"
       res = -2
@@ -74,88 +74,7 @@ class JubulaRunner
     port
   end
 
-  def store_cmd(name, cmd)
-    path = File.join(@docker ? @docker.container_home : RootDir, File.basename(name))
-    FileUtils.makedirs(File.dirname(path), :noop => opts[:noop])
-    File.open(path, 'w') do |f|
-      f.puts '#!/bin/sh -v'
-      f.puts(cmd)
-    end
-    FileUtils.chmod(0755, path, verbose: true, :noop => opts[:noop])
-    FileUtils.cp(path, RootDir, :preserve => true, :verbose => true, :noop => opts[:noop])
-    system("ls -l #{path}", :noop => opts[:noop])
-    puts Dir.pwd
-  end
-
-  def prepare_docker
-    @docker.stop_docker # cleanup from previous runs if any
-    $need_to_stop_docker = true
-    at_exit do @docker.stop_docker end
-    tmp_dest_dir = File.join(RootDir, 'tmp.to_be_deleted')
-    puts "tmp_dest_dir is #{tmp_dest_dir}"
-    FileUtils.makedirs(tmp_dest_dir, :noop => opts[:noop])
-    if File.exists?(@docker.container_home) && !opts[:noop]
-      FileUtils.mv(@docker.container_home, "#{tmp_dest_dir}/#{Time.now.strftime('%Y%m%d%H%M%s')}", verbose: true)
-      fail "Must be possible to remove container_home #{@docker.container_home}" if File.exist?(@docker.container_home)
-      FileUtils.rm_rf(tmp_dest_dir)
-    end
-    FileUtils.makedirs(@docker.container_home, :noop => opts[:noop])
-    [ 'pom.xml', 'jubula-target', 'jubula-tests', 'org.eclipse.jubula.product.autagent.start'].each do |item|
-      FileUtils.cp_r(File.join(RootDir, item), @docker.container_home, verbose: true, noop: opts[:noop], preserve: true)
-    end
-    FileUtils.cp_r(WorkDir, File.join(@docker.container_home, 'work'), verbose: true, noop: opts[:noop], preserve: true)
-  end
-
-  def check_compose_for_x11
-    checks = [ '/tmp/.X11-unix', '/dev/snd' ]
-    if opts[:use_x11] # needs also changes in docker-compose.yml!
-      # Thanks to jess Fraznelle https://blog.jessfraz.com/post/docker-containers-on-the-desktop/
-      @display = ENV['DISPLAY']
-      checks.each do |needed_for_x|
-        cmd = "#{@docker.start_with} config | /bin/grep #{needed_for_x}"
-        unless system(cmd,  { :may_fail => true })
-          puts "\n\n-----------\n\n"
-          puts "If you want to make USE_X11 work correctly, you must add definitions"
-          puts "for #{checks} into docker-compose.yaml"
-          puts "\n\n-----------\n\n"
-          binding.pry
-          return 4
-        end
-      end
-      puts "Activating USE_X11 for DISPLAY #{@display}"
-    else
-      checks.each do |needed_for_x|
-        cmd = "#{@docker.start_with} config | /bin/grep #{needed_for_x}"
-
-        if (res = `#{cmd}`) && res.length > 0
-          puts "\n\n-----------\n\n"
-          puts "If must remove the definitions for #{checks} in docker-compose.yaml"
-          puts "   or Xvfb will not work correctly!"
-          puts "\n\n-----------\n\n"
-          return 4
-        end
-      end
-    end
-  end
-  def adapt_compose_for_x11
-    compose_yaml = File.join(RootDir, 'wheezy', 'docker-compose.yml')
-    inhalt = IO.readlines(compose_yaml); 3
-    if opts[:use_x11] # needs also changes in docker-compose.yml!
-      inhalt.each{|line|line.sub!(/^(\s+)# (.+)(#.+USE_X11\n)/, '\1\2\3')}.compact; 3
-      File.open(compose_yaml, 'w+'){|f| f.write(inhalt.join("")) }
-      system('git diff -w wheezy', :noop => opts[:noop])
-      @display = ENV['DISPLAY']
-      puts "Activating USE_X11 for DISPLAY #{@display}"
-    else
-      puts "rollback"
-      inhalt.each{|line| line.sub!(/^(\s+)([^#].*USE_X11\n)/,'\1# \2') unless /\s+#.+(#.+USE_X11\n)/.match(line)};2
-      File.open(compose_yaml, 'w+'){|f| f.write(inhalt.join("")) }
-      system('git diff -w wheezy', { :noop => opts[:noop]})
-      @display = ':1.5' # as defined below for Xvfb
-    end
-  end
   def run_test_in_docker
-    prepare_docker
     res = false
     adapt_compose_for_x11
     check_compose_for_x11
@@ -173,38 +92,10 @@ class JubulaRunner
     end
     puts "run_test_in_docker from #{Dir.pwd}"
     FileUtils.rm_f('jubula-tests/AUT_run.log', verbose: true, :noop => opts[:noop]) if File.exist?('jubula-tests/AUT_run.log')
-    cmd = "status=99\n"
-    cmd_name = '/home/elexis/testexec.sh'
     @test_params[:environment].each do |v,k| cmd += "export #{v}=#{k}\n" end if @test_params[:environment]
-    cmd += %(export LANG=de_CH.UTF-8
-export LANGUAGE=de_CH
-export DISPLAY=#{@display}
-export VARIANT=#{opts[:variant]}
-export AGENT_PORT=#{@test_params[:agent_port]}
-Xvfb :1 -screen 5 1600x1280x24 -nolisten tcp &
-echo "I am" `whoami`: `id`
-
-# idea from https://gist.github.com/tullmann/476cc71169295d5c3fe6
-echo `date`: waiting for Xserver to be ready
-MAX=120 # About 60 seconds
-CT=0
-while ! xdpyinfo >/dev/null 2>&1; do
-    sleep 0.50s
-    CT=$(( CT + 1 ))
-    if [ "$CT" -ge "$MAX" ]; then
-        echo "FATAL: $0: Gave up waiting for X server $DISPLAY"
-        exit 11
-    fi
-done
-echo `date`: Xserver on display #{@display} seems to be ready
-
-)
-     cmd += %(
-/usr/bin/metacity --replace --sm-disable &
-sleep 1
-/usr/bin/metacity-message disable-keybindings
-) unless opts[:use_x11]
-  cmd  += %(/usr/bin/xclock -digital -twentyfour & # Gives early feedback, that X is running
+    start_env = @docker.create_env_for_script
+    cmd  = %(status=99
+. #{start_env}
 # /home/elexis/results is mounted via docker-compose.yml
 cp $0 /home/elexis/results
 du -shx /home/elexis/.m2/repository
@@ -216,11 +107,11 @@ env | sort
 date
 ps -ef
 #{@mvn_cmd} -DDISPLAY=#{@display}
+export status=$?
 date
 pwd
 find $PWD -name surefire-reports | xargs ls -lrt
 ps -ef
-export status=$?
 echo saved status $status for #{@mvn_cmd}
 echo $status | tee /home/elexis/results/result_of_test_run
 echo Resultat von #{@test_params[:test_to_run]} um `date` war $status | tee --append /home/elexis/results/result_of_test_run
@@ -235,14 +126,14 @@ pkill -P $$
 echo about to exit with status $status
 exit $status
 )
-    store_cmd(cmd_name, cmd)
+    cmd_name = '/home/elexis/call_maven.sh'
+    @docker.store_cmd(cmd_name, cmd)
     # http://support.xored.com/support/solutions/articles/3000028645
     # https://www.eclipse.org/forums/index.php?t=msg&th=440461&goto=987043&#msg_987043
     # Had window activation problem with Xvfb with or without awesome
     # with startx this did not gow
-    system('xhost local:root', :noop => opts[:noop]) if @docker && opts[:use_x11]
     begin
-      puts "Starting HOST_UID is #{ENV['HOST_UID'].inspect} from process #{Process.uid.to_s} AGENT_PORT #{ENV['AGENT_PORT']} cmd: #{cmd_name}"
+      puts "Starting HOST_UID is #{ENV['HOST_UID'].inspect} from process #{Process.uid.to_s} AGENT_PORT #{opts[:agent_port]} cmd: #{cmd_name}"
       res = @docker.start_docker(cmd_name)
       sleep(0.5, :noop => opts[:noop])
       result = File.join(@result_dir, 'result_of_test_run')
@@ -287,7 +178,10 @@ exit $status
     FileUtils.makedirs(WorkDir, opts[:noop]) unless File.directory?(WorkDir)
     if opts[:run_in_docker]
       Dir.chdir(RootDir)
-      @docker = DockerRunner.new(@test_name, @result_dir, @test_params[:agent_port], opts[:noop])
+      @opts[:compose_file] = "wheezy/docker-compose.yml"
+      @opts[:compose_project] = "jubula#{opt[:agent_port]}"
+      @opts[:docker_name] = "jenkinstest"
+      @docker = DockerRunner.new(opts, @test_name, @result_dir)
       @elexis_log = "#{@docker.container_home}/elexis/logs/elexis-3.log"
     else
       @elexis_log = "#{Etc.getpwuid.dir}/elexis/logs/elexis-3.log"
@@ -298,13 +192,6 @@ exit $status
     FileUtils.makedirs(@result_dir, :noop => opts[:noop])
     # -offline does not work inside docker. Don't know why
     @mvn_cmd = "mvn clean integration-test -Dtest_to_run=#{@test_params[:test_to_run]}" # + ' -offline' #
-    trap("SIGINT") do
-      puts "\n\n----- ctrl_c catched-----\n\n"
-      sleep(1, :noop => opts[:noop])
-      @docker.stop_docker
-      puts "ctrl_c catcher finished"
-      exit(3)
-    end
     @docker ? run_test_in_docker : run_test_exec
   ensure
     @docker.stop_docker if @docker
@@ -332,8 +219,8 @@ exit $status
     @test_params.merge!(YAML.load_file(test_definitions)) if File.exist?(test_definitions)
     @test_params.merge!(opts)
     @test_params[:test_to_run] ||= test2run
-    @test_params[:agent_port] = get_unused_agent_port(@test_params)
-    ENV['AGENT_PORT'] = @test_params[:agent_port].to_s # for docker-compose.yml
+    @opts[:agent_port] = get_unused_agent_port(@test_params)
+    ENV['AGENT_PORT'] = @opts[:agent_port].to_s # for docker-compose.yml
     show_configuration if $VERBOSE || opts[:noop]
     if opts[:medelexis]
       glob_pattern = "*medelexis*application*.zip"

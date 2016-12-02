@@ -1,14 +1,12 @@
 $LOAD_PATH.unshift File.dirname(__FILE__)
 require 'lib/version'
 require 'lib/common'
-require 'rubocop/rake_task'
-RuboCop::RakeTask.new
 
 our_directory = File.expand_path(File.dirname(__FILE__))
 
 desc 'Build the docker image'
 task :docker_build do
-  unless system('bin/jubularunner.rb --build-docker', MAY_FAIL)
+  unless system('bin/jubularunner.rb --build-docker', :may_fail => true)
     fail 'docker_build failed!'
   end
   something_to_commit = `git status -uno --porcelain wheezy`
@@ -62,7 +60,7 @@ task :jubula_test, [:test_to_run] => :elexis_install_os do |_target, args|
   test_to_run = args[:test_to_run]
   test_to_run ||= 'Screenshot'
   # TODO: publish signed image and ensure that it can be
-  system('bin/jubularunner.rb docker_build') unless system('docker images #{ElexisJubula::NAME}', MAY_FAIL)
+  system('bin/jubularunner.rb docker_build') unless system('docker images #{ElexisJubula::NAME}', :may_fail => true)
   fail 'Running failed' unless system("bin/jubularunner.rb #{test_to_run} --no-run-in-docker")
 end
 
@@ -130,7 +128,7 @@ task docker_publish: :docker_build do
     "docker push #{ElexisJubula::NAME}:latest",
     ]
   cmds.each do |cmd|
-    unless system(cmd, MAY_FAIL)
+    unless system(cmd, :may_fail => true)
       puts "To build. we use the following commands:\n  " + cmds.join("\n  ")
       puts "we failed in #{cmd}"
       fail

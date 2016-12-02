@@ -64,6 +64,7 @@ module DbHelpers
   end
 
   def create_database
+    return true if run_in_docker?
     cmds =
         [ "create database if not exists #{opts[:db_name]}",
           "GRANT ALL ON #{opts[:db_name]}.* TO '#{opts[:db_user]}'@'%' IDENTIFIED BY '#{opts[:db_password]}'",
@@ -114,10 +115,11 @@ module DbHelpers
       has_tables = db.tables # Maybe the database does not
     rescue Sequel::DatabaseConnectionError
     end
-    if opts[:noop] || !has_tables
+    puts "load_elexis_db_if_not_exist has_tables is #{has_tables.inspect} noop #{ opts[:noop]}"
+    unless has_tables && has_tables.size > 0
       create_database
       load_database_dump
-    end
+    end unless opts[:noop]
   end
 
   def elexis_database_info

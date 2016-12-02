@@ -21,12 +21,12 @@ services:
       # File in this directory must not be world readable or the mysqld will simply ignore it!
       - ${PWD}/wheezy/mysql:/etc/mysql/conf.d
     environment:
-      MYSQL_ROOT_PASSWORD: secretRoot
+      MYSQL_ROOT_PASSWORD: elexis
       # username/password must be kept in sync with the AUT_RUN.java and
       # postresql/init_elexis_db.sh
-      MYSQL_USER: elexistest
-      MYSQL_PASSWORD: elexisTestPassword
-      MYSQL_DATABASE: elexistest
+      MYSQL_USER: elexis
+      MYSQL_PASSWORD: elexisTest
+      MYSQL_DATABASE: elexis
 
   pgdata:
     image: postgres:9.1
@@ -44,28 +44,26 @@ services:
       - ${PWD}/wheezy/postgres:/docker-entrypoint-initdb.d
     environment:
       # LANG: 'de_CH.UTF-8'
-      PGUSER: elexistest
-      POSTGRES_DB: elexistest
-      POSTGRES_PASSWORD: elexisTestPassword
+      PGUSER: elexis
+      POSTGRES_DB: test_elexis
+      POSTGRES_PASSWORD: elexisTest
 
-  jenkinstest:
-    # build: .
+  runner:
+    build: .
     image: ngiger/jubula_runner:${JUBULA_RUNNER_VERSION}
     networks:
       private:
       public:
     ports:
-      - "${AGENT_PORT}:${AGENT_PORT}"
       # Force an error if HOST_UID is not given!
       - "127.0.0.1::${HOST_UID}"
     working_dir: /home/elexis
     # We want silently kill the docker after an hour
     entrypoint: '/app/create_elexis_user.sh'
     volumes:
-      - ${PWD}/results:/home/elexis/results
-      - ${PWD}/container_home_m2:/home/elexis/.m2
-      - ${PWD}/container_home:/home/elexis
-      - ${PWD}/.git:/home/elexis/.git
+      - /opt/db_dumps:/opt/db_dumps
+      - /opt/downloads:/opt/downloads
+      - ${PWD}:/home/elexis
       # File in this directory must not be world readable or the mysqld will simply ignore it!
       - ${PWD}/wheezy/mysql:/etc/mysql/conf.d
       - /tmp/.X11-unix:/tmp/.X11-unix # für USE_X11
@@ -78,15 +76,15 @@ services:
     # an empty HOST_UID while creating the jenkinstest gives at least a warning
       HOST_UID: "${HOST_UID}" # We want to map the host_uid as our HOST_ID using create_elexis_user
       DOCKER_OPTS: "-H tcp://0.0.0.0:4243 -H unix:///var/run/docker.sock"
-      PGUSER: elexistest
+      PGUSER: elexis
       PGHOST: postgres
-      POSTGRES_DB: elexistest
+      POSTGRES_DB: test_elexis
       POSTGRES_PASSWORD: elexisTestPassword
       MYSQL_HOST: mysql
-      MYSQL_ROOT_PASSWORD: secretRoot
-      MYSQL_USER: elexistest
-      MYSQL_PASSWORD: elexisTestPassword
-      MYSQL_DATABASE: elexistest   #  MYSQL_HOST: mysqlTest
+      MYSQL_ROOT_PASSWORD: elexisTest
+      MYSQL_USER: elexis
+      MYSQL_PASSWORD: elexisTest
+      MYSQL_DATABASE: test_elexis
 networks:
   public:
   private:

@@ -1,0 +1,1289 @@
+Sequel.migration do
+  change do
+    create_table(:agntermine, :ignore_index_errors=>true) do
+      String :ID, :size=>127, :null=>false
+      String :PatID, :size=>80
+      String :Bereich, :size=>25
+      String :Tag, :size=>8, :fixed=>true
+      String :Beginn, :size=>4, :fixed=>true
+      String :Dauer, :size=>4, :fixed=>true
+      String :Grund, :text=>true
+      String :TerminTyp, :size=>50
+      String :TerminStatus, :size=>50
+      String :ErstelltVon, :size=>25
+      String :angelegt, :size=>10
+      String :lastedit, :size=>10
+      Integer :PalmID, :default=>0
+      String :flags, :size=>10
+      String :deleted, :default=>"0", :size=>2, :fixed=>true
+      String :Extension, :text=>true
+      String :linkgroup, :size=>20
+      Bignum :lastupdate
+      
+      primary_key [:ID]
+      
+      index [:Bereich], :name=>:agnbereich
+      index [:Tag, :Beginn, :Bereich], :name=>:it
+      index [:PatID], :name=>:pattern
+    end
+    
+    create_table(:artikel, :ignore_index_errors=>true) do
+      String :id, :default=>"", :size=>25, :null=>false
+      String :subid, :default=>"\"\"", :size=>20
+      String :lieferantid, :size=>25
+      String :name, :size=>127
+      String :Name_intern, :size=>127
+      String :maxbestand, :size=>4
+      String :minbestand, :size=>4
+      String :istbestand, :size=>4
+      String :ek_preis, :size=>8
+      String :vk_preis, :size=>8
+      String :typ, :size=>15
+      String :codeclass, :size=>10
+      String :extid, :size=>25
+      File :extinfo
+      String :Klasse, :size=>80
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      String :EAN, :size=>15
+      Bignum :lastupdate
+      String :ValidFrom, :size=>8, :fixed=>true
+      String :ValidTo, :size=>8, :fixed=>true
+      String :ATC_code, :size=>255
+      
+      primary_key [:id]
+      
+      index [:subid], :name=>:art1
+      index [:typ], :name=>:art2
+      index [:codeclass], :name=>:art3
+      index [:name], :name=>:i5
+    end
+    
+    create_table(:artikel_details) do
+      String :ARTICLE_ID, :size=>25
+      String :notes, :text=>true
+      File :image
+    end
+    
+    create_table(:auf, :ignore_index_errors=>true) do
+      String :id, :default=>"", :size=>25, :null=>false
+      String :patientid, :size=>25
+      String :fallid, :size=>25
+      String :prozent, :size=>3, :fixed=>true
+      String :datumvon, :size=>8
+      String :datumbis, :size=>8
+      String :Grund, :size=>50
+      String :AUFZusatz, :size=>80
+      String :BriefID, :size=>25
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      String :DatumAUZ, :size=>8, :fixed=>true
+      Bignum :LASTUPDATE
+      
+      primary_key [:id]
+      
+      index [:patientid], :name=>:auf1
+    end
+    
+    create_table(:bbs, :ignore_index_errors=>true) do
+      String :id, :default=>"", :size=>25, :null=>false
+      String :reference, :size=>25
+      String :topic, :size=>80
+      String :date, :size=>8
+      String :time, :size=>4
+      String :authorid, :size=>25
+      String :message, :text=>true
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      Bignum :LASTUPDATE
+      
+      primary_key [:id]
+      
+      index [:reference], :name=>:bbs1
+    end
+    
+    create_table(:behandlungen, :ignore_index_errors=>true) do
+      String :id, :default=>"", :size=>25, :null=>false
+      String :fallid, :size=>25
+      String :mandantid, :size=>25
+      String :rechnungsid, :size=>25
+      String :datum, :size=>8
+      String :diagnosen, :size=>25
+      String :leistungen, :size=>25
+      File :eintrag
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      Bignum :LASTUPDATE
+      
+      primary_key [:id]
+      
+      index [:fallid], :name=>:i4
+    end
+    
+    create_table(:behdl_dg_joint, :ignore_index_errors=>true) do
+      String :id, :default=>"", :size=>25, :null=>false
+      String :behandlungsid, :size=>25
+      String :diagnoseid, :size=>25
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      Bignum :LASTUPDATE
+      
+      primary_key [:id]
+      
+      index [:behandlungsid], :name=>:bdg1
+    end
+    
+    create_table(:bildanzeige, :ignore_index_errors=>true) do
+      String :ID, :size=>25, :null=>false
+      String :PatID, :size=>25
+      String :Datum, :size=>8, :fixed=>true
+      String :Title, :size=>30
+      String :Info, :text=>true
+      String :Keywords, :size=>80
+      String :isRef, :size=>2, :fixed=>true
+      File :Bild
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      Bignum :lastupdate
+      
+      primary_key [:ID]
+      
+      index [:PatID], :name=>:BANZ1
+    end
+    
+    create_table(:briefe, :ignore_index_errors=>true) do
+      String :id, :default=>"", :size=>25, :null=>false
+      String :betreff, :size=>80
+      String :datum, :size=>8
+      String :modifiziert, :size=>8
+      String :gedruckt, :size=>8
+      String :geloescht, :size=>2, :fixed=>true
+      String :absenderid, :size=>25
+      String :destid, :size=>25
+      String :behandlungsid, :size=>25
+      String :patientid, :size=>25
+      String :typ, :size=>30
+      String :MimeType, :size=>80
+      String :Path, :text=>true
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      Bignum :LASTUPDATE
+      
+      primary_key [:id]
+      
+      index [:behandlungsid], :name=>:i8
+    end
+    
+    create_table(:ch_berchtold_privatrechnung, :ignore_index_errors=>true) do
+      String :ID, :size=>25, :null=>false
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      String :parent, :size=>80
+      String :name, :size=>499
+      String :short, :size=>80
+      String :cost, :size=>8, :fixed=>true
+      String :price, :size=>8, :fixed=>true
+      String :time, :size=>4, :fixed=>true
+      String :subsystem, :size=>25
+      String :valid_from, :size=>8, :fixed=>true
+      String :valid_until, :size=>8, :fixed=>true
+      File :ExtInfo
+      Bignum :lastupdate
+      
+      primary_key [:ID]
+      
+      index [:parent, :name], :name=>:chelpr_idx1
+      index [:valid_from], :name=>:chelpr_idx2
+    end
+    
+    create_table(:ch_elexis_agenda_daymsg) do
+      String :ID, :size=>8, :fixed=>true, :null=>false
+      String :Kurz, :size=>80
+      String :Msg, :text=>true
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      Bignum :lastupdate, :default=>0
+      
+      primary_key [:ID]
+    end
+    
+    create_table(:ch_elexis_arzttarif_ch_rfe, :ignore_index_errors=>true) do
+      String :ID, :size=>25, :null=>false
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      Bignum :lastupdate
+      String :type, :size=>2, :fixed=>true
+      String :konsID, :size=>25
+      
+      primary_key [:ID]
+      
+      index [:konsID], :name=>:ch_elexis_arzttarif_ch_rfe_idx
+    end
+    
+    create_table(:ch_elexis_arzttarife_ch_physio, :ignore_index_errors=>true) do
+      String :ID, :size=>25, :null=>false
+      Bignum :lastupdate
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      String :validFrom, :size=>8, :fixed=>true
+      String :validUntil, :size=>8, :fixed=>true
+      String :TP, :size=>8, :fixed=>true
+      String :ziffer, :size=>6
+      String :titel, :size=>255
+      String :description, :text=>true
+      
+      primary_key [:ID]
+      
+      index [:ziffer], :name=>:cheacp
+    end
+    
+    create_table(:ch_elexis_developer_resources_sampletable, :ignore_index_errors=>true) do
+      String :ID, :size=>25, :null=>false
+      Bignum :lastupdate
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      String :PatientID, :size=>25
+      String :Title, :size=>50
+      String :FunFactor, :size=>6
+      String :BoreFactor, :size=>6
+      String :Date, :size=>8, :fixed=>true
+      String :Remarks, :text=>true
+      File :FunnyStuff
+      
+      primary_key [:ID]
+      
+      index [:FunFactor], :name=>:ch_elexis_developer_resources_sampletableidx1
+    end
+    
+    create_table(:ch_elexis_eigendiagnosen, :ignore_index_errors=>true) do
+      String :ID, :size=>25, :null=>false
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      String :parent, :size=>20
+      String :code, :size=>20
+      String :title, :size=>80
+      String :comment, :text=>true
+      File :ExtInfo
+      Bignum :lastupdate
+      
+      primary_key [:ID]
+      
+      index [:parent, :code], :name=>:CH_ELEXIS_EIGENDIAGNOSEN_idx1
+    end
+    
+    create_table(:ch_elexis_icpc, :ignore_index_errors=>true) do
+      String :ID, :size=>3, :fixed=>true, :null=>false
+      Bignum :lastupdate
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      String :component, :size=>2, :fixed=>true
+      String :short, :size=>80
+      String :synonyms, :size=>250
+      String :icd10, :text=>true
+      String :txt, :text=>true
+      String :criteria, :text=>true
+      String :inclusion, :text=>true
+      String :exclusion, :text=>true
+      String :consider, :text=>true
+      String :note, :text=>true
+      
+      primary_key [:ID]
+      
+      index [:component], :name=>:CH_ELEXIS_ICPC_IDX1
+    end
+    
+    create_table(:ch_elexis_icpc_encounter, :ignore_index_errors=>true) do
+      String :ID, :size=>25
+      String :KONS, :size=>25
+      String :EPISODE, :size=>25
+      String :RFE, :size=>4, :fixed=>true
+      String :DIAG, :size=>4, :fixed=>true
+      String :PROC, :size=>4, :fixed=>true
+      File :ExtInfo
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      Bignum :lastupdate
+      
+      index [:KONS], :name=>:CH_ELEXIS_ICPC_ENCOUNTER1
+      index [:EPISODE], :name=>:CH_ELEXIS_ICPC_ENCOUNTER2
+    end
+    
+    create_table(:ch_elexis_icpc_episodes, :ignore_index_errors=>true) do
+      String :ID, :size=>25
+      String :PatientID, :size=>25
+      String :Title, :size=>256
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      String :StartDate, :size=>20
+      String :Number, :size=>10
+      String :Status, :default=>"1", :size=>1, :fixed=>true
+      File :ExtInfo
+      Bignum :lastupdate
+      
+      index [:PatientID], :name=>:CH_ELEXIS_ICPC_EPISODES1
+      index [:Title], :name=>:CH_ELEXIS_ICPC_EPISODES2
+    end
+    
+    create_table(:ch_elexis_icpc_episodes_diagnoses_link) do
+      String :ID, :size=>25
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      String :Episode, :size=>25
+      String :Diagnosis, :size=>80
+      Bignum :lastupdate
+    end
+    
+    create_table(:ch_elexis_impfplan_vaccination_types) do
+      String :ID, :size=>25, :null=>false
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      Bignum :lastupdate
+      String :name, :size=>80
+      String :product, :size=>80
+      String :delay_1to2, :size=>10
+      String :delay_2to3, :size=>10
+      String :delay_3to4, :size=>10
+      String :delay_4to5, :size=>10
+      String :delay_rep, :size=>10
+      String :recommendedAge, :size=>10
+      String :remarks, :text=>true
+      
+      primary_key [:ID]
+    end
+    
+    create_table(:ch_elexis_impfplan_vaccinations, :ignore_index_errors=>true) do
+      String :ID, :size=>25, :null=>false
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      Bignum :lastupdate
+      String :patientID, :size=>25
+      String :vaccinationType, :size=>25
+      String :date, :size=>8, :fixed=>true
+      String :observations, :text=>true
+      
+      primary_key [:ID]
+      
+      index [:patientID], :name=>:CH_ELEXIS_IMPFPLAN_VACCINATIONS_IDX1
+    end
+    
+    create_table(:ch_elexis_kassenbuch) do
+      String :ID, :size=>25, :null=>false
+      String :Nr, :size=>25
+      String :Date, :size=>8, :fixed=>true
+      String :Amount, :size=>8, :fixed=>true
+      String :Total, :size=>8, :fixed=>true
+      String :Entry, :size=>80
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      String :Category, :size=>80
+      Bignum :lastupdate
+      
+      primary_key [:ID]
+    end
+    
+    create_table(:ch_elexis_medikamente_bag_ext) do
+      String :ID, :size=>25, :null=>false
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      String :keywords, :size=>80
+      String :prescription, :text=>true
+      String :KompendiumText, :text=>true
+      Bignum :lastupdate
+      
+      primary_key [:ID]
+    end
+    
+    create_table(:ch_elexis_medikamente_bag_interactions, :ignore_index_errors=>true) do
+      String :ID, :size=>25, :null=>false
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      String :Subst1, :size=>25
+      String :Subst2, :size=>25
+      String :Type, :size=>20
+      String :Relevance, :size=>1, :fixed=>true
+      String :Contributor, :size=>25
+      String :ContribDate, :size=>8, :fixed=>true
+      String :Description, :text=>true
+      
+      primary_key [:ID]
+      
+      index [:Subst1], :name=>:CEMBI1
+      index [:Subst2], :name=>:CEMBI2
+    end
+    
+    create_table(:ch_elexis_medikamente_bag_joint) do
+      String :ID, :size=>25, :null=>false
+      String :product, :size=>25
+      String :substance, :size=>25
+      
+      primary_key [:ID]
+    end
+    
+    create_table(:ch_elexis_medikamente_bag_substance, :ignore_index_errors=>true) do
+      String :ID, :size=>25, :null=>false
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      String :gruppe, :size=>10
+      String :name, :size=>250
+      Bignum :lastupdate
+      
+      primary_key [:ID]
+      
+      index [:gruppe], :name=>:CEMBS1
+      index [:name], :name=>:CEMBS2
+    end
+    
+    create_table(:ch_elexis_messages) do
+      String :ID, :size=>25, :null=>false
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      String :origin, :size=>25
+      String :destination, :size=>25
+      String :dateTime, :size=>14, :fixed=>true
+      String :msg, :text=>true
+      Bignum :lastupdate
+      
+      primary_key [:ID]
+    end
+    
+    create_table(:ch_elexis_messwerte_messwerte) do
+      String :ID, :size=>25, :null=>false
+      Bignum :lastupdate
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      String :MessungID, :size=>25
+      String :Name, :size=>25
+      String :Wert, :size=>25
+      
+      primary_key [:ID]
+    end
+    
+    create_table(:ch_elexis_molemax, :ignore_index_errors=>true) do
+      String :ID, :size=>25, :null=>false
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      String :patientID, :size=>25
+      String :date, :size=>8, :fixed=>true
+      String :slot, :size=>3, :fixed=>true
+      String :koord, :size=>40
+      File :ExtInfo
+      String :parentID, :size=>25
+      
+      primary_key [:ID]
+      
+      index [:patientID], :name=>:MLMX1
+    end
+    
+    create_table(:ch_elexis_notes) do
+      String :ID, :size=>25
+      String :Parent, :size=>25
+      String :Title, :size=>80
+      String :Date, :size=>8, :fixed=>true
+      File :Contents
+      String :refs, :text=>true
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      String :keywords, :size=>255
+      String :mimetype, :size=>80
+      Bignum :lastupdate
+    end
+    
+    create_table(:ch_elexis_omnivore_data, :ignore_index_errors=>true) do
+      String :ID, :size=>25, :null=>false
+      String :PatID, :size=>25
+      String :Datum, :size=>8, :fixed=>true
+      String :Title, :size=>255
+      String :Mimetype, :size=>255
+      String :Keywords, :size=>255
+      String :Path, :size=>255
+      File :Doc
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      String :Category, :size=>80
+      Bignum :lastupdate, :default=>0
+      
+      primary_key [:ID]
+      
+      index [:PatID], :name=>:OMN1
+      index [:Keywords], :name=>:OMN2
+      index [:Category], :name=>:OMN3
+      index [:Mimetype], :name=>:OMN4
+      index [:deleted], :name=>:OMN5
+      index [:Title], :name=>:OMN6
+    end
+    
+    create_table(:ch_elexis_privatrechnung, :ignore_index_errors=>true) do
+      String :ID, :size=>25, :null=>false
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      String :parent, :size=>80
+      String :name, :size=>499
+      String :short, :size=>80
+      String :cost, :size=>8, :fixed=>true
+      String :price, :size=>8, :fixed=>true
+      String :time, :size=>4, :fixed=>true
+      String :subsystem, :size=>25
+      String :valid_from, :size=>8, :fixed=>true
+      String :valid_until, :size=>8, :fixed=>true
+      File :ExtInfo
+      Bignum :lastupdate
+      
+      primary_key [:ID]
+      
+      index [:parent, :name], :name=>:chelpr_idx1
+      index [:valid_from], :name=>:chelpr_idx2
+    end
+    
+    create_table(:ch_elexis_stickynotes, :ignore_index_errors=>true) do
+      String :ID, :size=>25
+      Bignum :lastupdate
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      String :PatientID, :size=>25
+      File :contents
+      
+      index [:PatientID], :name=>:CH_ELEXIS_STICKYNOTES1
+    end
+    
+    create_table(:ch_medelexis_labortarif2009) do
+      String :ID, :size=>25, :null=>false
+      Bignum :lastupdate
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      String :chapter, :size=>10
+      String :code, :size=>12
+      String :tp, :size=>10
+      String :name, :size=>255
+      String :limitatio, :text=>true
+      String :fachbereich, :size=>10
+      String :praxistyp, :size=>2
+      
+      primary_key [:ID]
+    end
+    
+    create_table(:ch_medelexis_therapieplan_dispenses) do
+      String :ID, :size=>25, :null=>false
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      Bignum :lastupdate
+      String :medicationID, :size=>25
+      String :dispenseDate, :size=>8, :fixed=>true
+      String :dispenseType, :size=>2, :fixed=>true
+      
+      primary_key [:ID]
+    end
+    
+    create_table(:ch_medelexis_therapieplan_medication) do
+      String :ID, :size=>25, :null=>false
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      Bignum :lastupdate
+      String :patientID, :size=>25
+      String :article, :size=>80
+      String :packSize, :size=>5
+      String :dosage, :size=>20
+      String :startDate, :size=>8, :fixed=>true
+      String :endDate, :size=>8, :fixed=>true
+      String :remarks, :size=>80
+      
+      primary_key [:ID]
+    end
+    
+    create_table(:com_hilotec_elexis_messwerte_messungen) do
+      String :ID, :size=>25, :null=>false
+      Bignum :lastupdate
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      String :PatientID, :size=>25
+      String :TypName, :size=>25
+      String :Datum, :size=>8, :fixed=>true
+      
+      primary_key [:ID]
+    end
+    
+    create_table(:com_hilotec_elexis_messwerte_messwerte) do
+      String :ID, :size=>25, :null=>false
+      Bignum :lastupdate
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      String :MessungID, :size=>25
+      String :Name, :size=>25
+      String :Wert, :size=>25
+      
+      primary_key [:ID]
+    end
+    
+    create_table(:config) do
+      String :param, :default=>"", :size=>80, :null=>false
+      String :wert, :text=>true
+      Bignum :LASTUPDATE
+      
+      primary_key [:param]
+    end
+    
+    create_table(:dbimage, :ignore_index_errors=>true) do
+      String :ID, :size=>25, :null=>false
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      String :Datum, :size=>8, :fixed=>true
+      String :Title, :size=>80
+      File :Bild
+      Bignum :LASTUPDATE
+      String :Prefix, :size=>80
+      
+      primary_key [:ID]
+      
+      index [:Title], :name=>:DBIMAGE1
+    end
+    
+    create_table(:diagnosen, :ignore_index_errors=>true) do
+      String :id, :default=>"", :size=>25, :null=>false
+      String :dg_txt, :size=>255
+      String :dg_code, :size=>25
+      String :klasse, :size=>80
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      Bignum :LASTUPDATE
+      
+      primary_key [:id]
+      
+      index [:klasse, :dg_code], :name=>:dg1
+    end
+    
+    create_table(:eigenleistungen) do
+      String :ID, :default=>"", :size=>25, :null=>false
+      String :Code, :size=>20
+      String :Bezeichnung, :size=>80
+      String :EK_PREIS, :size=>6
+      String :VK_PREIS, :size=>6
+      String :ZEIT, :size=>4
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      Bignum :LASTUPDATE
+      
+      primary_key [:ID]
+    end
+    
+    create_table(:ek_preise, :ignore_index_errors=>true) do
+      String :typ, :size=>80
+      String :id, :size=>25
+      String :datum_von, :size=>8
+      String :datum_bis, :size=>8
+      String :MULTIPLIKATOR, :size=>8
+      Bignum :LASTUPDATE
+      
+      index [:typ], :name=>:ekp1
+      index [:datum_von], :name=>:ekp2
+    end
+    
+    create_table(:elexisbefunde, :ignore_index_errors=>true) do
+      String :id, :default=>"", :size=>25, :null=>false
+      String :patientid, :size=>25
+      String :Name, :size=>80
+      String :datum, :size=>8
+      File :befunde
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      Bignum :lastupdate
+      
+      primary_key [:id]
+      
+      index [:datum], :name=>:idx_elbf1
+      index [:patientid], :name=>:idx_elbf2
+    end
+    
+    create_table(:esrrecords, :ignore_index_errors=>true) do
+      String :ID, :default=>"", :size=>25, :null=>false
+      String :DATUM, :size=>8
+      String :EINGELESEN, :size=>8
+      String :VERARBEITET, :size=>8
+      String :GUTSCHRIFT, :size=>8
+      String :BETRAGINRP, :size=>8
+      String :CODE, :size=>3, :fixed=>true
+      String :RECHNUNGSID, :size=>25
+      String :PATIENTID, :size=>25
+      String :MANDANTID, :size=>25
+      String :REJECTCODE, :size=>3, :fixed=>true
+      String :KOSTEN, :size=>4
+      String :GEBUCHT, :size=>8
+      String :FILE, :size=>80
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      Bignum :lastupdate
+      
+      primary_key [:ID]
+      
+      index [:DATUM], :name=>:ESR1
+      index [:PATIENTID], :name=>:ESR2
+      index [:REJECTCODE], :name=>:ESR3
+    end
+    
+    create_table(:etiketten, :ignore_index_errors=>true) do
+      String :ID, :size=>25, :null=>false
+      String :Image, :size=>25
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      String :importance, :size=>7
+      String :Name, :size=>40
+      String :foreground, :size=>6, :fixed=>true
+      String :background, :size=>6, :fixed=>true
+      String :classes, :size=>255
+      Bignum :LASTUPDATE
+      
+      primary_key [:ID]
+      
+      index [:Name], :name=>:ETIKETTE1
+    end
+    
+    create_table(:etiketten_objclass_link, :ignore_index_errors=>true) do
+      String :objclass, :size=>80
+      String :sticker, :size=>25
+      
+      index [:objclass], :name=>:eol1
+    end
+    
+    create_table(:etiketten_object_link, :ignore_index_errors=>true) do
+      String :obj, :size=>25
+      String :etikette, :size=>25
+      Bignum :LASTUPDATE
+      
+      index [:obj], :name=>:ETIKETTE2
+      index [:etikette], :name=>:ETIKETTE3
+    end
+    
+    create_table(:faelle, :ignore_index_errors=>true) do
+      String :id, :default=>"", :size=>25, :null=>false
+      String :patientid, :size=>25
+      String :garantid, :size=>25
+      String :kostentrid, :size=>25
+      String :versnummer, :size=>25
+      String :fallnummer, :size=>25
+      String :betriebsnummer, :size=>25
+      String :diagnosen, :size=>25
+      String :datumvon, :size=>8
+      String :datumbis, :size=>8
+      String :bezeichnung, :size=>20
+      String :grund, :size=>20
+      String :gesetz, :size=>10
+      File :EXTINFO
+      String :Status, :size=>80
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      Bignum :LASTUPDATE
+      
+      primary_key [:id]
+      
+      index [:patientid], :name=>:i3
+    end
+    
+    create_table(:heap) do
+      String :ID, :default=>"", :size=>80, :null=>false
+      File :inhalt
+      String :datum, :size=>8, :fixed=>true
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      Bignum :lastupdate
+      
+      primary_key [:ID]
+    end
+    
+    create_table(:heap2) do
+      String :ID, :default=>"", :size=>80, :null=>false
+      File :Contents
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      String :datum, :size=>8, :fixed=>true
+      Bignum :lastupdate
+      
+      primary_key [:ID]
+    end
+    
+    create_table(:iatrix_problem) do
+      String :ID, :size=>25, :null=>false
+      String :PatientID, :size=>25
+      String :Bezeichnung, :size=>50
+      String :Nummer, :size=>10
+      String :Datum, :size=>10
+      String :Procedere, :size=>80
+      String :Status, :default=>"1", :size=>1, :fixed=>true
+      File :ExtInfo
+      
+      primary_key [:ID]
+    end
+    
+    create_table(:iatrix_problem_behdl_joint, :ignore_index_errors=>true) do
+      String :ID, :size=>25, :null=>false
+      String :ProblemID, :size=>25
+      String :BehandlungsID, :size=>25
+      
+      primary_key [:ID]
+      
+      index [:ProblemID], :name=>:problembehdl1
+    end
+    
+    create_table(:iatrix_problem_dauermedikation_joint, :ignore_index_errors=>true) do
+      String :ID, :size=>25, :null=>false
+      String :ProblemID, :size=>25
+      String :DauermedikationID, :size=>25
+      
+      primary_key [:ID]
+      
+      index [:ProblemID], :name=>:problemdauermedikation1
+    end
+    
+    create_table(:iatrix_problem_dg_joint, :ignore_index_errors=>true) do
+      String :ID, :size=>25, :null=>false
+      String :ProblemID, :size=>25
+      String :DiagnoseID, :size=>25
+      
+      primary_key [:ID]
+      
+      index [:ProblemID], :name=>:problemdg1
+    end
+    
+    create_table(:icd10, :ignore_index_errors=>true) do
+      String :id, :default=>"", :size=>25, :null=>false
+      String :parent, :size=>25
+      String :icdcode, :size=>10
+      String :encoded, :text=>true
+      String :icdtxt, :text=>true
+      File :extinfo
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      Bignum :lastupdate
+      
+      primary_key [:id]
+      
+      index [:parent], :name=>:icd1
+      index [:icdcode], :name=>:icd2
+    end
+    
+    create_table(:kontakt, :ignore_index_errors=>true) do
+      String :id, :default=>"", :size=>25, :null=>false
+      String :istorganisation, :default=>"0", :size=>1, :fixed=>true
+      String :istperson, :default=>"0", :size=>1, :fixed=>true
+      String :istpatient, :default=>"0", :size=>1, :fixed=>true
+      String :istanwender, :default=>"0", :size=>1, :fixed=>true
+      String :istmandant, :default=>"0", :size=>1, :fixed=>true
+      String :istlabor, :default=>"0", :size=>1, :fixed=>true
+      String :land, :size=>3, :fixed=>true
+      String :geburtsdatum, :size=>8
+      String :geschlecht, :size=>1, :fixed=>true
+      String :Titel, :size=>255
+      String :Bezeichnung1, :size=>255
+      String :Bezeichnung2, :size=>255
+      String :Bezeichnung3, :size=>255
+      String :Strasse, :size=>255
+      String :plz, :size=>6
+      String :Ort, :size=>255
+      String :telefon1, :size=>20
+      String :telefon2, :size=>20
+      String :fax, :size=>20
+      String :natelnr, :size=>15
+      String :Email, :size=>255
+      String :Website, :size=>255
+      String :gruppe, :size=>10
+      String :patientnr, :size=>50
+      String :anschrift, :text=>true
+      String :bemerkung, :text=>true
+      File :diagnosen
+      File :persanamnese
+      File :sysanamnese
+      File :famanamnese
+      String :risiken, :text=>true
+      String :allergien, :text=>true
+      File :extinfo
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      Bignum :LASTUPDATE
+      String :TitelSuffix, :size=>255
+      
+      primary_key [:id]
+      
+      index [:Bezeichnung1], :name=>:k0
+    end
+    
+    create_table(:kontakt_adress_joint, :ignore_index_errors=>true) do
+      String :id, :default=>"", :size=>25, :null=>false
+      String :myid, :size=>25
+      String :otherid, :size=>25
+      String :Bezug, :size=>80
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      Bignum :LASTUPDATE
+      String :myRType, :size=>4, :fixed=>true
+      String :otherRType, :size=>4, :fixed=>true
+      
+      primary_key [:id]
+      
+      index [:myid], :name=>:aij1
+    end
+    
+    create_table(:konto, :ignore_index_errors=>true) do
+      String :id, :default=>"", :size=>25, :null=>false
+      String :patientid, :size=>25
+      String :betrag, :size=>8
+      String :datum, :size=>8
+      String :bemerkung, :size=>80
+      String :RechnungsID, :size=>25
+      String :ZahlungsID, :size=>25
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      Bignum :LASTUPDATE
+      
+      primary_key [:id]
+      
+      index [:datum], :name=>:konto1
+      index [:patientid], :name=>:konto2
+    end
+    
+    create_table(:labgroup_item_joint) do
+      String :GroupID, :size=>25, :null=>false
+      String :ItemID, :size=>25
+      String :Comment, :text=>true
+      Bignum :LASTUPDATE
+    end
+    
+    create_table(:labgroups) do
+      String :ID, :size=>25, :null=>false
+      String :name, :size=>30
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      Bignum :LASTUPDATE
+      
+      primary_key [:ID]
+    end
+    
+    create_table(:laboritems, :ignore_index_errors=>true) do
+      String :id, :default=>"", :size=>25, :null=>false
+      String :kuerzel, :size=>80
+      String :titel, :size=>80
+      String :laborid, :size=>25
+      String :RefMann, :size=>256
+      String :RefFrauOrTx, :size=>256
+      String :Einheit, :size=>20
+      String :typ, :size=>1, :fixed=>true
+      String :gruppe, :size=>25
+      String :prio, :size=>3, :fixed=>true
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      Bignum :LASTUPDATE
+      String :billingcode, :size=>128
+      String :EXPORT, :size=>100
+      String :loinccode, :size=>128
+      String :visible, :size=>1
+      String :digits, :size=>16
+      String :formula, :size=>255
+      
+      primary_key [:id]
+      
+      index [:kuerzel], :name=>:labit1
+      index [:laborid], :name=>:labit2
+    end
+    
+    create_table(:laborwerte, :ignore_index_errors=>true) do
+      String :id, :default=>"", :size=>25, :null=>false
+      String :patientid, :size=>25
+      String :datum, :size=>8
+      String :itemid, :size=>25
+      String :resultat, :size=>255
+      String :kommentar, :text=>true
+      String :Flags, :size=>10
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      String :Origin, :size=>30
+      String :zeit, :size=>6, :fixed=>true
+      Bignum :LASTUPDATE
+      File :ExtInfo
+      String :unit, :size=>255
+      String :analysetime, :size=>24
+      String :observationtime, :size=>24
+      String :transmissiontime, :size=>24
+      String :refmale, :size=>255
+      String :reffemale, :size=>255
+      String :OriginID, :size=>25
+      
+      primary_key [:id]
+      
+      index [:patientid], :name=>:labor1
+      index [:datum], :name=>:labor2
+      index [:itemid], :name=>:labor3
+    end
+    
+    create_table(:leistungen, :ignore_index_errors=>true) do
+      String :id, :default=>"", :size=>25, :null=>false
+      String :behandlung, :size=>25
+      String :leistg_txt, :size=>255
+      String :leistg_code, :size=>25
+      String :klasse, :size=>80
+      String :zahl, :size=>3, :fixed=>true
+      String :ek_kosten, :size=>6
+      String :VK_TP, :size=>8
+      String :VK_SCALE, :size=>8
+      String :vk_preis, :size=>6
+      String :SCALE, :default=>"100", :size=>4
+      File :DETAIL
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      String :SCALE2, :size=>4, :fixed=>true
+      Bignum :LASTUPDATE
+      String :userID, :size=>25
+      
+      primary_key [:id]
+      
+      index [:behandlung], :name=>:lst1
+      index [:klasse, :leistg_code], :name=>:lst2
+    end
+    
+    create_table(:leistungsblock, :ignore_index_errors=>true) do
+      String :id, :default=>"", :size=>25, :null=>false
+      String :mandantid, :size=>25
+      String :name, :size=>30
+      File :leistungen
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      Bignum :LASTUPDATE
+      String :Macro, :size=>30
+      
+      primary_key [:id]
+      
+      index [:name], :name=>:block1
+      index [:mandantid], :name=>:block2
+      index [:Macro], :name=>:block3
+    end
+    
+    create_table(:logs) do
+      String :ID, :size=>25, :null=>false
+      String :OID, :size=>255
+      String :datum, :size=>8, :fixed=>true
+      String :typ, :size=>20
+      String :userID, :size=>25
+      String :station, :size=>255
+      File :ExtInfo
+      Bignum :LASTUPDATE
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      
+      primary_key [:ID]
+    end
+    
+    create_table(:output_log, :ignore_index_errors=>true) do
+      String :ID, :size=>25, :null=>false
+      Bignum :lastupdate
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      String :ObjectID, :size=>25
+      String :ObjectType, :size=>80
+      String :Datum, :size=>8, :fixed=>true
+      String :Outputter, :size=>80
+      File :ExtInfo
+      
+      primary_key [:ID]
+      
+      index [:ObjectID], :name=>:bal_i1
+    end
+    
+    create_table(:patient_artikel_joint, :ignore_index_errors=>true) do
+      String :artikelid, :size=>25
+      String :Dosis, :size=>255
+      String :Bemerkung, :size=>255
+      String :id, :size=>25
+      String :patientid, :size=>25
+      String :REZEPTID, :size=>25
+      String :DATEFROM, :size=>8, :fixed=>true
+      String :DATEUNTIL, :size=>8, :fixed=>true
+      String :ANZAHL, :size=>3, :fixed=>true
+      File :ExtInfo
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      Bignum :LASTUPDATE
+      String :Artikel, :size=>255
+      String :prescType, :size=>2, :fixed=>true
+      String :sortOrder, :size=>3, :fixed=>true
+      String :prescDate, :size=>8, :fixed=>true
+      String :prescriptor, :size=>25
+      
+      index [:REZEPTID], :name=>:PAJ2
+      index [:patientid], :name=>:paj1
+    end
+    
+    create_table(:rechnungen, :ignore_index_errors=>true) do
+      String :id, :default=>"", :size=>25, :null=>false
+      String :rnnummer, :size=>8
+      String :fallid, :size=>25
+      String :mandantid, :size=>25
+      String :rndatum, :size=>8
+      String :rnstatus, :size=>20
+      String :rndatumvon, :size=>8
+      String :rndatumbis, :size=>8
+      String :betrag, :size=>8
+      File :extinfo
+      String :STATUSDATUM, :size=>8, :fixed=>true
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      Bignum :LASTUPDATE
+      
+      primary_key [:id]
+      
+      index [:rnstatus], :name=>:Rn3
+      index [:rndatumvon], :name=>:Rn4
+      index [:rndatumbis], :name=>:Rn5
+      index [:mandantid], :name=>:i10
+      index [:fallid], :name=>:i9
+    end
+    
+    create_table(:reminders, :ignore_index_errors=>true) do
+      String :id, :default=>"", :size=>25, :null=>false
+      String :identid, :size=>25
+      String :datedue, :size=>8
+      String :status, :size=>1, :fixed=>true
+      String :typ, :size=>1, :fixed=>true
+      String :params, :text=>true
+      String :message, :text=>true
+      String :RESPONSIBLE, :size=>25
+      String :OriginID, :size=>25
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      Bignum :LASTUPDATE
+      
+      primary_key [:id]
+      
+      index [:identid], :name=>:rem1
+      index [:datedue], :name=>:rem2
+      index [:RESPONSIBLE], :name=>:rem3
+    end
+    
+    create_table(:reminders_responsible_link, :ignore_index_errors=>true) do
+      String :ID, :size=>25, :null=>false
+      String :ReminderID, :size=>25
+      String :ResponsibleID, :size=>25
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      Bignum :LASTUPDATE
+      
+      primary_key [:ID]
+      
+      index [:ReminderID], :name=>:rrl1
+      index [:ResponsibleID], :name=>:rrl2
+    end
+    
+    create_table(:rezepte, :ignore_index_errors=>true) do
+      String :id, :default=>"", :size=>25, :null=>false
+      String :patientid, :size=>25
+      String :mandantid, :size=>25
+      String :datum, :size=>8
+      String :rptxt, :text=>true
+      String :RpZusatz, :size=>80
+      String :BriefID, :size=>25
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      Bignum :LASTUPDATE
+      
+      primary_key [:id]
+      
+      index [:patientid], :name=>:rp1
+    end
+    
+    create_table(:right_) do
+      String :ID, :size=>25, :null=>false
+      Bignum :LASTUPDATE
+      String :DELETED, :default=>"0", :size=>1, :fixed=>true
+      String :LOG_EXECUTION, :size=>1, :fixed=>true
+      String :NAME, :size=>256
+      String :PARENTID, :size=>25
+      String :I18N_NAME, :size=>256
+      
+      primary_key [:ID]
+    end
+    
+    create_table(:role) do
+      String :ID, :size=>25, :null=>false
+      Bignum :LASTUPDATE
+      String :DELETED, :default=>"0", :size=>1, :fixed=>true
+      File :EXTINFO
+      String :ISSYSTEMROLE, :default=>"0", :size=>1, :fixed=>true
+      
+      primary_key [:ID]
+    end
+    
+    create_table(:role_right_joint) do
+      String :ID, :size=>25, :null=>false
+      Bignum :LASTUPDATE
+      String :DELETED, :size=>1, :fixed=>true
+      String :ROLE_ID, :size=>25, :null=>false
+      
+      primary_key [:ID, :ROLE_ID]
+    end
+    
+    create_table(:tarmed, :ignore_index_errors=>true) do
+      String :ID, :default=>"", :size=>14, :null=>false
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      String :Parent, :size=>14
+      String :DigniQuanti, :size=>5, :fixed=>true
+      String :DigniQuali, :size=>4, :fixed=>true
+      String :Sparte, :size=>4, :fixed=>true
+      String :GueltigVon, :size=>8, :fixed=>true
+      String :GueltigBis, :size=>8, :fixed=>true
+      String :Nickname, :size=>25
+      String :tx255, :size=>255
+      Bignum :lastupdate
+      
+      primary_key [:ID]
+      
+      index [:Parent], :name=>:tarmed2
+    end
+    
+    create_table(:tarmed_daten, :ignore_index_errors=>true) do
+      String :Parameter, :size=>80
+      String :DatumVon, :size=>8, :fixed=>true
+      String :DatumBis, :size=>8, :fixed=>true
+      String :Wert, :size=>10
+      
+      index [:Parameter], :name=>:tarmed5
+    end
+    
+    create_table(:tarmed_definitionen, :ignore_index_errors=>true) do
+      String :Spalte, :size=>20
+      String :Kuerzel, :size=>5
+      String :titel, :size=>255
+      
+      index [:Spalte], :name=>:tarmed3
+    end
+    
+    create_table(:tarmed_extension, :ignore_index_errors=>true) do
+      String :Code, :size=>14
+      File :limits
+      String :med_interpret, :text=>true
+      String :tech_interpret, :text=>true
+      
+      index [:Code], :name=>:tarmed4
+    end
+    
+    create_table(:traces, :ignore_index_errors=>true) do
+      Bignum :logtime
+      String :workstation, :size=>30
+      String :username, :size=>30
+      String :action, :text=>true
+      
+      index [:logtime], :name=>:trace1
+      index [:username], :name=>:trace2
+    end
+    
+    create_table(:user_) do
+      String :ID, :size=>25, :null=>false
+      String :DELETED, :default=>"0", :size=>1, :fixed=>true
+      String :KONTAKT_ID, :size=>25
+      Bignum :LASTUPDATE
+      String :HASHED_PASSWORD, :size=>64
+      String :SALT, :size=>64
+      String :IS_ACTIVE, :default=>"1", :size=>1, :fixed=>true
+      String :IS_ADMINISTRATOR, :default=>"0", :size=>1, :fixed=>true
+      String :KEYSTORE, :text=>true
+      File :EXTINFO
+      
+      primary_key [:ID]
+    end
+    
+    create_table(:user_role_joint) do
+      String :ID, :size=>25, :null=>false
+      Bignum :LASTUPDATE
+      String :DELETED, :size=>1, :fixed=>true
+      String :USER_ID, :size=>25, :null=>false
+      
+      primary_key [:ID, :USER_ID]
+    end
+    
+    create_table(:userconfig, :ignore_index_errors=>true) do
+      String :UserID, :size=>25
+      String :Param, :size=>80
+      String :Value, :text=>true
+      Bignum :LASTUPDATE
+      
+      index [:Param], :name=>:UCFG
+      index [:UserID], :name=>:UCFG2
+    end
+    
+    create_table(:vk_preise, :ignore_index_errors=>true) do
+      String :typ, :size=>80
+      String :id, :size=>25
+      String :datum_von, :size=>8
+      String :datum_bis, :size=>8
+      String :MULTIPLIKATOR, :size=>8
+      Bignum :LASTUPDATE
+      
+      index [:typ], :name=>:vkp1
+      index [:datum_von], :name=>:vkp2
+    end
+    
+    create_table(:xid, :ignore_index_errors=>true) do
+      String :ID, :size=>25, :null=>false
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      String :type, :size=>80
+      String :object, :size=>25
+      String :domain, :size=>255
+      String :domain_id, :size=>255
+      String :quality, :default=>"0", :size=>1, :fixed=>true
+      Bignum :LASTUPDATE
+      
+      primary_key [:ID]
+      
+      index [:domain], :name=>:XIDIDX1
+      index [:domain_id], :name=>:XIDIDX2
+      index [:object], :name=>:XIDIDX3
+    end
+    
+    create_table(:zahlungen, :ignore_index_errors=>true) do
+      String :id, :default=>"", :size=>25, :null=>false
+      String :rechnungsid, :size=>25
+      String :betrag, :size=>8
+      String :datum, :size=>8
+      String :bemerkung, :size=>80
+      String :deleted, :default=>"0", :size=>1, :fixed=>true
+      Bignum :LASTUPDATE
+      
+      primary_key [:id]
+      
+      index [:rechnungsid], :name=>:zahl1
+    end
+  end
+end
