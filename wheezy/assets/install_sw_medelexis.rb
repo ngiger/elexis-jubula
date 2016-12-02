@@ -67,7 +67,7 @@ def create_snapshot(name, full = true)
 end
 
 def get_window_name(name = 'Elexis [[:digit:]].[[:digit:]].[[:digit:]]')
-  elexis_windows = `wmctrl -l | grep -e '#{name}'`
+  elexis_windows = `wmctrl -l | grep -e '#{name}' 2>/dev/null`
   if elexis_windows.size > 10
     elexis_windows.split(/\s+/)[-2..-1].join(' ')else
     nil

@@ -7,15 +7,14 @@ require 'byebug' if Gem::Specification.find_all_by_name('byebug').any?
 
 $LOAD_PATH.unshift File.dirname(__FILE__)
 require 'version'
-VARIANT = ENV['VARIANT'] ? ENV['VARIANT'] : 'snapshot' unless defined?(VARIANT)
+begin
+  require 'pry'
+rescue LoadError
+end
 
-if ARGV.index('-n')
-  DRY_RUN = true
-  ARGV.delete('-n')
-else
-  DRY_RUN = false
-end unless defined?(DRY_RUN)
+VARIANT = ENV['VARIANT'] ? ENV['VARIANT'] : 'snapshot' unless defined?(VARIANT)
 MAY_FAIL = true
+@noop = ENV['DRY_RUN']
 
 def java_triplet
   cfg = { 'cpu' => RbConfig::CONFIG['target_cpu'] }
@@ -57,20 +56,20 @@ def windows?
   WINDOWS_REGEXP.match(RbConfig::CONFIG['host_os'])
 end
 
-def unzip(zip_file, should_create)
-  return if Dir.glob(should_create).size > 0
+def unzip(zip_file, should_create, noop = @noop)
+  return if noop || Dir.glob(should_create).size > 0
   puts "Unzipping #{zip_file}"
-  return if DRY_RUN
-  system("unzip -q -o #{zip_file}", MAY_FAIL) # sometimes it returns bogus errors
+  return if noop
+  system("unzip -q -o #{zip_file}", :may_fail => true) # sometimes it returns bogus errors
   puts "Unzipped #{zip_file}"
   fail "unzip did not create #{should_create}" unless Dir.glob(should_create).size > 0
 end
 
-def download_if_not_exist(dest_dir, src)
+def download_if_not_exist(dest_dir, src, noop = @noop)
   filename = File.join(dest_dir, File.basename(src))
   return true if File.exist?(filename) && File.size(filename) > 0
   puts "getting from #{src} -> #{File.expand_path(filename)}"
-  return true if DRY_RUN
+  return true if noop
   if src.index('http') == 0
     require 'open-uri'
     write_out = open(filename, 'wb')
@@ -81,7 +80,7 @@ def download_if_not_exist(dest_dir, src)
   end
 end
 
-def download_and_unzip(zip_url, should_create)
+def download_and_unzip(zip_url, should_create, noop = @noop)
   return if Dir.chdir(WorkDir) && Dir.glob(should_create).size > 0
   zip_file = File.basename(zip_url)
   unless File.exist?(zip_file)
@@ -99,7 +98,7 @@ end
 def get_full_file_path_or_fail(path)
   unless File.exist?(path)
     fail "Failing as I could not find the specified file #{path}"
-  end unless DRY_RUN
+  end
   File.expand_path(path)
 end
 
@@ -128,8 +127,8 @@ usageConditionAccepted=true"
   end
 end
 
-def install_rcp_support_for_jubula(inst_dir)
-  return if DRY_RUN
+def install_rcp_support_for_jubula(inst_dir, noop = @noop)
+  return if noop
   rcp_support = File.expand_path(File.join(File.dirname(__FILE__), '..', 'assets', 'rcp-support.zip'))
   dropins = File.join(inst_dir, 'dropins', 'plugins')
   FileUtils.makedirs(dropins, :verbose => true)
@@ -137,8 +136,8 @@ def install_rcp_support_for_jubula(inst_dir)
   unzip(rcp_support, 'org.eclipse.jubula.rc.rcp_*.jar')
 end
 
-def patch_ini_file_for_jubula_rc(inst_dir)
-  return if DRY_RUN
+def patch_ini_file_for_jubula_rc(inst_dir, noop = @noop)
+  return if noop
   ini_name = Dir.glob(File.join(inst_dir, 'configuration/config.ini')).first
   return if File.exist?(ini_name + '.bak')
   fail 'Must first install Elexis before patching the configuration/config.ini' unless ini_name
@@ -196,9 +195,11 @@ def patch_ruby(cmd)
   end
 end
 
-def system(cmd, may_fail = false)
-  cmd2history = "#{cmd}#{may_fail ? '# may_fail' : ''}"
-  if DRY_RUN
+def system(cmd, opts = { :may_fail => false, :noop => @noop} )
+  cmd2history = "#{cmd}"
+  fail "Must pass a Hash, no longer a constant" unless opts.is_a?(Hash)
+  cmd2history += '# may_fail' if opts[:may_fail]
+  if opts[:noop]
     puts cmd2history
     return true
   end
@@ -206,14 +207,15 @@ def system(cmd, may_fail = false)
   res = Kernel.system(full_cmd)
   return true if res
   puts Dir.pwd
-  puts "Dir.cmd #{Dir.pwd} and #{res} may fail #{may_fail}"
-  fail(cmd) unless may_fail
+  puts "Dir.cmd #{Dir.pwd} and #{res} may fail #{opts[:may_fail]}"
+  fail(cmd) unless opts[:may_fail]
 end
 
-def sleep(nr_seconds)
-  if DRY_RUN
+def sleep(nr_seconds, noop = @noop )
+  if noop
     puts "sleep #{nr_seconds} # seconds"
   else
     Kernel.sleep(nr_seconds)
   end
 end
+
