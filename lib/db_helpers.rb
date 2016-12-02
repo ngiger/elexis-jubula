@@ -1,11 +1,14 @@
 require 'pp'
+require 'sequel'
+require 'yaml'
+
 module DbHelpers
-  def self.dump_schema_to_migration(outfile = File.join(INFO_TODAY, 'db.schema'))
+  def dump_schema_to_migration(outfile = File.join(info_today, 'db.schema'))
     system("sequel --dump-migration #{patch_jdbc_for_sequel} > #{outfile}")
   end
 
   LOG_START = /^\d+:\d+:\d+\.\d+\s+\[\w+\]\s+\w+\s+/
-  def self.analyse_log(elexis_log)
+  def analyse_log(elexis_log)
     # TODO: catch errors in spec/data/no_db_connection.log
     # 17:42:47.425 [main] ERROR ch.elexis.core.application.Desk - Database connection error
     # java.lang.NullPointerException: null
@@ -27,7 +30,7 @@ module DbHelpers
   #  jdbc:mysql:[USER/PASSWORD]@[HOST][:PORT]:SID
   # mysql2://elexis:elexisTest@localhost/vece
   # TODO: Support db_host
-  def self.jdbc_to_hash(jdbc)
+  def jdbc_to_hash(jdbc)
     info = {}
     info[:db_type] = jdbc.split(':').first.sub('mysql2', 'mysql')
     info[:db_name] = jdbc.split('/').last.split('/').last
@@ -38,14 +41,14 @@ module DbHelpers
       info[:db_host] ='localhost'
     end
     info[:db_password] = /[:](\w+)[@\/]/.match(jdbc)[1]
-    info[:db_elexis_params] = "-Dch.elexis.username=#{OPTS[:elexis_user]} -Dch.elexis.password=#{OPTS[:elexis_password]} " +
+    info[:db_elexis_params] = "-Dch.elexis.username=#{opts[:elexis_user]} -Dch.elexis.password=#{opts[:elexis_password]} " +
         " -Dch.elexis.dbUser=#{info[:db_user]} -Dch.elexis.dbPw=#{info[:db_password]}  -Dch.elexis.dbFlavor=#{info[:db_type]}" +
         " -Dch.elexis.dbSpec=jdbc:#{info[:db_type]}://#{info[:db_host]}/#{info[:db_name]}"
     info
   end
 
-  def self.patch_jdbc_for_sequel
-    OPTS[:jdbc].sub('mysql:', 'mysql2:')
+  def patch_jdbc_for_sequel
+    opts[:jdbc].sub('mysql:', 'mysql2:')
   end
 
   # org.osgi.framework.BundleException
@@ -60,78 +63,85 @@ module DbHelpers
     return [db_version, elexis_version]
   end
 
-  def self.create_database
-    root_pw = OPTS[:root_pw]
+  def create_database
     cmds =
-        [ "create database if not exists #{OPTS[:db_name]}",
-          "GRANT ALL ON #{OPTS[:db_name]}.* TO '#{OPTS[:db_user]}'@'%' IDENTIFIED BY '#{OPTS[:db_password]}'",
+        [ "create database if not exists #{opts[:db_name]}",
+          "GRANT ALL ON #{opts[:db_name]}.* TO '#{opts[:db_user]}'@'%' IDENTIFIED BY '#{opts[:db_password]}'",
           ]
     cmds.each do |cmd|
-      full_cmd = 'echo "' + cmd + "\"| #{DB_ROOT_CMD};"
+      full_cmd = 'echo "' + cmd + "\"| #{db_root_cmd};"
       unless system(full_cmd)
-        binding.pry
-        fail "Unable to create database #{OPTS[:db_name]} using #{cmd}"
+        fail "Unable to create database #{opts[:db_name]} using #{cmd}"
       end
     end
   end
-  def self.drop_database
-    cmd = "drop database #{OPTS[:db_name]}"
-    full_cmd = "#{DB_ROOT_CMD}  --execute '#{cmd}'"
+  def drop_database
+    cmd = "drop database #{opts[:db_name]}"
+    full_cmd = "#{db_root_cmd}  --execute '#{cmd}'"
     unless system(full_cmd)
-      puts "Unable to drop database #{OPTS[:db_name]} using #{cmd}"
+      puts "Unable to drop database #{opts[:db_name]} using #{cmd}"
     else
-      puts "Successfully dropped database #{OPTS[:db_name]}"
+      puts "Successfully dropped database #{opts[:db_name]}"
     end
   end
 
-  def self.load_database_dump
-    fail "Could not read file #{OPTS[:db_dump]}" unless File.readable? OPTS[:db_dump]
+  def load_database_dump
+    fail "Could not read file #{opts[:db_dump]}" unless File.readable? opts[:db_dump]
     # Delete from the database dump the create database and use command
-    cmd = "cat #{OPTS[:db_dump]} | egrep -v  '^CREATE DATABASE|^USE '| #{DB_ROOT_CMD}  #{OPTS[:db_name]}"
-    puts "Loading database #{OPTS[:db_name]} from #{OPTS[:db_dump]} (#{size_in_mb(OPTS[:db_dump])}). This could take a long time"
+    cmd = "cat #{opts[:db_dump]} | egrep -v  '^CREATE DATABASE|^USE '| #{db_root_cmd}  #{opts[:db_name]}"
+    puts "Loading database #{opts[:db_name]} from #{opts[:db_dump]} (#{size_in_mb(opts[:db_dump])}). This could take a long time"
     start_time = Time.now
     system(cmd)
     diff_seconds = (Time.now - start_time).to_i
-    puts "Loading the databse #{OPTS[:db_dump]} took #{diff_seconds} seconds"
+    puts "Loading the database #{opts[:db_dump]} took #{diff_seconds} seconds"
   end
 
 
-  def self.start_pry
+  def start_pry
     db  = Sequel.connect(patch_jdbc_for_sequel)
     puts db
     binding.pry
   end
 
-  def self.size_in_mb(filename)
+  def size_in_mb(filename)
     (File.size(filename)/1024/1024).to_s + ' MB'
   end
 
-  def self.load_elexis_db_if_not_exist
+  def load_elexis_db_if_not_exist
     db  = Sequel.connect(patch_jdbc_for_sequel)
+    has_tables = false
     begin
-      db.tables # Maybe the databse does not
+      has_tables = db.tables # Maybe the database does not
     rescue Sequel::DatabaseConnectionError
+    end
+    if opts[:noop] || !has_tables
       create_database
       load_database_dump
     end
   end
 
-  def self.elexis_database_info
+  def elexis_database_info
     STDOUT.write("Creating elexis_database_info."); STDOUT.sync = true
     load_elexis_db_if_not_exist
     db_info = {}
-    db_info[:db_label]       = File.basename(OPTS[:db_dump]).split('_').first
-    db_info[:sql_dump]       = OPTS[:db_dump]
-    db_info[:sql_dump_size]  = size_in_mb(OPTS[:db_dump]) if File.exist?(OPTS[:db_dump])
+    db_info[:db_label]       = File.basename(opts[:db_dump]).split('_').first
+    db_info[:sql_dump]       = opts[:db_dump]
+    db_info[:sql_dump_size]  = size_in_mb(opts[:db_dump]) if File.exist?(opts[:db_dump])
     db_info[:db_type]        = 'mysql'
     db_info[:db_client]      = Mysql2::Client.info
-    db_info[:db_version]     = db[:config].filter[:param => 'dbversion'][:wert]
-    db_info[:elexis_version] = db[:config].filter[:param => 'ElexisVersion'][:wert]
+    unless opts[:noop]
+      db_info[:db_version]     = db[:config].filter[:param => 'dbversion'][:wert]
+      db_info[:elexis_version] = db[:config].filter[:param => 'ElexisVersion'][:wert]
+    end
     all_tables = {}
 
-    new_db_elexis = File.join(INFO_ROOT, db_info[:db_label], db_info[:db_version] + '-' + db_info[:elexis_version])
-    my_root = File.exist?(new_db_elexis) ? INFO_TODAY : new_db_elexis
-    FileUtils.makedirs(my_root)
+    if opts[:noop]
+      puts "noop: Would save various database info for: #{db_info[:db_type]} #{db_info[:db_label]}"
+      return
+    end
+    new_db_elexis = File.join(info_root, db_info[:db_label], db_info[:db_version] + '-' + db_info[:elexis_version])
+    my_root = File.exist?(new_db_elexis) ? info_today : new_db_elexis
+    FileUtils.makedirs(my_root, :noop => opts[:noop])
     # TODO: append output of the following MySQL commands
     # SHOW GLOBAL VARIABLES LIKE '%version%';
     # status
@@ -153,12 +163,14 @@ module DbHelpers
     db_schema = File.join(my_root, 'db.schema')
     dump_schema_to_migration(db_schema)
     sql_schema = File.join(my_root, 'db.mysql')
-    cmd = "#{DB_ROOT_CMD} --user #{OPTS[:db_user]} --password=#{OPTS[:db_password]} --no-data #{OPTS[:db_name]} > #{sql_schema}".sub('mysql', 'mysqldump')
+    cmd = "#{db_root_cmd} --user #{opts[:db_user]} --password=#{opts[:db_password]} --no-data #{opts[:db_name]} > #{sql_schema}".sub('mysql', 'mysqldump')
     fail "Unable to to dump schema using #{cmd}" unless system(cmd)
     puts "Stored info under #{my_root}"
     if my_root.eql?(new_db_elexis)
       # add it to git
       system("git add #{sql_schema} #{db_yaml} #{db_schema}")
+    else
+      true
     end
   end
 

@@ -115,7 +115,7 @@ def start_medelexis
     Thread.new do
       Process.wait(pid)
       res = $?.clone
-      puts "Thread: Medelexis unexpected exit #{pid} finished with #{res.exitstatus}"
+      puts "Thread: Medelexis pid #{pid} finished with #{res.exitstatus}"
     end
     count = 0
     while true
