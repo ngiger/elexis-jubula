@@ -14,7 +14,9 @@ end
 
 VARIANT = ENV['VARIANT'] ? ENV['VARIANT'] : 'snapshot' unless defined?(VARIANT)
 MAY_FAIL = true
-@noop = ENV['DRY_RUN']
+def noop
+  ENV['DRY_RUN']
+end
 
 def java_triplet
   cfg = { 'cpu' => RbConfig::CONFIG['target_cpu'] }
@@ -56,7 +58,7 @@ def windows?
   WINDOWS_REGEXP.match(RbConfig::CONFIG['host_os'])
 end
 
-def unzip(zip_file, should_create, noop = @noop)
+def unzip(zip_file, should_create)
   return if noop || Dir.glob(should_create).size > 0
   puts "Unzipping #{zip_file}"
   return if noop
@@ -65,7 +67,7 @@ def unzip(zip_file, should_create, noop = @noop)
   fail "unzip did not create #{should_create}" unless Dir.glob(should_create).size > 0
 end
 
-def download_if_not_exist(dest_dir, src, noop = @noop)
+def download_if_not_exist(dest_dir, src)
   filename = File.join(dest_dir, File.basename(src))
   return true if File.exist?(filename) && File.size(filename) > 0
   puts "getting from #{src} -> #{File.expand_path(filename)}"
@@ -80,7 +82,7 @@ def download_if_not_exist(dest_dir, src, noop = @noop)
   end
 end
 
-def download_and_unzip(zip_url, should_create, noop = @noop)
+def download_and_unzip(zip_url, should_create)
   return if Dir.chdir(WorkDir) && Dir.glob(should_create).size > 0
   zip_file = File.basename(zip_url)
   unless File.exist?(zip_file)
@@ -127,7 +129,7 @@ usageConditionAccepted=true"
   end
 end
 
-def install_rcp_support_for_jubula(inst_dir, noop = @noop)
+def install_rcp_support_for_jubula(inst_dir)
   return if noop
   rcp_support = File.expand_path(File.join(File.dirname(__FILE__), '..', 'assets', 'rcp-support.zip'))
   dropins = File.join(inst_dir, 'dropins', 'plugins')
@@ -136,7 +138,7 @@ def install_rcp_support_for_jubula(inst_dir, noop = @noop)
   unzip(rcp_support, 'org.eclipse.jubula.rc.rcp_*.jar')
 end
 
-def patch_ini_file_for_jubula_rc(inst_dir, noop = @noop)
+def patch_ini_file_for_jubula_rc(inst_dir)
   return if noop
   ini_name = Dir.glob(File.join(inst_dir, 'configuration/config.ini')).first
   return if File.exist?(ini_name + '.bak')
@@ -196,23 +198,22 @@ def patch_ruby(cmd)
   end
 end
 
-def system(cmd, opts = { :may_fail => false, :noop => @noop} )
+def system(cmd, opts = { :may_fail => false} )
   cmd2history = "#{cmd}"
   fail "Must pass a Hash, no longer a constant" unless opts.is_a?(Hash)
   cmd2history += '# may_fail' if opts[:may_fail]
-  if opts[:noop]
+  if noop
     puts cmd2history
     return true
   end
   full_cmd = "cd #{Dir.pwd} && " + cmd
   res = Kernel.system(full_cmd)
   return true if res
-  puts Dir.pwd
   puts "Dir.cmd #{Dir.pwd} and res #{res} may fail #{opts[:may_fail]}  for #{cmd}"
   fail(cmd) unless opts[:may_fail]
 end
 
-def sleep(nr_seconds, noop = @noop )
+def sleep(nr_seconds)
   if noop
     puts "sleep #{nr_seconds} # seconds"
   else

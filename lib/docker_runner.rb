@@ -30,60 +30,22 @@ class DockerRunner
       exit(3)
     end
   end
-  def start_docker(cmd_in_docker, env = nil, workdir = nil)
-    system('xhost local:root', :noop => opts[:noop]) if opts[:use_x11]
-    puts "cmd_in_docker #{cmd_in_docker} with uid #{ENV['HOST_UID']}"
-    [ # instead of calling build, create, start we can use compose up -d
-      # @start_with + 'build',
-      # Only possibility to make it work under compose 1.8
-      @start_with + 'up -d', # create and start do not create a network with compose 1.8, up -d does
-      # TODO: How to run several instances of jenkinstest in parallel
-      # using docker-compose scale and exec --index
-      # added -T to work around bug https://github.com/docker/compose/pull/4059
-      @start_with + "exec -T --user elexis #{@opts[:docker_name]} #{cmd_in_docker}",
-    ].each do |cmd|
-      sleep(2, @noop); puts "start_docker #{cmd}"
-      next if @noop
-      if @test_name.eql?('build_docker')
-        res = system(cmd, MAY_FAIL) if /build/i.match(cmd)
-      else
-        res = system(cmd, MAY_FAIL)
-      end
-    end
-    rescue RuntimeError => e
-      puts "start_docker: #{cmd_in_docker} Catched run_in_docker? #{run_in_docker?} @docker #{@docker.class} runtimeError #{e}  :stop_docker #{self.respond_to?(:stop_docker)} #{e.backtrace.join("\n")}"
-      stop_docker
-      exit 66
-  end
-
-  def stop_docker
-    puts "stop_docker was called opts[:need_to_stop_docker] is #{opts[:need_to_stop_docker].inspect}"
-    return unless opts[:need_to_stop_docker]
-    @result_dir ||= Dir.glob("results-#{opts[:variant]}-*").last
-    @result_dir ||= Dir.pwd
-    cmd =  @start_with + "logs --no-color --timestamps > #{@result_dir}/containers.log"
-    puts "Saving container logs using #{cmd}"
-    return true if @noop
-    system(cmd, MAY_FAIL)
-    @stop_commands.each do |cmd| res = system(cmd, MAY_FAIL) end
-    opts[:need_to_stop_docker] = false
-  end
-
 
   # TODO: Shouldn't we pass test_name, etc via the options
   def initialize(options, test_name = nil, result_dir=nil)
     @opts = options
     @noop = options[:noop]
     @test_name = test_name
-    @result_dir = result_dir
+    @project_name ||= 'xtest'
+    @display ||= ENV['DISPLAY']
+    fail "Must pass result_dir in options" unless opts[:result_dir]
     # TODO: Fix running tests in parallel
     @container_home = File.join(RootDir, 'container_home')
     @m2_repo = File.join(RootDir, 'container_home_m2')
     FileUtils.makedirs(@m2_repo, :verbose => true, :noop => noop)
-    @project_name = 'jubula'+@opts[:agent_port].to_s
     @start_with = "docker-compose "
     @start_with += "-f #{@opts[:compose_file]} " if @opts[:compose_file]
-    @start_with += "--project-name {opt[:compose_project]} " if @opts[:compose_project]
+    @start_with += "--project-name #{@opts[:compose_project]} " if @opts[:compose_project]
     if @test_name.eql?('build_docker')
       @cleanup_networks = []
       @stop_commands = []
@@ -91,10 +53,52 @@ class DockerRunner
       @cleanup_networks =  "docker network rm  #{@project_name}_public 2>/dev/null; sleep 1; docker network rm  #{@project_name}_private 2>/dev/null"
       @stop_commands = ["#{@start_with} stop", "#{@start_with} rm --force --all", @cleanup_networks]
     end
-    # cleanup stale dwait-for-it.sh mysql:3306 -- echo "mysql server is up"ocker containers
     return true if @noop
-    @stop_commands.each do |cmd| res = system(cmd, MAY_FAIL) end
+    @stop_commands.each do |cmd| system(cmd, MAY_FAIL) end
+    prepare_docker
+    adapt_compose_for_x11
+    check_compose_for_x11
   end
+
+  def run_cmd_in_docker(cmd_name, cmd)
+    system('xhost local:root', :noop => opts[:noop]) if opts[:use_x11]
+    script = create_docker_script(cmd_name, cmd)
+    store_cmd(cmd_name, script)
+    puts "cmd_in_docker #{cmd_name} with uid #{ENV['HOST_UID']}"
+    [ # instead of calling build, create, start we can use compose up -d
+      # @start_with + 'build',
+      # Only possibility to make it work under compose 1.8
+      @start_with + 'up -d', # create and start do not create a network with compose 1.8, up -d does
+      # TODO: How to run several instances of jenkinstest in parallel
+      # using docker-compose scale and exec --index
+      # added -T to work around bug https://github.com/docker/compose/pull/4059
+      @start_with + "exec -T --user elexis #{@opts[:docker_name]} #{cmd_name}",
+    ].each do |a_cmd|
+      sleep(2); puts "start_docker #{a_cmd}"
+      next if @noop
+      if @test_name.eql?('build_docker')
+        res = system(a_cmd, MAY_FAIL) if /build/i.match(a_cmd)
+      else
+        res = system(a_cmd, MAY_FAIL)
+      end
+    end
+    rescue RuntimeError => e
+      puts "start_docker: #{cmd_name} Catched run_in_docker? #{run_in_docker?} @docker #{@docker.class} runtimeError #{e}  :stop_docker #{self.respond_to?(:stop_docker)} #{e.backtrace.join("\n")}"
+      stop_docker
+      exit 66
+  end
+
+  def stop_docker
+    puts "@stop_commands #{@stop_commands.inspect}" if noop
+    return unless opts[:need_to_stop_docker]
+    cmd =  @start_with + "logs --no-color --timestamps > #{opts[:result_dir]}/containers.log"
+    puts "Saving container logs using #{cmd}"
+#    system(cmd, MAY_FAIL.merge({ :noop => @noop}))
+#    @stop_commands.each do |a_cmd| system(a_cmd, MAY_FAIL.merge({ :noop => @noop})) end
+    opts[:need_to_stop_docker] = false
+  end
+
+  private
 
   def check_compose_for_x11
     checks = [ '/tmp/.X11-unix', '/dev/snd' ]
@@ -130,16 +134,16 @@ class DockerRunner
 
   def adapt_compose_for_x11
     compose_yaml = opts[:compose_file]
-    inhalt = IO.readlines(compose_yaml); 3
+    inhalt = IO.readlines(compose_yaml)
     if opts[:use_x11] # needs also changes in docker-compose.yml!
-      inhalt.each{|line|line.sub!(/^(\s+)# (.+)(#.+USE_X11\n)/, '\1\2\3')}.compact; 3
+      inhalt.each{|line|line.sub!(/^(\s+)# (.+)(#.+USE_X11\n)/, '\1\2\3')}.compact
       File.open(compose_yaml, 'w+'){|f| f.write(inhalt.join("")) }
       system('git diff -w wheezy', :noop => opts[:noop])
       @display = ENV['DISPLAY']
       puts "Activating USE_X11 for DISPLAY #{@display}"
     else
       puts "rollback"
-      inhalt.each{|line| line.sub!(/^(\s+)([^#].*USE_X11\n)/,'\1# \2') unless /\s+#.+(#.+USE_X11\n)/.match(line)};2
+      inhalt.each{|line| line.sub!(/^(\s+)([^#].*USE_X11\n)/,'\1# \2') unless /\s+#.+(#.+USE_X11\n)/.match(line)}
       File.open(compose_yaml, 'w+'){|f| f.write(inhalt.join("")) }
       system('git diff -w wheezy', { :noop => opts[:noop]})
       @display = ':1.5' # as defined below for Xvfb
@@ -166,7 +170,9 @@ class DockerRunner
   end
 
   def store_cmd(name, cmd)
-    path = File.join(@docker ? @docker.container_home : RootDir, File.basename(name))
+    path = File.join(opts[:run_in_docker] ? @container_home : RootDir, File.basename(name))
+    puts "store_cmd #{path}"
+    return if opts[:noop] && !File.directory?(File.dirname(path))
     FileUtils.makedirs(File.dirname(path), :noop => opts[:noop])
     File.open(path, 'w') do |f|
       f.puts '#!/bin/bash -v'
@@ -176,15 +182,13 @@ class DockerRunner
     unless File.dirname(path).eql?(RootDir)
       FileUtils.cp(path, RootDir, :preserve => true, :verbose => true, :noop => opts[:noop])
     end
-    system("ls -l #{path}", :noop => opts[:noop])
   end
 
-  def create_env_for_script
+  def prepare_for_cmd
     cmd = %(export LANG=de_CH.UTF-8
 export LANGUAGE=de_CH
 export DISPLAY=#{@display}
 export VARIANT=#{opts[:variant]}
-#{@opts[:agent_port] ? 'export AGENT_PORT=' + @opts[:agent_port] : ''}
 Xvfb :1 -screen 5 1600x1280x24 -nolisten tcp &
 echo "I am" `whoami`: `id`
 # idea from https://gist.github.com/tullmann/476cc71169295d5c3fe6
@@ -210,9 +214,29 @@ sleep 1
 echo 'Waiting for mysql'
 /home/elexis/wheezy/assets/wait-for-it.sh --timeout=90 mysql:3306 -- echo "mysql server is up"
 )
-    cmd_name = '/home/elexis/create_env_for_script.sh'
-    store_cmd(cmd_name, cmd)
-    cmd_name
+    cmd
   end
+  def create_docker_script(cmd_name, cmd)
+    cmd = %(#{prepare_for_cmd}
+#{cmd}
+export status=$?
+date
+pwd
+find $PWD -name surefire-reports | xargs ls -lrt
+ps -ef
+echo $status | tee #{opts[:result_dir]}/result_of_test_run
+echo Resultat von #{cmd_name} um `date` war $status | tee --append #{opts[:result_dir]}/result_of_test_run
+cat #{opts[:result_dir]}/result_of_test_run
+ls -l #{opts[:result_dir]}/result_of_test_run
+# sleep 3600 # some time for debugging uncomment this line if needed
+sync # ensure that everything is written to the disk
+sleep 1
+echo killing children process
+pkill -P $$
+echo about to exit with status $status
+exit $status
+)
+  end
+
 end
 

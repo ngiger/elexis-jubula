@@ -128,13 +128,13 @@ module InstHelpers
     cache = File.join(UpgradeOptions::CACHE_BASE, opts[:medelexis] ? 'medelexis' : 'elexis', variant)
     url = "https://download.medelexis.ch/medelexis.3//#{variant}"
     dest = File.join(Dir.pwd, variant)
-    result_dir1 = "results-#{variant}-1"
-    result_dir2 = "results-#{variant}-2"
+    result_dir1 = "#{opts[:result_dir]}/1"
+    result_dir2 = "#{opts[:result_dir]}/2"
 
     if File.exist?(File.join(dest, 'plugins'))
       puts "Skip extract_medelexis_exe as #{cache}/plugins exists"
     else
-      exe = extract_medelexis_exe(variant, cache, dest)
+      extract_medelexis_exe(variant, cache, dest)
     end
     if false
       install_variant(url, cache, dest) unless Dir.glob("#{dest}/plugins/org.iatrix*.jar").size > 0

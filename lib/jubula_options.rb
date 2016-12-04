@@ -3,8 +3,9 @@ require 'trollop'
 class JubulaOptions < Hash
   def initialize(options = ARGV)
     p = Trollop::Parser.new do
-      version = "JubulaRunner 0.1 (c) by Niklaus Giger <niklaus.giger@member.fsf.org>"
+      version "JubulaRunner #{ElexisJubula::VERSION} (c) by Niklaus Giger <niklaus.giger@member.fsf.org>"
       banner <<-EOS
+      #{version}
     Useage:
       * Run Jubula  GUI tests for Elexis
       * Run Elexis and/or Jubula AUT-agent inside the docker
@@ -17,13 +18,14 @@ class JubulaOptions < Hash
       opt :build_docker,  "Build the docker image needed"
       opt :elexis,        "Run Elexis inside the docker"
       opt :aut_agent,     "Start autagent for Jubula inside the docker"
-      opt :run_in_docker, "Run maven inside docker, not on the command line", :default => true
-      opt :medelexis,     "Test Medelexis (not Elexis3) app"
+      opt :run_in_docker, "Run maven inside docker, not on the command line", :default => false
+      opt :medelexis,     "Test Medelexis (not Elexis3) app", :default => false
       opt :variant,       "Possible values are snapshot, beta, prerelease, release", :type => String, :default => 'snapshot'
     end
     result = Trollop::with_standard_exception_handling p do
       p.parse options
     end
+    ENV['DRY_RUN'] = 'true' if result[:noop]
     self.merge! result
   end
 end

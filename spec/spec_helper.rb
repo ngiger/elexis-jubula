@@ -23,7 +23,7 @@ module Kernel
 end
 
 def cleanup_directories
-  [ Dir.glob("results-*-1") +
+  [ Dir.glob("results-*") +
     Dir.glob("prerelease")].flatten.each { |dir| FileUtils.rm_rf(dir) if File.exist?(dir) }
 end
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration

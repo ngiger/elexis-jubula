@@ -66,9 +66,9 @@ services:
       - ${PWD}:/home/elexis
       # File in this directory must not be world readable or the mysqld will simply ignore it!
       - ${PWD}/wheezy/mysql:/etc/mysql/conf.d
-      - /tmp/.X11-unix:/tmp/.X11-unix # für USE_X11
-    devices: # für USE_X11
-      - /dev/snd # für USE_X11
+      # - /tmp/.X11-unix:/tmp/.X11-unix # für USE_X11
+    # devices: # für USE_X11
+      # - /dev/snd # für USE_X11
     depends_on:
         - postgres
         - mysql

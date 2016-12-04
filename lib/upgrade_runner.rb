@@ -5,16 +5,8 @@ class UpgradeRunner
   attr_reader :opts, :db_root_cmd, :db, :start_time, :info_root, :info_today
   include DbHelpers
   include InstHelpers
-  def system(cmd)
-    if  opts[:noop]
-      puts cmd
-      return true
-    end
-    return Kernel.system(cmd)
-  end
-
-  def cleanup_result_dirs
-    dirs = [opts[:variant]] +  Dir.glob("results-#{opts[:variant]}-*")
+  def cleanup(result_dir)
+    dirs = [opts[:variant]] +  Dir.glob(result_dir)
     dirs.each do |dir|
       puts "Removing directory and its content: #{dir}"
       FileUtils.rm_rf(dir, :verbose => true, :noop => opts[:noop] )
@@ -39,9 +31,11 @@ class UpgradeRunner
     @info_root = File.expand_path(File.join(__FILE__, '..', '..', 'db_info'))
     @info_today = File.join(@info_root, opts[:db_name], start_time.strftime('%Y%m%d.%H%M%S'))
     @db  = Sequel.connect(patch_jdbc_for_sequel)
+    opts[:result_dir] = "results-#{opts[:variant]}"
+    FileUtils.makedirs(opts[:result_dir], :verbose => true, :noop => opts[:noop] ) unless File.exist?(opts[:result_dir])
     if opts[:clean]
       drop_database unless opts[:run_in_docker]
-      cleanup_result_dirs
+      cleanup(opts[:result_dir])
     end
     res = false
     if opts[:info]
@@ -55,14 +49,14 @@ class UpgradeRunner
           if run_in_docker?
             begin
               puts "Call load_elexis_db_if_not_exist"
-              fail 'simulate_error'
+              # fail 'simulate_error'
               res = load_elexis_db_if_not_exist
               puts "load_elexis_db_if_not_exist done. res #{res.inspect}"
               res = elexis_database_info
               puts "elexis_database_info done. res #{res.inspect}"
               res = upgrade
               puts "upgrade done. res #{res.inspect}"
-    #           res_info = elexis_database_info
+              res_info = elexis_database_info
               puts "elexis_database_info done. res_info #{res_info.inspect}"
             rescue RuntimeError => e
               puts "#{Time.now}: Catched run_in_docker? #{run_in_docker?} @docker #{@docker.class} runtimeError #{e}  :stop_docker #{self.respond_to?(:stop_docker)} #{e.backtrace.join("\n")}"
@@ -73,25 +67,12 @@ class UpgradeRunner
             @opts[:docker_name] = "runner"
             @docker = DockerRunner.new(opts)
             DockerRunner.trap_ctrl_c(@docker, @opts)
-            @docker.adapt_compose_for_x11
-            @docker.check_compose_for_x11
-            start_env = @docker.create_env_for_script
-            cmd  = %(status=98
-. #{start_env}
-cd /home/elexis
+            cmd  = %(cd /home/elexis
 bundle install
 bundle exec /home/elexis/bin/tst_upgrade.rb --clean --upgrade --run-in-docker
-export status=$?
-echo "bundle returned $status"
-ps -ef
-echo killing children process
-pkill -P $$
-echo about to exit with status $status
-exit $status
 )
-            cmd_name = '/home/elexis/call_upgrade.sh'
-            @docker.store_cmd(cmd_name, cmd)
-            @docker.start_docker(cmd_name)
+            cmd_name = "/home/elexis/upgrade_#{opts[:variant]}.sh"
+            res = @docker.run_cmd_in_docker(cmd_name, cmd)
             @docker.stop_docker
           end
         end
@@ -102,8 +83,6 @@ exit $status
         res = upgrade
         elexis_database_info
       end
-    elsif opts[:pry]
-      start_pry
     elsif opts[:clean]
       res = true
     else
@@ -111,7 +90,28 @@ exit $status
       res = false
     end
     diff_seconds = (Time.now - start_time).to_i
-    puts "#{Time.now.strftime('%Y.%m.%d %H:%M:%S')}: took #{diff_seconds} seconds to run. Exit status 0 if #{res.inspect}. (inside Docker #{run_in_docker?})"
-    exit(res ? 0 : 1)
+    okay = true
+    results = Dir.glob(opts[:result_dir] + '/**/install_sw_medelexis.errors')
+    if !opts[:noop] && !run_in_docker?
+      puts "Checking #{results}"
+      fail "No install_sw_medelexis.done found in #{opts[:result_dir]}" if results.size == 0
+      regexp = /Handled (\d+) error/
+      results.each do |file|
+        status_line = IO.readlines(file)[0] # by convention
+        unless regexp.match(status_line)
+          puts "No line containing #{regexp} found in #{file}"
+          okay = false
+          break
+        end
+        if regexp.match(status_line)[1].to_i > 0
+          puts "No in #{file} shows errors"
+          okay = false
+          break
+        end
+        puts "Found #{status_line} in #{file}. That is good. Details are in #{file.sub('errors', 'done')}"
+      end
+    end
+    puts "#{Time.now.strftime('%Y.%m.%d %H:%M:%S')}: took #{diff_seconds} seconds to run. Exit status 0 if #{okay.inspect}. (inside Docker #{run_in_docker?})"
+    return(okay ? 0 : 1)
   end
 end

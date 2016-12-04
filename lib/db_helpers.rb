@@ -55,6 +55,7 @@ module DbHelpers
   # sequel mysql2://localhost/hgz
   def get_db_elexis_version
     db  = Sequel.connect(patch_jdbc_for_sequel)
+    return ['0.0', 'x.y'] if opts[:noop]
     db_version = db[:config].filter[:param => 'dbversion'][:wert]
     elexis_version = db[:config].filter[:param => 'ElexisVersion'][:wert]
     puts "db_version #{db_version} elexis_version #{elexis_version}"
@@ -101,7 +102,7 @@ module DbHelpers
   def start_pry
     db  = Sequel.connect(patch_jdbc_for_sequel)
     puts db
-    binding.pry
+    binding.pry # in start_pry
   end
 
   def size_in_mb(filename)
@@ -117,9 +118,9 @@ module DbHelpers
     end
     puts "load_elexis_db_if_not_exist has_tables is #{has_tables.inspect} noop #{ opts[:noop]}"
     unless has_tables && has_tables.size > 0
-      create_database
+      create_database unless opts[:noop]
       load_database_dump
-    end unless opts[:noop]
+    end
   end
 
   def elexis_database_info
