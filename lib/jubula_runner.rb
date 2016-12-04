@@ -15,8 +15,6 @@ class JubulaRunner
   def run(options, test_cases=ARGV)
     @opts = options
     opts[:result_dir] ||= 'results'
-    ENV['HOST_UID'] = Process.uid.to_s
-    ENV['JUBULA_RUNNER_VERSION'] = ElexisJubula::VERSION
     puts "#{opts[:variant]} #{test_cases.join(' ')} opts[:noop] is #{opts[:noop]} opts[:use_x11] #{opts[:use_x11]} RUN_IN_DOCKER #{opts[:run_in_docker]} opts[:medelexis] #{opts[:medelexis]} tag #{ENV['JUBULA_RUNNER_VERSION']}"
     res = 0
     if opts[:definition]

@@ -38,6 +38,8 @@ class DockerRunner
     @test_name = test_name
     @project_name ||= 'xtest'
     @display ||= ENV['DISPLAY']
+    ENV['HOST_UID'] = Process.uid.to_s
+    ENV['JUBULA_RUNNER_VERSION'] = ElexisJubula::VERSION
     fail "Must pass result_dir in options" unless opts[:result_dir]
     # TODO: Fix running tests in parallel
     @container_home = File.join(RootDir, 'container_home')
