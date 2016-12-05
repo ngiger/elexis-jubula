@@ -63,6 +63,7 @@ class DockerRunner
   end
 
   def run_cmd_in_docker(cmd_name, cmd)
+    puts cmd.gsub("\n", "\nin_docker: ") if opts[:noop]
     system('xhost local:root', :noop => opts[:noop]) if opts[:use_x11]
     script = create_docker_script(cmd_name, cmd)
     store_cmd(cmd_name, script)
@@ -224,7 +225,7 @@ echo 'Waiting for mysql'
 export status=$?
 date
 pwd
-find $PWD -name surefire-reports | xargs ls -lrt
+# find $PWD -name surefire-reports | xargs ls -lrt # needed sometimes for debugging
 ps -ef
 echo $status | tee #{opts[:result_dir]}/result_of_test_run
 echo Resultat von #{cmd_name} um `date` war $status | tee --append #{opts[:result_dir]}/result_of_test_run

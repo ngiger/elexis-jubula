@@ -65,17 +65,21 @@ module InstHelpers
     # https://sbe.medelexis.ch/jenkins/view/3.0/job/Medelexis-3-Application/lastSuccessfulBuild/artifact/ch.medelexis.application.p2site/target/products/ch.medelexis.application.product.Medelexis-linux.gtk.x86_64.zip
   end
 
-  def prepare_license
+  def prepare_license(container_home = false)
+    dest = File.expand_path(File.join("~/elexis/license.xml"))
+    if run_in_docker?
+      puts "I am running inside the docker. The license file must already be present under #{dest} #{File.exist?(dest)}"
+      return File.exist?(dest)
+    end
     license = opts[:license_file]
     if license
       unless File.exist?(license)
         puts "No file #{license} found"
         return false
       end
-      dest = File.expand_path(File.join("~/elexis/license.xml"))
-      puts dest
+      dest = File.expand_path(File.join(container_home, "/elexis/license.xml")) if opts[:run_in_docker]
       FileUtils.makedirs(File.dirname(dest), :verbose => true, :noop => opts[:noop]) unless File.exist?(File.dirname(dest))
-      FileUtils.cp(license, File.expand_path(File.join("~/elexis/license.xml")), :verbose => true, :noop => opts[:noop])
+      FileUtils.cp(license, dest, :verbose => true, :noop => opts[:noop])
       return system("ls -la #{dest}")
     end
   end
@@ -118,11 +122,6 @@ module InstHelpers
   end
 
   def upgrade
-    if opts[:medelexis]
-      prepare_license
-    else
-      puts "Download of elexis open source not yet supported, as there we have to join elexis-3-base and elexis-3-core"
-    end unless run_in_docker?
     variant = opts[:variant]
 
     cache = File.join(UpgradeOptions::CACHE_BASE, opts[:medelexis] ? 'medelexis' : 'elexis', variant)
@@ -139,21 +138,22 @@ module InstHelpers
     if false
       install_variant(url, cache, dest) unless Dir.glob("#{dest}/plugins/org.iatrix*.jar").size > 0
     else
-      puts "Skip install_variant. We think it is better to instal"
+      puts "upgrade: Skip install_variant. We think it is better to install"
     end
     res = true
     if File.exist?(result_dir1) && !opts[:clean]
-      puts "Skipping first install as we found #{result_dir1} and not clean demanded"
+      puts "upgrade: Skipping first install as we found #{result_dir1} and not clean demanded"
     else
       res = start_and_install_sw(dest, variant, result_dir1, true)
+      puts "upgrade: first start_and_install_sw returned #{res}"
       unless res
-          puts "first start_and_install_sw failed"
+          puts "upgrade: first start_and_install_sw failed"
         return false
       end
     end
-    puts "start second start_and_install_sw"
+    puts "upgrade: start second start_and_install_sw"
     res = start_and_install_sw(dest, variant, result_dir2, false)
-    puts "start second start_and_install_sw returned #{res}"
+    puts "upgrade: start second start_and_install_sw returned #{res}"
     return res
   end
 

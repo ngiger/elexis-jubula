@@ -7,7 +7,6 @@
 #   Close all your Internet Explorer windows  nircmd.exe win close class "IEFrame"
 #   Answer 'Yes' to a standard Windows message-box.   nircmd.exe dlg "" "" click yes
 require 'fileutils'
-
 ELEXIS_DB_DEFAULTS = '-Dch.elexis.username=007 -Dch.elexis.password=topsecret -Delexis-run-mode=RunFromScratch '
 
 if ARGV.size < 3
@@ -81,7 +80,7 @@ end
 def prepare_medelexis
   progress "preparing medelexis #{MEDELEXIS_EXE} for #{VARIANT.inspect}"
   # Output some debugging info
-  if $VERBOSE
+  if false && $VERBOSE
     system('env')
     system("echo 'I am' `whoami`: `id`")
     system("ls -l #{File.expand_path('~')}")
@@ -90,12 +89,16 @@ def prepare_medelexis
     puts "Either #{LICENSE_ORIGIN} or  #{LICENSE_INSTALLED} must be readable"
     exit 1
   end
-  FileUtils.cp(LICENSE_ORIGIN, LICENSE_INSTALLED, :verbose => true) unless File.exist?(LICENSE_INSTALLED)
+  if File.exist?(LICENSE_INSTALLED)
+    progress "using #{LICENSE_INSTALLED} #{File.size(LICENSE_INSTALLED)} bytes"
+  else
+    FileUtils.cp(LICENSE_ORIGIN, LICENSE_INSTALLED, :verbose => true)
+    progress "copied #{LICENSE_ORIGIN} -> #{LICENSE_INSTALLED} #{File.size(LICENSE_INSTALLED)}"
+  end
   unless  File.readable?(LICENSE_INSTALLED)
     puts "Could not read #{LICENSE_INSTALLED}"
     exit 1
   end
-  progress "prepared #{LICENSE_INSTALLED} #{File.size(LICENSE_INSTALLED)}ng8"
   File.open(PASSWORD_FILE, 'w+') {|f| f.puts 'dummy_password_from_'+ File.basename(__FILE__) }
   progress "prepared #{PASSWORD_FILE}"
   FileUtils.makedirs(File.dirname(ACCEPTED_LICENSE))
@@ -127,38 +130,44 @@ def start_medelexis
       count += 1
       puts "Medelexis running #{count} pid #{pid}" if $VERBOSE
       name=get_window_name
-      break if name
+      if name
+        progress "Elexis is running after #{count} seconds"
+        break
+      end
       if count >= 120
         progress "Failed starting Elexis after 120 errors"
         report_error
         exit 3
       end
-
-      puts "#{MEDELEXIS_EXE} died. Why?" unless Process.getpgid( pid )
-      return
+      unless Process.getpgid( pid )
+        puts "#{MEDELEXIS_EXE} died. Why?"
+        return
+      end
     end
-    send_escape_to_window('InfoBox')
+    close_error_window_if_present('InfoBox')
     progress "Waiting for Medelexis to be fully active"
     sleep 5
-    send_escape_to_window('InfoBox')
+    close_error_window_if_present('InfoBox')
     progress "Medelexis full name is '#{name}' after #{$sw_errors} seconds"
-    send_escape_to_window('InfoBox')
+    close_error_window_if_present('InfoBox')
   end
 end
 
-def increment_sw_error_and_snapshot(msg, err_name)
+def increment_sw_error_and_snapshot(windowname, msg, err_name)
   $sw_errors += 1
   create_snapshot("#{$sw_errors}_#{err_name}")
-  cmd = "xdotool search --name #{windowname} windowactivate && xdotool key Escape"
-  res = system(cmd)
+  send_escape(windowname)
   progress "#{msg} rm res #{res} for #{cmd}"
 end
 
-def send_escape_to_window(windowname)
+def close_error_window_if_present(windowname, is_error = true)
   err_name=get_window_name(windowname)
   return unless err_name
   if err_name
-    increment_sw_error_and_snapshot("Found error_window #{$sw_errors}", err_name)
+    if is_error
+      increment_sw_error_and_snapshot(windowname, "Found error_window #{$sw_errors}", err_name)
+    else
+    end
   end
 end
 
@@ -166,13 +175,25 @@ def send_quit
   system("wmctrl -c '#{get_window_name}'")
 end
 
+def send_escape(window_name)
+  cmd = "xdotool search --name '#{window_name}' windowactivate && xdotool key Escape"
+  res = system(cmd)
+end
+
+def close_non_error_popups
+  @@index  ||= 0
+ ['Wichtige Reminder'].each do |popup_name|
+    if popup = get_window_name(popup_name)
+      @@index += 1
+      create_snapshot("#{@@index}_#{popup}_1")
+      send_escape(popup)
+    end
+ end
+end
 def install_sw
-  send_escape_to_window('InfoBox')
+  close_error_window_if_present('InfoBox')
   progress "Installing SW #{get_window_name}  after #{(Time.now - StartTime).to_i} seconds"
-  if wichtig = get_window_name("Wichtige Reminder")
-    send_escape_to_window("Wichtige") # Sending "Wichtige Reminder" will fail
-    sleep 0.5
-  end
+  close_non_error_popups
   send_quit
   sleep 5
   create_snapshot('install_sw_pressed_quit')
@@ -180,10 +201,11 @@ def install_sw
   while name = get_window_name
     sleep 3
     progress "Elexis #{name} still alive after #{(Time.now - StartTime).to_i} seconds"
-    PROBLEMATIC_WINDOW_TITLES.each{ |name| send_escape_to_window(name) }
+    PROBLEMATIC_WINDOW_TITLES.each{ |name| close_error_window_if_present(name) }
     send_quit # why
+    close_non_error_popups # sometime we have them
     if (Time.now - StartTime).to_i > 600 # wait maximal 10 minutes
-      increment_sw_error_and_snapshot("Timout expired (600 seconds) #{$sw_errors}", 'timeout_installation')
+      increment_sw_error_and_snapshot('Elexis', "Timout expired (600 seconds) #{$sw_errors}", 'timeout_installation')
     end
   end
 end

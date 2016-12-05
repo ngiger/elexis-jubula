@@ -97,7 +97,6 @@ export agent_port=#{@opts[:agent_port]}
     cmd_name = "/home/elexis/maven_#{@test_name}.sh"
     begin
       puts "Starting HOST_UID is #{ENV['HOST_UID'].inspect} from process #{Process.uid.to_s} AGENT_PORT #{opts[:agent_port]} cmd: #{cmd_name}"
-      puts cmd if opts[:noop]
       res = @docker.run_cmd_in_docker(cmd_name, cmd)
       sleep(0.5)
       result = File.join(RESULT_DIR, 'result_of_test_run')

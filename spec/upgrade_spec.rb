@@ -18,7 +18,7 @@ RSpec.describe "bin/tst_upgrade.rb" do
       @options = JubulaOptions.new(["--noop", '--run-in-docker', "Screenshot"])
       expect(@options[:noop]).to eq true
       @cli = JubulaRunner.new
-      expect{  @cli_output = buildr_capture { @cli.run(@options)} }.to_not raise_error(SystemExit)
+      expect{  @cli_output = buildr_capture { @cli.run(@options)} }.not_to raise_error
     end
 
     it "should stop the docker" do
@@ -34,7 +34,7 @@ RSpec.describe "bin/tst_upgrade.rb" do
       cleanup_directories
       @options = UpgradeOptions.new(["--noop", "--drop"])
       @cli = UpgradeRunner.new
-      expect{  @cli_output = buildr_capture { @cli.run(@options)} }.to_not raise_error(SystemExit)
+      expect{  @cli_output = buildr_capture { @cli.run(@options)} }.not_to raise_error
       @cli_output = buildr_capture { @cli.run(@options)} unless  @cli_output
     end
     it "should handle the noop option" do
@@ -50,7 +50,7 @@ RSpec.describe "bin/tst_upgrade.rb" do
       expect(@options[:clean]).to eq true
       @cli = UpgradeRunner.new
       # @cli.run(@options)
-      expect{  @cli_output = buildr_capture { @cli.run(@options)} }.to_not raise_error(SystemExit)
+      expect{  @cli_output = buildr_capture { @cli.run(@options)} }.not_to raise_error
     end
 
     it "should drop the database" do
@@ -68,7 +68,8 @@ RSpec.describe "bin/tst_upgrade.rb" do
       cleanup_directories
       @options = UpgradeOptions.new(["--noop", "--upgrade", '--no-run-in-docker'])
       @cli = UpgradeRunner.new
-      expect{  @cli_output = buildr_capture { @cli.run(@options)} }.to_not raise_error(SystemExit)
+      # @cli.run(@options)
+      expect{  @cli_output = buildr_capture { @cli.run(@options)} }.not_to raise_error
     end
 
     it "should download the zip from correct URL" do
@@ -94,13 +95,33 @@ RSpec.describe "bin/tst_upgrade.rb" do
     it "should save the database info" do
       expect(@cli_output).to match(/save various database info for: mysql rgw/)
     end
+
+    it "should login as elexis user test" do
+      expect(@cli_output).to match(/ch.elexis.username=elexis/)
+      expect(@cli_output).to match(/-Dch.elexis.username=elexis/)
+    end
+
+  end
+  context 'when --noop, --clean, --definition=rgw and --upgrade option is given' do
+    before(:each) do
+      cleanup_directories
+      @options = UpgradeOptions.new(['--noop', '--clean', '--upgrade', '--no-run-in-docker', '--definition=rgw'])
+      @cli = UpgradeRunner.new
+      expect{  @cli_output = buildr_capture { @cli.run(@options)} }.not_to raise_error
+    end
+
+    it "should login as elexis user test" do
+      expect(@cli_output).to match(/-Dch.elexis.username=test/)
+      expect(@cli_output).to match(/-Dch.elexis.password=test/)
+    end
+
   end
   context 'when --noop, --clean and --info option is given' do
     before(:each) do
       cleanup_directories
       @options = UpgradeOptions.new(["--noop", '--clean', "--info"])
       @cli = UpgradeRunner.new
-      expect{  @cli_output = buildr_capture { @cli.run(@options)} }.to_not raise_error(SystemExit)
+      expect{  @cli_output = buildr_capture { @cli.run(@options)} }.not_to raise_error
     end
 
     it "should drop the database" do

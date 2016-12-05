@@ -30,13 +30,13 @@ class UpgradeRunner
     start_time = Time.now
     @info_root = File.expand_path(File.join(__FILE__, '..', '..', 'db_info'))
     @info_today = File.join(@info_root, opts[:db_name], start_time.strftime('%Y%m%d.%H%M%S'))
-    @db  = Sequel.connect(patch_jdbc_for_sequel)
     opts[:result_dir] = "results-#{opts[:variant]}"
-    FileUtils.makedirs(opts[:result_dir], :verbose => true, :noop => opts[:noop] ) unless File.exist?(opts[:result_dir])
+    @db  = Sequel.connect(patch_jdbc_for_sequel)
     if opts[:clean]
       drop_database unless opts[:run_in_docker]
       cleanup(opts[:result_dir])
     end
+    FileUtils.makedirs(opts[:result_dir], :verbose => true, :noop => opts[:noop] ) unless File.exist?(opts[:result_dir])
     res = false
     if opts[:info]
       load_elexis_db_if_not_exist
@@ -48,16 +48,16 @@ class UpgradeRunner
         begin
           if run_in_docker?
             begin
-              puts "Call load_elexis_db_if_not_exist"
+              puts "upgrade_runner: load_elexis_db_if_not_exist"
               # fail 'simulate_error'
               res = load_elexis_db_if_not_exist
-              puts "load_elexis_db_if_not_exist done. res #{res.inspect}"
+              puts "upgrade_runner: load_elexis_db_if_not_exist done. res #{res.inspect}"
               res = elexis_database_info
-              puts "elexis_database_info done. res #{res.inspect}"
+              puts "upgrade_runner: elexis_database_info done. res #{res.inspect}"
               res = upgrade
-              puts "upgrade done. res #{res.inspect}"
+              puts "upgrade_runner:upgrade done. res #{res.inspect}"
               res_info = elexis_database_info
-              puts "elexis_database_info done. res_info #{res_info.inspect}"
+              puts "upgrade_runner: elexis_database_info done. res_info #{res_info.inspect}"
             rescue RuntimeError => e
               puts "#{Time.now}: Catched run_in_docker? #{run_in_docker?} @docker #{@docker.class} runtimeError #{e}  :stop_docker #{self.respond_to?(:stop_docker)} #{e.backtrace.join("\n")}"
               exit 78
@@ -67,9 +67,10 @@ class UpgradeRunner
             @opts[:docker_name] = "runner"
             @docker = DockerRunner.new(opts)
             DockerRunner.trap_ctrl_c(@docker, @opts)
+            prepare_license(@docker.container_home) if opts[:medelexis]
             cmd  = %(cd /home/elexis
 bundle install
-bundle exec /home/elexis/bin/tst_upgrade.rb --clean --upgrade --run-in-docker
+bundle exec /home/elexis/bin/tst_upgrade.rb --clean --upgrade --run-in-docker #{opts[:definition] ? ('--definition='+opts[:definition]) : ''}
 )
             cmd_name = "/home/elexis/upgrade_#{opts[:variant]}.sh"
             res = @docker.run_cmd_in_docker(cmd_name, cmd)
@@ -80,6 +81,7 @@ bundle exec /home/elexis/bin/tst_upgrade.rb --clean --upgrade --run-in-docker
         create_database
         load_elexis_db_if_not_exist
         get_db_elexis_version
+        prepare_license if opts[:medelexis]
         res = upgrade
         elexis_database_info
       end
@@ -94,7 +96,6 @@ bundle exec /home/elexis/bin/tst_upgrade.rb --clean --upgrade --run-in-docker
     results = Dir.glob(opts[:result_dir] + '/**/install_sw_medelexis.errors')
     if !opts[:noop] && !run_in_docker?
       puts "Checking #{results}"
-      fail "No install_sw_medelexis.done found in #{opts[:result_dir]}" if results.size == 0
       regexp = /Handled (\d+) error/
       results.each do |file|
         status_line = IO.readlines(file)[0] # by convention
@@ -108,9 +109,19 @@ bundle exec /home/elexis/bin/tst_upgrade.rb --clean --upgrade --run-in-docker
           okay = false
           break
         end
-        puts "Found #{status_line} in #{file}. That is good. Details are in #{file.sub('errors', 'done')}"
+        puts "Found '#{status_line.chomp}' in #{file}. That is good. Details are in #{file.sub('errors', 'done')}"
+      end
+      if results.size != 2
+        puts "Need 2 install_sw_medelexis.done in #{opts[:result_dir]}. Found only #{results.siz}"
+        okay = false
       end
     end
+    msg = "Ran: "
+    msg += "clean " if opts[:clean]
+    msg += " definition " + opts[:definition] if opts[:definition]
+    msg += " sql_dump " + opts[:sql_dump] if opts[:sql_dump]
+    msg += " stored db info in " + opts[:db_info_root] if opts[:db_info_root]
+    puts msg
     puts "#{Time.now.strftime('%Y.%m.%d %H:%M:%S')}: took #{diff_seconds} seconds to run. Exit status 0 if #{okay.inspect}. (inside Docker #{run_in_docker?})"
     return(okay ? 0 : 1)
   end

@@ -144,6 +144,7 @@ module DbHelpers
     end
     new_db_elexis = File.join(info_root, db_info[:db_label], db_info[:db_version] + '-' + db_info[:elexis_version])
     my_root = File.exist?(new_db_elexis) ? info_today : new_db_elexis
+    opts[:db_info_root] = my_root
     FileUtils.makedirs(my_root, :noop => opts[:noop])
     # TODO: append output of the following MySQL commands
     # SHOW GLOBAL VARIABLES LIKE '%version%';
