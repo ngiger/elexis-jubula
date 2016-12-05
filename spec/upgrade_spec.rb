@@ -24,6 +24,7 @@ RSpec.describe "bin/tst_upgrade.rb" do
     it "should stop the docker" do
       expect(@cli_output).to match(/docker-compose.* --project-name jubula.*\s+stop/)
     end
+
     it "should remove the docker" do
       expect(@cli_output).to match(/docker-compose.* --project-name jubula.*\s+rm/)
     end

@@ -136,6 +136,7 @@ export agent_port=#{@opts[:agent_port]}
   end
 
   def run_test_suite
+    saved = Dir.pwd
     @test_params ||= @opts.clone
     @result_dir = File.join(RootDir, RESULT_DIR)
     FileUtils.makedirs(WorkDir, opts[:noop]) unless File.directory?(WorkDir)
@@ -169,6 +170,7 @@ export agent_port=#{@opts[:agent_port]}
     opts[:run_in_docker] ? run_test_in_docker : run_test_exec
   ensure
     puts "Ensure called run_in_docker #{opts[:run_in_docker]}"
+    Dir.chdir(saved)
     @docker.stop_docker if opts[:run_in_docker] && @docker
     destination =  @result_dir + '-' + @test_params[:test_to_run]
     FileUtils.rm_rf(destination, :verbose => true, :noop => opts[:noop])
@@ -187,6 +189,7 @@ export agent_port=#{@opts[:agent_port]}
   end
 
   def setup_test_case(test2run)
+    saved = Dir.pwd
     @test_name = test2run
     @start_time = Time.now
     @test_params = YAML.load_file(File.join(RootDir, 'definitions', "defaults.yaml"))
@@ -209,7 +212,6 @@ export agent_port=#{@opts[:agent_port]}
       prepare_medelexis(Dir.pwd)
       FileUtils.rm_rf(WorkDir, :verbose => true, :noop => opts[:noop])
       FileUtils.makedirs(WorkDir, :verbose => true, :noop => opts[:noop])
-      saved = Dir.pwd
       begin
         Dir.chdir(WorkDir)
         unzip(zip_file, File.join(WorkDir, 'Medelexis.ini'))

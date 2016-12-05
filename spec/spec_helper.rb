@@ -23,6 +23,7 @@ module Kernel
 end
 
 def cleanup_directories
+  Dir.chdir(File.expand_path(File.dirname(File.dirname(__FILE__))))
   [ Dir.glob("results-*") +
     Dir.glob("prerelease")].flatten.each { |dir| FileUtils.rm_rf(dir) if File.exist?(dir) }
 end

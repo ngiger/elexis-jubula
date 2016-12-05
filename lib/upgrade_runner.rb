@@ -15,7 +15,7 @@ class UpgradeRunner
   def run(options)
     @opts = options
     if opts[:definition]
-      name = "definitions/#{opts[:definition]}.yaml"
+      name = File.expand_path("definitions/#{opts[:definition]}.yaml")
       fail "Could not find definition file #{name}" unless File.exist?(name)
       opts.merge! YAML.load_file(name)
     end
@@ -112,7 +112,7 @@ bundle exec /home/elexis/bin/tst_upgrade.rb --clean --upgrade --run-in-docker #{
         puts "Found '#{status_line.chomp}' in #{file}. That is good. Details are in #{file.sub('errors', 'done')}"
       end
       if results.size != 2
-        puts "Need 2 install_sw_medelexis.done in #{opts[:result_dir]}. Found only #{results.siz}"
+        puts "Need 2 install_sw_medelexis.done in #{opts[:result_dir]}. Found only #{results.size}"
         okay = false
       end
     end
