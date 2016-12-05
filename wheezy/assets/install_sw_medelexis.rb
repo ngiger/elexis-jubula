@@ -23,7 +23,6 @@ FLAG_FILE = File.join(RESULT_DIR, File.basename(__FILE__, '.rb') + '.done')
 ERROR_FILE = File.join(RESULT_DIR, File.basename(__FILE__, '.rb') + '.errors')
 PASSWORD_FILE = File.expand_path('~') + '/.medelexis.dummy.password'
 ACCEPTED_LICENSE  =  File.dirname(MEDELEXIS_EXE)+ '/configuration/.settings/MedelexisDesk.prefs'
-LICENSE_ORIGIN    =  File.expand_path('~') +'/medelexis_jubula_license.xml'
 LICENSE_INSTALLED =  File.expand_path('~') +'/elexis/license.xml'
 ERROR_WINDOW  = 'Problem Occurred'  # eg. 'Additional p2 locations' has encounter a problem
 $sw_errors = 0
@@ -85,17 +84,9 @@ def prepare_medelexis
     system("echo 'I am' `whoami`: `id`")
     system("ls -l #{File.expand_path('~')}")
   end
-  unless (File.readable?(LICENSE_ORIGIN) || File.readable?(LICENSE_INSTALLED))
-    puts "Either #{LICENSE_ORIGIN} or  #{LICENSE_INSTALLED} must be readable"
-    exit 1
-  end
-  if File.exist?(LICENSE_INSTALLED)
-    progress "using #{LICENSE_INSTALLED} #{File.size(LICENSE_INSTALLED)} bytes"
+  if  File.readable?(LICENSE_INSTALLED)
+    system("ls -l #{LICENSE_INSTALLED}")
   else
-    FileUtils.cp(LICENSE_ORIGIN, LICENSE_INSTALLED, :verbose => true)
-    progress "copied #{LICENSE_ORIGIN} -> #{LICENSE_INSTALLED} #{File.size(LICENSE_INSTALLED)}"
-  end
-  unless  File.readable?(LICENSE_INSTALLED)
     puts "Could not read #{LICENSE_INSTALLED}"
     exit 1
   end
