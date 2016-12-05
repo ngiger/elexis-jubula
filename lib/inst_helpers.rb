@@ -4,6 +4,27 @@ require 'timeout'
 require 'upgrade_options'
 
 module InstHelpers
+  def self.report_result(opts)
+    pattern = "#{opts[:result_dir] ? opts[:result_dir] : Dir.pwd}/**/elexis-3.log"
+    puts "report_result using #{pattern}"
+    logs = Dir.glob(pattern)
+    features = []
+    logs.each do |log|
+      puts "reading #{log}"
+      IO.readlines(log).each do |line|
+        m = /InstallFeaturesJob\s+-\s+(.+) -/.match(line)
+        next unless m
+        features << m[1]
+      end
+    end
+    puts "Installed #{features.size} features: #{features.join(', ')}"
+    msg = "Ran: "
+    msg += "clean " if opts[:clean]
+    msg += " definition " + opts[:definition] if opts[:definition]
+    msg += " sql_dump " + opts[:sql_dump] if opts[:sql_dump]
+    msg += " stored db info in " + opts[:db_info_root] if opts[:db_info_root]
+    puts msg
+  end
   def download(url, cache)
     res = false
     saved = Dir.pwd
@@ -127,8 +148,8 @@ module InstHelpers
     cache = File.join(UpgradeOptions::CACHE_BASE, opts[:medelexis] ? 'medelexis' : 'elexis', variant)
     url = "https://download.medelexis.ch/medelexis.3//#{variant}"
     dest = File.join(Dir.pwd, variant)
-    result_dir1 = "#{opts[:result_dir]}/1"
-    result_dir2 = "#{opts[:result_dir]}/2"
+    result_dir1 = "#{opts[:result_dir]}/runFromScratch"
+    result_dir2 = "#{opts[:result_dir]}/#{opts[:db_name]}"
 
     if File.exist?(File.join(dest, 'plugins'))
       puts "Skip extract_medelexis_exe as #{cache}/plugins exists"

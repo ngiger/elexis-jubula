@@ -78,6 +78,7 @@ end
 
 def prepare_medelexis
   progress "preparing medelexis #{MEDELEXIS_EXE} for #{VARIANT.inspect}"
+  puts "dockerenv? #{File.exist?('/.dockerenv')} in #{Dir.pwd}"
   # Output some debugging info
   if false && $VERBOSE
     system('env')

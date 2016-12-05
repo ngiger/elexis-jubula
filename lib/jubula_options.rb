@@ -11,7 +11,7 @@ class JubulaOptions < Hash
       * Run Elexis and/or Jubula AUT-agent inside the docker
       * Specify one or more tests to be run (unless autagent, build_docker or elexis given)
       * Parameters for each test are given in definitions/<testname>.yaml, overriding those from definitions/default.yaml
-      * Results of each test are saved (with surefire reports) under results and results-<testname>
+      * Results of each test are saved (with surefire reports) under results and results_<testname>
     EOS
       opt :noop,          "No-Operation. Show configuration and commands without executing them", :default => false
       opt :use_x11,       "Force to use your display when running. Patches wheezy/docker-compose.yml, too. Handy to debug problems."

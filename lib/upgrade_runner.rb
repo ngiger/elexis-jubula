@@ -30,7 +30,7 @@ class UpgradeRunner
     start_time = Time.now
     @info_root = File.expand_path(File.join(__FILE__, '..', '..', 'db_info'))
     @info_today = File.join(@info_root, opts[:db_name], start_time.strftime('%Y%m%d.%H%M%S'))
-    opts[:result_dir] = "results-#{opts[:variant]}"
+    opts[:result_dir] = "results_#{opts[:variant]}"
     @db  = Sequel.connect(patch_jdbc_for_sequel)
     if opts[:clean]
       drop_database unless opts[:run_in_docker]
@@ -116,13 +116,14 @@ bundle exec /home/elexis/bin/tst_upgrade.rb --clean --upgrade --run-in-docker #{
         okay = false
       end
     end
-    msg = "Ran: "
-    msg += "clean " if opts[:clean]
-    msg += " definition " + opts[:definition] if opts[:definition]
-    msg += " sql_dump " + opts[:sql_dump] if opts[:sql_dump]
-    msg += " stored db info in " + opts[:db_info_root] if opts[:db_info_root]
-    puts msg
-    puts "#{Time.now.strftime('%Y.%m.%d %H:%M:%S')}: took #{diff_seconds} seconds to run. Exit status 0 if #{okay.inspect}. (inside Docker #{run_in_docker?})"
-    return(okay ? 0 : 1)
+    InstHelpers.report_result(options)
+    if run_in_docker? || opts[:noop]
+      FileUtils.cp_r(opts[:db_info_root], opts[:result_dir], :verbose => true, :noop => opts[:noop]) if opts[:db_info_root]
+      puts "#{Time.now.strftime('%Y.%m.%d %H:%M:%S')}: took #{diff_seconds} seconds to run. returning #{okay.inspect}"
+      return okay
+    else
+      puts "#{Time.now.strftime('%Y.%m.%d %H:%M:%S')}: took #{diff_seconds} seconds to run. Exit status 0 if #{okay.inspect}"
+      exit(okay ? 0 : 1)
+    end
   end
 end

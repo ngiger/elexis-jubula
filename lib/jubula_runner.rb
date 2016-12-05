@@ -145,6 +145,7 @@ export agent_port=#{@opts[:agent_port]}
       @opts[:compose_file] = "wheezy/docker-compose.yml"
       @opts[:compose_project] = "jubula#{@opts[:agent_port]}"
       @opts[:docker_name] = "jenkinstest"
+      @opts[:container_home] =  File.join(RootDir, 'container_home')
       @docker = DockerRunner.new(opts, @test_name, @result_dir)
       @elexis_log = "#{@docker.container_home}/elexis/logs/elexis-3.log"
       puts "trap_ctrl_c installed"
@@ -219,7 +220,7 @@ export agent_port=#{@opts[:agent_port]}
         Dir.chdir(saved)
       end
     else
-      require 'install_open_source_elexis.rb' unless File.directory?(File.join(WorkDir, 'plugins'))
+      require 'install_open_source_elexis.rb' unless File.directory?(File.join(WorkDir, 'plugins')) || @opts[:noop]
     end
     @jubula_test_db_params = get_h2_db_params(File.join(WorkDir, 'database/embedded'))
     @jubula_test_data_dir  = File.join(WorkDir, 'database/data')

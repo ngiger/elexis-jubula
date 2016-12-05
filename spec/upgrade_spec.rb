@@ -82,7 +82,7 @@ RSpec.describe "bin/tst_upgrade.rb" do
     end
 
     it "should call the installer for the first installation without parameter" do
-      expect(@cli_output).to match(/install_sw_medelexis.rb.* prerelease results-prerelease\/1$/)
+      expect(@cli_output).to match(/install_sw_medelexis.rb.* prerelease results_prerelease\/runFromScratch$/)
     end
 
     it "should load the database" do
@@ -90,7 +90,7 @@ RSpec.describe "bin/tst_upgrade.rb" do
     end
 
     it "should call the installer for the second installation with parameter" do
-      expect(@cli_output).to match(/install_sw_medelexis.rb.* prerelease results-prerelease.*-Dch.elexis.username=elexis/)
+      expect(@cli_output).to match(/install_sw_medelexis.rb.* prerelease results_prerelease\/test_elexis.*-Dch.elexis.username=elexis/)
     end
 
     it "should save the database info" do

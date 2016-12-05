@@ -42,7 +42,7 @@ class DockerRunner
     ENV['JUBULA_RUNNER_VERSION'] = ElexisJubula::VERSION
     fail "Must pass result_dir in options" unless opts[:result_dir]
     # TODO: Fix running tests in parallel
-    @container_home = File.join(RootDir, 'container_home')
+    @container_home = @opts[:container_home] ? @opts[:container_home] : RootDir
     @m2_repo = File.join(RootDir, 'container_home_m2')
     FileUtils.makedirs(@m2_repo, :verbose => true, :noop => noop)
     @start_with = "docker-compose "
@@ -160,6 +160,7 @@ class DockerRunner
     tmp_dest_dir = File.join(RootDir, 'tmp.to_be_deleted')
     puts "tmp_dest_dir is #{tmp_dest_dir}"
     FileUtils.makedirs(tmp_dest_dir, :noop => opts[:noop])
+    return unless opts[:container_home]
     if File.exists?(container_home) && !opts[:noop]
       FileUtils.mv(container_home, "#{tmp_dest_dir}/#{Time.now.strftime('%Y%m%d%H%M%s')}", verbose: true)
       fail "Must be possible to remove container_home #{container_home}" if File.exist?(container_home)
