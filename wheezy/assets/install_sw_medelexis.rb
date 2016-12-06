@@ -225,5 +225,6 @@ end
 File.open(FLAG_FILE, 'w+' ) {|f| f.puts @@msgs.join("\n") }
 report_error
 puts @@msgs.join("\n")
-exit $sw_errors
+# we exit here with 0 (success) and let other determine whether problem with LOIN and other are really bad or not
+exit 0
 
