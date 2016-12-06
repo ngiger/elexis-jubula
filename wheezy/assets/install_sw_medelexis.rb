@@ -149,7 +149,7 @@ def increment_sw_error_and_snapshot(windowname, msg, err_name)
   $sw_errors += 1
   create_snapshot("#{$sw_errors}_#{err_name}")
   send_escape(windowname)
-  progress "#{msg} $sw_errors #{$sw_errors} for #{cmd}"
+  progress "#{msg} $sw_errors #{$sw_errors} for #{windowname} #{err_name}"
 end
 
 def close_error_window_if_present(windowname, is_error = true)
