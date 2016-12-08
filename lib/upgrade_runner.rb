@@ -94,29 +94,30 @@ bundle exec /home/elexis/bin/tst_upgrade.rb --clean --upgrade --run-in-docker #{
     diff_seconds = (Time.now - start_time).to_i
     okay = true
     results = Dir.glob(opts[:result_dir] + '/**/install_sw_medelexis.errors')
-    if !opts[:noop] && !run_in_docker?
+    if opts[:upgrade] && !opts[:noop] && !run_in_docker?
       puts "Checking #{results}"
       regexp = /Handled (\d+) error/
       results.each do |file|
         status_line = IO.readlines(file)[0] # by convention
         unless regexp.match(status_line)
-          puts "No line containing #{regexp} found in #{file}"
+          puts "upgrade_runner fails: No line containing #{regexp} found in #{file}"
           okay = false
           break
         end
+        # TODO: Should we fail because of erros like LOINC missin?
         if regexp.match(status_line)[1].to_i > 0
-          puts "No in #{file} shows errors"
+          puts "upgrade_runner fails: Found #{regexp.match(status_line)[1].to_i} errors in #{file} shows errors"
           okay = false
           break
-        end
+        end if false
         puts "Found '#{status_line.chomp}' in #{file}. That is good. Details are in #{file.sub('errors', 'done')}"
       end
       if results.size != 2
-        puts "Need 2 install_sw_medelexis.done in #{opts[:result_dir]}. Found only #{results.size}"
+        puts "upgrade_runner fails: Need 2 install_sw_medelexis.done in #{opts[:result_dir]}. Found only #{results.size}"
         okay = false
       end
     end
-    InstHelpers.report_result(options)
+    InstHelpers.report_result(options) if opts[:upgrade]
     if run_in_docker? || opts[:noop]
       FileUtils.cp_r(opts[:db_info_root], opts[:result_dir], :verbose => true, :noop => opts[:noop]) if opts[:db_info_root]
       puts "#{Time.now.strftime('%Y.%m.%d %H:%M:%S')}: took #{diff_seconds} seconds to run. returning #{okay.inspect}"
