@@ -2,9 +2,9 @@
 $LOAD_PATH << File.join(File.dirname(File.dirname(__FILE__)), 'lib')
 require 'common'
 
-def install_opensource_elexis(noop = ENV['DRY_RUN'])
+def install_opensource_elexis(noop = ENV['DRY_RUN'], variant = VARIANT)
   director_zip = Config[:director_latest]
-  elexis_zip = Config[:elexis_fsf][VARIANT][:full_zip_url]
+  elexis_zip = Config[:elexis_fsf][variant][:full_zip_url]
 
   if macos?
     elexis_zip.sub!('linux.gtk.x86_64', 'macosx.cocoa.x86_64')
@@ -12,7 +12,7 @@ def install_opensource_elexis(noop = ENV['DRY_RUN'])
   end
 
   if true # install from jenkins
-    download_and_unzip(elexis_zip.gsub('snapshot', VARIANT), File.join(WorkDir, '**/plugins'))
+    download_and_unzip(elexis_zip.gsub('snapshot', variant), File.join(WorkDir, '**/plugins'))
   else # install via director
     download_and_unzip(director_zip, File.join(WorkDir, 'director'))
     to_install = Config[:elexis_fsf][:features_2_install]

@@ -141,7 +141,7 @@ end
 def patch_ini_file_for_jubula_rc(inst_dir)
   return if noop
   ini_name = Dir.glob(File.join(inst_dir, 'configuration/config.ini')).first
-  return if File.exist?(ini_name + '.bak')
+  return if ini_name && File.exist?(ini_name + '.bak')
   fail 'Must first install Elexis before patching the configuration/config.ini' unless ini_name
   jar_path = File.join(WorkDir, '**/plugins/*jubula.rc.rcp_*.jar')
   jubula_jar = Dir.glob(jar_path).first

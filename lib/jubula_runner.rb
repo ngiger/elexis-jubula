@@ -168,6 +168,7 @@ export agent_port=#{@opts[:agent_port]}
     FileUtils.makedirs(@result_dir, :noop => opts[:noop])
     # -offline does not work inside docker. Don't know why
     @mvn_cmd = "mvn clean integration-test -Dtest_to_run=#{@test_params[:test_to_run]}" # + ' -offline' #
+    @mvn_cmd +=  " -DDISPLAY=#{@docker.display}" if opts[:run_in_docker]
     opts[:run_in_docker] ? run_test_in_docker : run_test_exec
   ensure
     puts "Ensure called run_in_docker #{opts[:run_in_docker]}"
@@ -220,7 +221,11 @@ export agent_port=#{@opts[:agent_port]}
         Dir.chdir(saved)
       end
     else
-      require 'install_open_source_elexis.rb' unless File.directory?(File.join(WorkDir, 'plugins')) || @opts[:noop]
+      unless File.directory?(File.join(WorkDir, 'plugins')) || @opts[:noop]
+        $LOAD_PATH << File.join(File.dirname(File.dirname(__FILE__)), 'bin')
+        require 'install_open_source_elexis.rb'
+        install_opensource_elexis(@opts[:noop], @opts[:variant])
+      end
     end
     @jubula_test_db_params = get_h2_db_params(File.join(WorkDir, 'database/embedded'))
     @jubula_test_data_dir  = File.join(WorkDir, 'database/data')

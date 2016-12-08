@@ -6,7 +6,7 @@ end
 
 # Helper class to use docker for the Jubula AUT
 class DockerRunner
-  attr_reader :container_home, :start_with, :noop, :opts
+  attr_reader :container_home, :start_with, :noop, :opts, :display
   MAY_FAIL = { :may_fail => true}
   # http://stackoverflow.com/questions/14112955/how-to-get-my-machines-ip-address-from-ruby-without-leveraging-from-other-ip-ad
   def local_ip
@@ -213,11 +213,11 @@ echo `date`: Xserver on display #{@display} seems to be ready
 /usr/bin/metacity --replace --sm-disable &
 sleep 1
 /usr/bin/metacity-message disable-keybindings
-)   unless opts[:use_x11]
+)
     cmd += %(/usr/bin/xclock -digital -twentyfour & # Gives early feedback, that X is running
 echo 'Waiting for mysql'
 /home/elexis/wheezy/assets/wait-for-it.sh --timeout=90 mysql:3306 -- echo "mysql server is up"
-)
+) unless opts[:use_x11]
     cmd
   end
   def create_docker_script(cmd_name, cmd)
