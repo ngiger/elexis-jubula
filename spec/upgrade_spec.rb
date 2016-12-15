@@ -108,7 +108,8 @@ RSpec.describe "bin/tst_upgrade.rb" do
       cleanup_directories
       @options = UpgradeOptions.new(['--noop', '--clean', '--upgrade', '--no-run-in-docker', '--definition=rgw'])
       @cli = UpgradeRunner.new
-      expect{  @cli_output = buildr_capture { @cli.run(@options)} }.not_to raise_error
+      @cli.run(@options)
+      # expect{  @cli_output = buildr_capture { @cli.run(@options)} }.not_to raise_error
     end
 
     it "should login as elexis user test" do

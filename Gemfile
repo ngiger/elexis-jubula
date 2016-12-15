@@ -4,7 +4,12 @@ gem 'rake'
 gem 'rspec'
 gem 'trollop'
 gem 'sequel'
-gem 'mysql2' #For MySQL
+if /^2/.match RUBY_VERSION
+  gem 'mysql2'
+else
+  gem 'mysql'
+end
+gem 'pg', '0.18.4'
 
 group 'debugger' do
   if /^2/.match RUBY_VERSION
