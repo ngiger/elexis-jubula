@@ -26,7 +26,7 @@ services:
       # postresql/init_elexis_db.sh
       MYSQL_USER: elexis
       MYSQL_PASSWORD: elexisTest
-      MYSQL_DATABASE: elexis
+      MYSQL_DATABASE: tst_upgrade
 
   pgdata:
     image: postgres:9.1
@@ -40,17 +40,18 @@ services:
       private:
     volumes_from:
       - pgdata
-    volumes:
-      - ${PWD}/wheezy/postgres:/docker-entrypoint-initdb.d
+#    volumes:
+#      - ${PWD}/wheezy/postgres:/docker-entrypoint-initdb.d
     environment:
       # LANG: 'de_CH.UTF-8'
       PGUSER: elexis
-      POSTGRES_DB: test_elexis
+      POSTGRES_DB: tst_upgrade
+      POSTGRES_USER: elexis
       POSTGRES_PASSWORD: elexisTest
 
   runner:
     build: .
-    image: ngiger/jubula_runner:${JUBULA_RUNNER_VERSION}
+    # image: ngiger/jubula_runner:${JUBULA_RUNNER_VERSION}
     networks:
       private:
       public:
@@ -71,20 +72,20 @@ services:
       # - /dev/snd # für USE_X11
     depends_on:
         - postgres
-        - mysql
+#         - mysql
     environment:
     # an empty HOST_UID while creating the jenkinstest gives at least a warning
       HOST_UID: "${HOST_UID}" # We want to map the host_uid as our HOST_ID using create_elexis_user
       DOCKER_OPTS: "-H tcp://0.0.0.0:4243 -H unix:///var/run/docker.sock"
       PGUSER: elexis
       PGHOST: postgres
-      POSTGRES_DB: test_elexis
-      POSTGRES_PASSWORD: elexisTestPassword
+      POSTGRES_DB: tst_upgrade
+      PGPASSWORD: elexisTest
       MYSQL_HOST: mysql
       MYSQL_ROOT_PASSWORD: elexisTest
       MYSQL_USER: elexis
       MYSQL_PASSWORD: elexisTest
-      MYSQL_DATABASE: test_elexis
+      MYSQL_DATABASE: tst_upgrade
 networks:
   public:
   private:

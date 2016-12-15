@@ -1,12 +1,24 @@
 require 'db_helpers'
 require 'inst_helpers'
 require 'docker_runner'
+if /java/.match RUBY_PLATFORM
+  require 'jdbc/mysql'
+  require 'jdbc/postgres'
+else
+  begin
+    require 'pg'
+    require 'mysql'
+  rescue LoadError
+    require 'mysql2'
+  end
+end
+
 class UpgradeRunner
   attr_reader :opts, :db_root_cmd, :db, :start_time, :info_root, :info_today
   include DbHelpers
   include InstHelpers
   def cleanup(result_dir)
-    dirs = [opts[:variant]] +  Dir.glob(result_dir)
+    dirs = [opts[:variant], 'vendor/indocker'] +  Dir.glob(result_dir)
     dirs.each do |dir|
       puts "Removing directory and its content: #{dir}"
       FileUtils.rm_rf(dir, :verbose => true, :noop => opts[:noop] )
@@ -19,19 +31,32 @@ class UpgradeRunner
       fail "Could not find definition file #{name}" unless File.exist?(name)
       opts.merge! YAML.load_file(name)
     end
-    opts[:jdbc]= 'mysql://elexis:elexisTest@mysql/elexis' if run_in_docker?
-    opts.merge! jdbc_to_hash(opts[:jdbc])
-    if run_in_docker?
-      @db_root_cmd = "mysql  --host #{opts[:db_host]} -u elexis --password=elexisTest"
-    else
-      @db_root_cmd = "mysql  --host #{opts[:db_host]} -u root --password=#{opts[:root_pw]}"
-    end
-    puts "db_root_cmd is #{@db_root_cmd}"
+    jdbc_to_hash(opts)
     start_time = Time.now
     @info_root = File.expand_path(File.join(__FILE__, '..', '..', 'db_info'))
     @info_today = File.join(@info_root, opts[:db_name], start_time.strftime('%Y%m%d.%H%M%S'))
     opts[:result_dir] = "results_#{opts[:variant]}"
-    @db  = Sequel.connect(patch_jdbc_for_sequel)
+    # http://sequel.jeremyevans.net/rdoc/files/doc/opening_databases_rdoc.html
+    #                       "mysql2://elexis:elexisTest@localhost/test_elexis" no such file to load -- mysql2
+    # @db  = Sequel.connect('jdbc:mysql://elexis:elexisTest@localhost/test_elexis')
+    # Sequel::DatabaseConnectionError: Java::ComMysqlJdbcExceptionsJdbc4::MySQLNonTransientConnectionException:
+    # Cannot load connection class because of underlying exception: 'java.lang.NumberFormatException: For input string: "elexisTest@localhost"'.
+    #  url: "jdbc:mysql://localhost:3306/blog?profileSQL=true"
+    # jdbc:oracle:thin:user/password@localhost:1521:database
+    # javaString = 'jdbc:mysql:elexis/elexisTest@localhost:elexis'
+    # das läuft: Sequel.connect('jdbc:mysql://localhost/elexis?user=elexis&password=elexisTest').tables
+
+    # jdbc:postgresql://localhost/database?user=username
+    # das läuft auch Sequel.connect('jdbc:postgresql://localhost/elexis?user=elexis&password=elexisTest').tables
+    #  Sequel.connect('jdbc:h2:/home/niklaus/elexis-jubula').tables
+    # Sequel::DatabaseConnectionError: Java::OrgH2Jdbc::JdbcSQLException: Falscher Benutzer Name oder Passwort
+    # Wrong user name or password [28000-187]
+    # from org.h2.message.DbException.getJdbcSQLException(org/h2/message/DbException.java:345)
+    # Sequel.connect('jdbc:h2:file:/home/niklaus/elexis-jubula;USER=sa;PASSWORD=').tables
+    # Sequel.connect('jdbc:h2:/home/niklaus/elexis-jubula.h2.db').tables
+    # ~/elexis-jubula.h2.db
+    # auch das läufe Sequel.connect('jdbc:h2:mem:').tables
+    @db  = Sequel.connect(opts[:sequel_connect])
     if opts[:clean]
       drop_database unless opts[:run_in_docker]
       cleanup(opts[:result_dir])
@@ -69,8 +94,10 @@ class UpgradeRunner
             DockerRunner.trap_ctrl_c(@docker, @opts)
             prepare_license(@docker.container_home) if opts[:medelexis]
             cmd  = %(cd /home/elexis
-bundle install
-bundle exec /home/elexis/bin/tst_upgrade.rb --clean --upgrade --run-in-docker #{opts[:definition] ? ('--definition='+opts[:definition]) : ''}
+# here we decided to use the apt-package for trollop sequel mysql2 and pg instead of calling
+# bundle install --path=vendor/indocker --without debugger
+# bundle exec /home/elexis/
+bin/tst_upgrade.rb --clean --upgrade --run-in-docker #{opts[:definition] ? ('--definition='+opts[:definition]) : ''}
 )
             cmd_name = "/home/elexis/upgrade_#{opts[:variant]}.sh"
             res = @docker.run_cmd_in_docker(cmd_name, cmd)

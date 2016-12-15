@@ -1,0 +1,2897 @@
+--
+-- PostgreSQL database dump
+--
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SET check_function_bodies = false;
+SET client_min_messages = warning;
+
+--
+-- Name: plpgsql; Type: EXTENSION; Schema: -; Owner: 
+--
+
+CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
+
+
+--
+-- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner: 
+--
+
+COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
+
+
+SET search_path = public, pg_catalog;
+
+SET default_tablespace = '';
+
+SET default_with_oids = false;
+
+--
+-- Name: agndays; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE agndays (
+    id character varying(10) NOT NULL,
+    message text,
+    infos text
+);
+
+
+ALTER TABLE public.agndays OWNER TO elexis;
+
+--
+-- Name: agnremarks; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE agnremarks (
+    id character varying(25) NOT NULL,
+    remark text
+);
+
+
+ALTER TABLE public.agnremarks OWNER TO elexis;
+
+--
+-- Name: agntermine; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE agntermine (
+    id character varying(127) NOT NULL,
+    patid character varying(80),
+    bereich character varying(25),
+    tag character(8),
+    beginn character(4),
+    dauer character(4),
+    grund text,
+    termintyp character varying(50),
+    terminstatus character varying(50),
+    erstelltvon character varying(25),
+    angelegt character varying(10),
+    lastedit character varying(10),
+    palmid integer DEFAULT 0,
+    flags character varying(10) DEFAULT 0,
+    deleted character(2) DEFAULT '0'::bpchar,
+    extension text,
+    linkgroup character varying(20),
+    lastupdate bigint,
+    statushistory text
+);
+
+
+ALTER TABLE public.agntermine OWNER TO elexis;
+
+--
+-- Name: artikel; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE artikel (
+    id character varying(25) NOT NULL,
+    subid character varying(20),
+    lieferantid character varying(25),
+    name character varying(80),
+    maxbestand character(4),
+    minbestand character(4),
+    istbestand character(4),
+    ek_preis character(6),
+    vk_preis character(6),
+    typ character varying(15),
+    codeclass character(5),
+    extid character varying(25),
+    extinfo bytea,
+    name_intern character varying(80),
+    klasse character varying(80),
+    deleted character(1) DEFAULT '0'::bpchar,
+    ean character varying(15),
+    lastupdate bigint,
+    validfrom character(8),
+    validto character(8),
+    atc_code character varying(255)
+);
+
+
+ALTER TABLE public.artikel OWNER TO elexis;
+
+--
+-- Name: artikel_details; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE artikel_details (
+    article_id character varying(25),
+    notes text,
+    image bytea
+);
+
+
+ALTER TABLE public.artikel_details OWNER TO elexis;
+
+--
+-- Name: at_medevit_elexis_medindex_article; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE at_medevit_elexis_medindex_article (
+    id character varying(25) NOT NULL,
+    lastupdate bigint,
+    deleted character(1) DEFAULT '0'::bpchar,
+    phar character varying(7),
+    dt character(8),
+    grpcd character varying(2),
+    cdso1 character varying(11),
+    cdso2 character varying(11),
+    prdno character varying(20),
+    smcat character varying(1),
+    smno character varying(8),
+    hospcd character varying(1),
+    clincd character varying(1),
+    arttyp character varying(1),
+    vat character varying(1),
+    salecd character varying(1),
+    inslim character varying(1),
+    limpts character varying(20),
+    grdfr character varying(1),
+    cool character varying(1),
+    temp character varying(5),
+    cdbg character varying(1),
+    bg character varying(1),
+    exp character varying(4),
+    qty character varying(20),
+    dscrd character varying(50),
+    dscrf character varying(50),
+    sortd character varying(70),
+    sortf character varying(70),
+    qtyud character varying(35),
+    qtyuf character varying(35),
+    img character varying(80),
+    img2 character varying(1),
+    pcktypd character varying(35),
+    pcktypf character varying(35),
+    mult character varying(8),
+    syn1d character varying(25),
+    syn1f character varying(25),
+    sloplus character varying(1),
+    nopcs character varying(8),
+    outsal character varying(8),
+    biocid character varying(1),
+    bagno character varying(10),
+    light character varying(1),
+    sist character varying(8),
+    esist character varying(8),
+    del character varying(1),
+    lieferantid character varying(25),
+    maxbestand character varying(4),
+    minbestand character varying(4),
+    istbestand character varying(4),
+    verkaufseinheit character varying(4),
+    anbruch character varying(4)
+);
+
+
+ALTER TABLE public.at_medevit_elexis_medindex_article OWNER TO elexis;
+
+--
+-- Name: at_medevit_elexis_medindex_product; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE at_medevit_elexis_medindex_product (
+    id character varying(25) NOT NULL,
+    lastupdate bigint,
+    deleted character(1) DEFAULT '0'::bpchar,
+    prdno character varying(20),
+    dt character(8),
+    dscrd character varying(50),
+    dscrf character varying(50),
+    bnamd character varying(22),
+    bnamf character varying(22),
+    adnamd character varying(31),
+    adnamf character varying(31),
+    size character varying(15),
+    adinfd character varying(25),
+    adinff character varying(25),
+    gencd character varying(1),
+    gengrp character varying(24),
+    atc character varying(7),
+    it character varying(8),
+    kono character varying(20),
+    trade character varying(2),
+    prtno character varying(20),
+    mono character varying(20),
+    cdgald character varying(1),
+    cdgalf character varying(1),
+    dose character varying(20),
+    doseu character varying(35),
+    drgfd character varying(10),
+    drgff character varying(10),
+    orph character varying(1),
+    biopha character varying(1),
+    biosim character varying(1),
+    bfs character varying(1),
+    blood character varying(1),
+    mscd character varying(13),
+    del character varying(1)
+);
+
+
+ALTER TABLE public.at_medevit_elexis_medindex_product OWNER TO elexis;
+
+--
+-- Name: at_medevit_medelexis_vat_ch; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE at_medevit_medelexis_vat_ch (
+    id character varying(25) NOT NULL,
+    lastupdate bigint,
+    deleted character(1) DEFAULT '0'::bpchar,
+    objectid character varying(80),
+    vatinfo character varying(255)
+);
+
+
+ALTER TABLE public.at_medevit_medelexis_vat_ch OWNER TO elexis;
+
+--
+-- Name: auf; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE auf (
+    id character varying(25) NOT NULL,
+    patientid character varying(25),
+    fallid character varying(25),
+    prozent character(3),
+    datumvon character(8),
+    datumbis character(8),
+    grund character varying(50),
+    aufzusatz character varying(80),
+    briefid character varying(25),
+    deleted character(1) DEFAULT '0'::bpchar,
+    datumauz character(8),
+    lastupdate bigint
+);
+
+
+ALTER TABLE public.auf OWNER TO elexis;
+
+--
+-- Name: bbs; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE bbs (
+    id character varying(25) NOT NULL,
+    reference character varying(25),
+    topic character varying(80),
+    date character(8),
+    "time" character(4),
+    authorid character varying(25),
+    message text,
+    deleted character(1) DEFAULT '0'::bpchar,
+    lastupdate bigint
+);
+
+
+ALTER TABLE public.bbs OWNER TO elexis;
+
+--
+-- Name: behandlungen; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE behandlungen (
+    id character varying(25) NOT NULL,
+    fallid character varying(25),
+    mandantid character varying(25),
+    rechnungsid character varying(25),
+    datum character(8),
+    diagnosen character varying(25),
+    leistungen character varying(25),
+    eintrag bytea,
+    deleted character(1) DEFAULT '0'::bpchar,
+    lastupdate bigint
+);
+
+
+ALTER TABLE public.behandlungen OWNER TO elexis;
+
+--
+-- Name: behdl_dg_joint; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE behdl_dg_joint (
+    id character varying(25) NOT NULL,
+    behandlungsid character varying(25),
+    diagnoseid character varying(25),
+    deleted character(1) DEFAULT '0'::bpchar,
+    lastupdate bigint
+);
+
+
+ALTER TABLE public.behdl_dg_joint OWNER TO elexis;
+
+--
+-- Name: bestellungen; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE bestellungen (
+    id character varying(80) NOT NULL,
+    lastupdate bigint,
+    deleted character(1) DEFAULT '0'::bpchar,
+    datum character(8),
+    contents bytea
+);
+
+
+ALTER TABLE public.bestellungen OWNER TO elexis;
+
+--
+-- Name: bildanzeige; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE bildanzeige (
+    id character varying(25) NOT NULL,
+    patid character varying(25),
+    datum character(8),
+    title character varying(30),
+    info text,
+    keywords character varying(80),
+    isref character(2),
+    bild bytea,
+    deleted character(1) DEFAULT '0'::bpchar,
+    lastupdate bigint
+);
+
+
+ALTER TABLE public.bildanzeige OWNER TO elexis;
+
+--
+-- Name: briefe; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE briefe (
+    id character varying(25) NOT NULL,
+    betreff character varying(80),
+    datum character(8),
+    modifiziert character(8),
+    gedruckt character(8),
+    geloescht character(2),
+    absenderid character varying(25),
+    destid character varying(25),
+    behandlungsid character varying(25),
+    patientid character varying(25),
+    typ character varying(30),
+    mimetype character varying(80),
+    path text,
+    deleted character(1) DEFAULT '0'::bpchar,
+    lastupdate bigint
+);
+
+
+ALTER TABLE public.briefe OWNER TO elexis;
+
+--
+-- Name: ch_berchtold_privatrechnung; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE ch_berchtold_privatrechnung (
+    id character varying(25) NOT NULL,
+    deleted character(1) DEFAULT '0'::bpchar,
+    lastupdate bigint,
+    parent character varying(80),
+    name character varying(499),
+    short character varying(80),
+    cost character(8),
+    price character(8),
+    "time" character(4),
+    subsystem character varying(25),
+    valid_from character(8),
+    valid_until character(8),
+    extinfo bytea
+);
+
+
+ALTER TABLE public.ch_berchtold_privatrechnung OWNER TO elexis;
+
+--
+-- Name: ch_elexis_agenda_daymsg; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE ch_elexis_agenda_daymsg (
+    id character(8) NOT NULL,
+    kurz character varying(80),
+    msg text,
+    deleted character(1) DEFAULT '0'::bpchar
+);
+
+
+ALTER TABLE public.ch_elexis_agenda_daymsg OWNER TO elexis;
+
+--
+-- Name: ch_elexis_arzttarif_ch_rfe; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE ch_elexis_arzttarif_ch_rfe (
+    id character varying(25) NOT NULL,
+    deleted character(1) DEFAULT '0'::bpchar,
+    lastupdate bigint,
+    type character(2),
+    konsid character varying(25)
+);
+
+
+ALTER TABLE public.ch_elexis_arzttarif_ch_rfe OWNER TO elexis;
+
+--
+-- Name: ch_elexis_arzttarife_ch_physio; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE ch_elexis_arzttarife_ch_physio (
+    id character varying(25) NOT NULL,
+    lastupdate bigint,
+    deleted character(1) DEFAULT '0'::bpchar,
+    validfrom character(8),
+    validuntil character(8),
+    tp character(8),
+    ziffer character varying(6),
+    titel character varying(255),
+    description text
+);
+
+
+ALTER TABLE public.ch_elexis_arzttarife_ch_physio OWNER TO elexis;
+
+--
+-- Name: ch_elexis_eigendiagnosen; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE ch_elexis_eigendiagnosen (
+    id character varying(25) NOT NULL,
+    deleted character(1) DEFAULT '0'::bpchar,
+    parent character varying(20),
+    code character varying(20),
+    title character varying(80),
+    comment text,
+    extinfo bytea,
+    lastupdate bigint
+);
+
+
+ALTER TABLE public.ch_elexis_eigendiagnosen OWNER TO elexis;
+
+--
+-- Name: ch_elexis_icpc; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE ch_elexis_icpc (
+    id character(3) NOT NULL,
+    deleted character(1) DEFAULT '0'::bpchar,
+    component character(2),
+    short character varying(80),
+    synonyms character varying(250),
+    icd10 text,
+    txt text,
+    criteria text,
+    inclusion text,
+    exclusion text,
+    consider text,
+    note text,
+    lastupdate bigint
+);
+
+
+ALTER TABLE public.ch_elexis_icpc OWNER TO elexis;
+
+--
+-- Name: ch_elexis_icpc_encounter; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE ch_elexis_icpc_encounter (
+    id character varying(25),
+    deleted character(1) DEFAULT '0'::bpchar,
+    kons character varying(25),
+    episode character varying(25),
+    rfe character(4),
+    diag character(4),
+    proc character(4),
+    extinfo bytea,
+    lastupdate bigint
+);
+
+
+ALTER TABLE public.ch_elexis_icpc_encounter OWNER TO elexis;
+
+--
+-- Name: ch_elexis_icpc_episodes; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE ch_elexis_icpc_episodes (
+    id character varying(25),
+    patientid character varying(25),
+    title character varying(256),
+    deleted character(1) DEFAULT '0'::bpchar,
+    startdate character varying(20),
+    number character varying(10),
+    status character(1) DEFAULT '1'::bpchar,
+    extinfo bytea,
+    lastupdate bigint
+);
+
+
+ALTER TABLE public.ch_elexis_icpc_episodes OWNER TO elexis;
+
+--
+-- Name: ch_elexis_icpc_episodes_diagnoses_link; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE ch_elexis_icpc_episodes_diagnoses_link (
+    id character varying(25),
+    deleted character(1) DEFAULT '0'::bpchar,
+    episode character varying(25),
+    diagnosis character varying(80),
+    lastupdate bigint
+);
+
+
+ALTER TABLE public.ch_elexis_icpc_episodes_diagnoses_link OWNER TO elexis;
+
+--
+-- Name: ch_elexis_impfplan_vaccination_types; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE ch_elexis_impfplan_vaccination_types (
+    id character varying(25) NOT NULL,
+    deleted character(1) DEFAULT '0'::bpchar,
+    lastupdate bigint,
+    name character varying(80),
+    product character varying(80),
+    delay_1to2 character varying(10),
+    delay_2to3 character varying(10),
+    delay_3to4 character varying(10),
+    delay_4to5 character varying(10),
+    delay_rep character varying(10),
+    recommendedage character varying(10),
+    remarks text
+);
+
+
+ALTER TABLE public.ch_elexis_impfplan_vaccination_types OWNER TO elexis;
+
+--
+-- Name: ch_elexis_impfplan_vaccinations; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE ch_elexis_impfplan_vaccinations (
+    id character varying(25) NOT NULL,
+    deleted character(1) DEFAULT '0'::bpchar,
+    lastupdate bigint,
+    patientid character varying(25),
+    vaccinationtype character varying(25),
+    date character(8),
+    observations text
+);
+
+
+ALTER TABLE public.ch_elexis_impfplan_vaccinations OWNER TO elexis;
+
+--
+-- Name: ch_elexis_medikamente_bag_ext; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE ch_elexis_medikamente_bag_ext (
+    id character varying(25) NOT NULL,
+    deleted character(1) DEFAULT '0'::bpchar,
+    keywords character varying(80),
+    prescription text,
+    kompendiumtext text,
+    lastupdate bigint
+);
+
+
+ALTER TABLE public.ch_elexis_medikamente_bag_ext OWNER TO elexis;
+
+--
+-- Name: ch_elexis_medikamente_bag_interactions; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE ch_elexis_medikamente_bag_interactions (
+    id character varying(25) NOT NULL,
+    deleted character(1) DEFAULT '0'::bpchar,
+    subst1 character varying(25),
+    subst2 character varying(25),
+    type character varying(20),
+    relevance character(1),
+    contributor character varying(25),
+    contribdate character(8),
+    description text
+);
+
+
+ALTER TABLE public.ch_elexis_medikamente_bag_interactions OWNER TO elexis;
+
+--
+-- Name: ch_elexis_medikamente_bag_joint; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE ch_elexis_medikamente_bag_joint (
+    id character varying(25) NOT NULL,
+    product character varying(25),
+    substance character varying(25)
+);
+
+
+ALTER TABLE public.ch_elexis_medikamente_bag_joint OWNER TO elexis;
+
+--
+-- Name: ch_elexis_medikamente_bag_substance; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE ch_elexis_medikamente_bag_substance (
+    id character varying(25) NOT NULL,
+    deleted character(1) DEFAULT '0'::bpchar,
+    gruppe character varying(10),
+    name character varying(250),
+    lastupdate bigint
+);
+
+
+ALTER TABLE public.ch_elexis_medikamente_bag_substance OWNER TO elexis;
+
+--
+-- Name: ch_elexis_messages; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE ch_elexis_messages (
+    id character varying(25) NOT NULL,
+    deleted character(1) DEFAULT '0'::bpchar,
+    origin character varying(25),
+    destination character varying(25),
+    datetime character(14),
+    msg text,
+    lastupdate bigint
+);
+
+
+ALTER TABLE public.ch_elexis_messages OWNER TO elexis;
+
+--
+-- Name: ch_elexis_notes; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE ch_elexis_notes (
+    id character varying(25),
+    parent character varying(25),
+    title character varying(80),
+    date character(8),
+    contents bytea,
+    refs text,
+    deleted character(1) DEFAULT '0'::bpchar,
+    keywords character varying(255),
+    mimetype character varying(80),
+    lastupdate bigint
+);
+
+
+ALTER TABLE public.ch_elexis_notes OWNER TO elexis;
+
+--
+-- Name: ch_elexis_omnivore_data; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE ch_elexis_omnivore_data (
+    id character varying(25) NOT NULL,
+    patid character varying(25),
+    datum character(8),
+    title character varying(255),
+    mimetype character varying(255),
+    keywords character varying(255),
+    path character varying(80),
+    doc bytea,
+    deleted character(1) DEFAULT '0'::bpchar,
+    category character varying(80),
+    lastupdate bigint DEFAULT 0
+);
+
+
+ALTER TABLE public.ch_elexis_omnivore_data OWNER TO elexis;
+
+--
+-- Name: ch_elexis_privatrechnung; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE ch_elexis_privatrechnung (
+    id character varying(25) NOT NULL,
+    deleted character(1) DEFAULT '0'::bpchar,
+    parent character varying(80),
+    name character varying(499),
+    short character varying(80),
+    cost character(8),
+    price character(8),
+    "time" character(4),
+    subsystem character varying(25),
+    valid_from character(8),
+    valid_until character(8),
+    extinfo bytea,
+    lastupdate bigint
+);
+
+
+ALTER TABLE public.ch_elexis_privatrechnung OWNER TO elexis;
+
+--
+-- Name: ch_elexis_stickynotes; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE ch_elexis_stickynotes (
+    id character varying(25) NOT NULL,
+    lastupdate bigint,
+    deleted character(1) DEFAULT '0'::bpchar,
+    patientid character varying(25),
+    contents bytea
+);
+
+
+ALTER TABLE public.ch_elexis_stickynotes OWNER TO elexis;
+
+--
+-- Name: ch_medelexis_labortarif2009; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE ch_medelexis_labortarif2009 (
+    id character varying(25) NOT NULL,
+    lastupdate bigint,
+    deleted character(1) DEFAULT '0'::bpchar,
+    chapter character varying(10),
+    code character varying(12),
+    tp character varying(10),
+    name character varying(255),
+    limitatio text,
+    fachbereich character varying(10),
+    praxistyp character varying(2),
+    gueltigvon character(8),
+    gueltigbis character(8)
+);
+
+
+ALTER TABLE public.ch_medelexis_labortarif2009 OWNER TO elexis;
+
+--
+-- Name: config; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE config (
+    param character varying(80) NOT NULL,
+    wert text,
+    lastupdate bigint
+);
+
+
+ALTER TABLE public.config OWNER TO elexis;
+
+--
+-- Name: dbimage; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE dbimage (
+    id character varying(25) NOT NULL,
+    deleted character(1) DEFAULT '0'::bpchar,
+    datum character(8),
+    title character varying(80),
+    bild bytea,
+    lastupdate bigint,
+    prefix character varying(80)
+);
+
+
+ALTER TABLE public.dbimage OWNER TO elexis;
+
+--
+-- Name: diagnosen; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE diagnosen (
+    id character varying(25) NOT NULL,
+    dg_txt character varying(255),
+    dg_code character varying(25),
+    klasse character varying(80),
+    deleted character(1) DEFAULT '0'::bpchar,
+    lastupdate bigint
+);
+
+
+ALTER TABLE public.diagnosen OWNER TO elexis;
+
+--
+-- Name: eigenleistungen; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE eigenleistungen (
+    id character varying(25) NOT NULL,
+    code character varying(20),
+    bezeichnung character varying(80),
+    ek_preis character(6),
+    vk_preis character(6),
+    zeit character(4),
+    deleted character(1) DEFAULT '0'::bpchar,
+    lastupdate bigint
+);
+
+
+ALTER TABLE public.eigenleistungen OWNER TO elexis;
+
+--
+-- Name: ek_preise; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE ek_preise (
+    typ character varying(80),
+    id character varying(25),
+    datum_von character(8),
+    datum_bis character(8),
+    multiplikator character varying(8),
+    lastupdate bigint
+);
+
+
+ALTER TABLE public.ek_preise OWNER TO elexis;
+
+--
+-- Name: elexisbefunde; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE elexisbefunde (
+    id character varying(25) NOT NULL,
+    patientid character varying(25),
+    name character varying(80),
+    datum character(8),
+    befunde bytea,
+    deleted character(1) DEFAULT '0'::bpchar,
+    lastupdate bigint
+);
+
+
+ALTER TABLE public.elexisbefunde OWNER TO elexis;
+
+--
+-- Name: esrrecords; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE esrrecords (
+    id character varying(25) NOT NULL,
+    datum character(8),
+    eingelesen character(8),
+    verarbeitet character(8),
+    gutschrift character(8),
+    betraginrp character(8),
+    code character(3),
+    rechnungsid character varying(25),
+    patientid character varying(25),
+    mandantid character varying(25),
+    rejectcode character(3),
+    kosten character(4),
+    gebucht character(8),
+    file character varying(80),
+    deleted character(1) DEFAULT '0'::bpchar,
+    lastupdate bigint
+);
+
+
+ALTER TABLE public.esrrecords OWNER TO elexis;
+
+--
+-- Name: etiketten; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE etiketten (
+    id character varying(25) NOT NULL,
+    image character varying(25),
+    deleted character(1) DEFAULT '0'::bpchar,
+    importance character varying(7),
+    name character varying(40),
+    foreground character(6),
+    background character(6),
+    classes character varying(255),
+    lastupdate bigint
+);
+
+
+ALTER TABLE public.etiketten OWNER TO elexis;
+
+--
+-- Name: etiketten_objclass_link; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE etiketten_objclass_link (
+    objclass character varying(80),
+    sticker character varying(25)
+);
+
+
+ALTER TABLE public.etiketten_objclass_link OWNER TO elexis;
+
+--
+-- Name: etiketten_object_link; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE etiketten_object_link (
+    obj character varying(25),
+    etikette character varying(25),
+    lastupdate bigint
+);
+
+
+ALTER TABLE public.etiketten_object_link OWNER TO elexis;
+
+--
+-- Name: faelle; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE faelle (
+    id character varying(25) NOT NULL,
+    patientid character varying(25),
+    garantid character varying(25),
+    kostentrid character varying(25),
+    versnummer character varying(25),
+    fallnummer character varying(25),
+    betriebsnummer character varying(25),
+    diagnosen character varying(25),
+    datumvon character(8),
+    datumbis character(8),
+    bezeichnung character varying(20),
+    grund character varying(20),
+    gesetz character varying(10),
+    extinfo bytea,
+    status character varying(80),
+    deleted character(1) DEFAULT '0'::bpchar,
+    lastupdate bigint
+);
+
+
+ALTER TABLE public.faelle OWNER TO elexis;
+
+--
+-- Name: heap; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE heap (
+    id character varying(80) NOT NULL,
+    inhalt bytea,
+    datum character(8),
+    deleted character(1) DEFAULT '0'::bpchar,
+    lastupdate bigint
+);
+
+
+ALTER TABLE public.heap OWNER TO elexis;
+
+--
+-- Name: heap2; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE heap2 (
+    contents bytea,
+    id character varying(80),
+    deleted character(1) DEFAULT '0'::bpchar,
+    datum character(8),
+    lastupdate bigint
+);
+
+
+ALTER TABLE public.heap2 OWNER TO elexis;
+
+--
+-- Name: iatrix_problem; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE iatrix_problem (
+    id character varying(25) NOT NULL,
+    patientid character varying(25),
+    bezeichnung character varying(100),
+    nummer character varying(10),
+    datum character varying(20),
+    procedere character varying(100),
+    status character(1) DEFAULT '1'::bpchar,
+    extinfo bytea,
+    deleted character(1) DEFAULT '0'::bpchar
+);
+
+
+ALTER TABLE public.iatrix_problem OWNER TO elexis;
+
+--
+-- Name: iatrix_problem_behdl_joint; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE iatrix_problem_behdl_joint (
+    id character varying(25) NOT NULL,
+    problemid character varying(25),
+    behandlungsid character varying(25)
+);
+
+
+ALTER TABLE public.iatrix_problem_behdl_joint OWNER TO elexis;
+
+--
+-- Name: iatrix_problem_dauermedikation_joint; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE iatrix_problem_dauermedikation_joint (
+    id character varying(25) NOT NULL,
+    problemid character varying(25),
+    dauermedikationid character varying(25)
+);
+
+
+ALTER TABLE public.iatrix_problem_dauermedikation_joint OWNER TO elexis;
+
+--
+-- Name: iatrix_problem_dg_joint; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE iatrix_problem_dg_joint (
+    id character varying(25) NOT NULL,
+    problemid character varying(25),
+    diagnoseid character varying(25)
+);
+
+
+ALTER TABLE public.iatrix_problem_dg_joint OWNER TO elexis;
+
+--
+-- Name: iatrix_problem_fall_joint; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE iatrix_problem_fall_joint (
+    problemid character varying(25),
+    fallid character varying(25)
+);
+
+
+ALTER TABLE public.iatrix_problem_fall_joint OWNER TO elexis;
+
+--
+-- Name: icd10; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE icd10 (
+    id character varying(25) NOT NULL,
+    deleted character(1) DEFAULT '0'::bpchar,
+    parent character varying(25),
+    icdcode character varying(10),
+    encoded text,
+    icdtxt text,
+    extinfo bytea,
+    lastupdate bigint
+);
+
+
+ALTER TABLE public.icd10 OWNER TO elexis;
+
+--
+-- Name: kontakt; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE kontakt (
+    id character varying(25) NOT NULL,
+    istorganisation character(1) DEFAULT '0'::bpchar,
+    istperson character(1) DEFAULT '0'::bpchar,
+    istpatient character(1) DEFAULT '0'::bpchar,
+    istanwender character(1) DEFAULT '0'::bpchar,
+    istmandant character(1) DEFAULT '0'::bpchar,
+    istlabor character(1) DEFAULT '0'::bpchar,
+    land character(3),
+    geburtsdatum character(8),
+    geschlecht character(1),
+    bezeichnung1 character varying(255),
+    bezeichnung2 character varying(255),
+    bezeichnung3 character varying(255),
+    strasse character varying(255),
+    plz character varying(6),
+    ort character varying(255),
+    telefon1 character varying(15),
+    telefon2 character varying(15),
+    fax character varying(15),
+    natelnr character varying(15),
+    email character varying(255),
+    website character varying(255),
+    gruppe character varying(10),
+    patientnr character varying(40),
+    anschrift text,
+    bemerkung text,
+    diagnosen bytea,
+    persanamnese bytea,
+    sysanamnese bytea,
+    famanamnese bytea,
+    risiken text,
+    allergien text,
+    extinfo bytea,
+    titel character varying(255),
+    deleted character(1) DEFAULT '0'::bpchar,
+    lastupdate bigint,
+    titelsuffix character varying(255)
+);
+
+
+ALTER TABLE public.kontakt OWNER TO elexis;
+
+--
+-- Name: kontakt_adress_joint; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE kontakt_adress_joint (
+    id character varying(25) NOT NULL,
+    myid character varying(25),
+    otherid character varying(25),
+    bezug character varying(80),
+    deleted character(1) DEFAULT '0'::bpchar,
+    lastupdate bigint
+);
+
+
+ALTER TABLE public.kontakt_adress_joint OWNER TO elexis;
+
+--
+-- Name: konto; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE konto (
+    id character varying(25) NOT NULL,
+    patientid character varying(25),
+    betrag character(8),
+    datum character(8),
+    bemerkung character varying(80),
+    rechnungsid character varying(25),
+    zahlungsid character varying(25),
+    deleted character(1) DEFAULT '0'::bpchar,
+    lastupdate bigint
+);
+
+
+ALTER TABLE public.konto OWNER TO elexis;
+
+--
+-- Name: labgroup_item_joint; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE labgroup_item_joint (
+    groupid character varying(25),
+    itemid character varying(25),
+    comment text,
+    lastupdate bigint
+);
+
+
+ALTER TABLE public.labgroup_item_joint OWNER TO elexis;
+
+--
+-- Name: labgroups; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE labgroups (
+    id character varying(25) NOT NULL,
+    name character varying(30),
+    deleted character(1) DEFAULT '0'::bpchar,
+    lastupdate bigint
+);
+
+
+ALTER TABLE public.labgroups OWNER TO elexis;
+
+--
+-- Name: laboritems; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE laboritems (
+    id character varying(25) NOT NULL,
+    kuerzel character varying(80),
+    titel character varying(80),
+    laborid character varying(25),
+    refmann character varying(256),
+    reffrauortx character varying(256),
+    einheit character varying(20),
+    typ character(1),
+    gruppe character varying(25),
+    prio character(3),
+    deleted character(1) DEFAULT '0'::bpchar,
+    lastupdate bigint,
+    billingcode character varying(20),
+    export character varying(100)
+);
+
+
+ALTER TABLE public.laboritems OWNER TO elexis;
+
+--
+-- Name: laborwerte; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE laborwerte (
+    id character varying(25) NOT NULL,
+    patientid character varying(25),
+    datum character(8),
+    itemid character varying(25),
+    resultat character varying(80),
+    kommentar text,
+    flags character varying(10),
+    deleted character(1) DEFAULT '0'::bpchar,
+    origin character varying(30),
+    zeit character(6),
+    lastupdate bigint
+);
+
+
+ALTER TABLE public.laborwerte OWNER TO elexis;
+
+--
+-- Name: leistungen; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE leistungen (
+    id character varying(25) NOT NULL,
+    behandlung character varying(25),
+    leistg_txt character varying(255),
+    leistg_code character varying(25),
+    klasse character varying(80),
+    zahl character(3),
+    ek_kosten character(6),
+    vk_preis character(6),
+    scale character(4) DEFAULT '100'::bpchar,
+    detail bytea,
+    vk_tp character varying(8),
+    vk_scale character varying(8),
+    deleted character(1) DEFAULT '0'::bpchar,
+    scale2 character(4),
+    lastupdate bigint,
+    userid character varying(25)
+);
+
+
+ALTER TABLE public.leistungen OWNER TO elexis;
+
+--
+-- Name: leistungsblock; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE leistungsblock (
+    id character varying(25) NOT NULL,
+    mandantid character varying(25),
+    name character varying(30),
+    leistungen bytea,
+    deleted character(1) DEFAULT '0'::bpchar,
+    lastupdate bigint
+);
+
+
+ALTER TABLE public.leistungsblock OWNER TO elexis;
+
+--
+-- Name: logs; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE logs (
+    id character varying(25) NOT NULL,
+    oid character varying(255),
+    datum character(8),
+    typ character varying(20),
+    userid character varying(25),
+    station character varying(255),
+    extinfo bytea,
+    lastupdate bigint,
+    deleted character(1) DEFAULT '0'::bpchar
+);
+
+
+ALTER TABLE public.logs OWNER TO elexis;
+
+--
+-- Name: output_log; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE output_log (
+    id character varying(25) NOT NULL,
+    lastupdate bigint,
+    deleted character(1) DEFAULT '0'::bpchar,
+    objectid character varying(25),
+    objecttype character varying(80),
+    datum character(8),
+    outputter character varying(80),
+    extinfo bytea
+);
+
+
+ALTER TABLE public.output_log OWNER TO elexis;
+
+--
+-- Name: patient_artikel_joint; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE patient_artikel_joint (
+    id character varying(25) NOT NULL,
+    patientid character varying(25),
+    artikelid character varying(25),
+    dosis character varying(255),
+    bemerkung character varying(255),
+    rezeptid character varying(25),
+    datefrom character(8),
+    dateuntil character(8),
+    anzahl character(3),
+    extinfo bytea,
+    deleted character(1) DEFAULT '0'::bpchar,
+    lastupdate bigint,
+    artikel character varying(80)
+);
+
+
+ALTER TABLE public.patient_artikel_joint OWNER TO elexis;
+
+--
+-- Name: percentile; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE percentile (
+    id character varying(25) NOT NULL,
+    date character(8),
+    patient_id character varying(25),
+    length character varying(8),
+    weight character varying(8),
+    head character varying(8),
+    bmi character varying(8),
+    deleted character(1) DEFAULT '0'::bpchar,
+    lastupdate bigint
+);
+
+
+ALTER TABLE public.percentile OWNER TO elexis;
+
+--
+-- Name: percentile_patient; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE percentile_patient (
+    id character varying(25) NOT NULL,
+    patient_id character varying(25),
+    age_correction character varying(8),
+    len_father character varying(8),
+    len_mother character varying(8),
+    deleted character(1) DEFAULT '0'::bpchar,
+    lastupdate bigint
+);
+
+
+ALTER TABLE public.percentile_patient OWNER TO elexis;
+
+--
+-- Name: percentile_ref_data; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE percentile_ref_data (
+    id character varying(25) NOT NULL,
+    sex character(1),
+    type character varying(10),
+    age character varying(8),
+    value_3 character varying(8),
+    value_10 character varying(8),
+    value_25 character varying(8),
+    value_50 character varying(8),
+    value_75 character varying(8),
+    value_90 character varying(8),
+    value_97 character varying(8),
+    deleted character(1) DEFAULT '0'::bpchar,
+    lastupdate bigint
+);
+
+
+ALTER TABLE public.percentile_ref_data OWNER TO elexis;
+
+--
+-- Name: rechnungen; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE rechnungen (
+    id character varying(25) NOT NULL,
+    rnnummer character varying(8),
+    fallid character varying(25),
+    mandantid character varying(25),
+    rndatum character(8),
+    rnstatus character varying(20),
+    rndatumvon character(8),
+    rndatumbis character(8),
+    betrag character(8),
+    extinfo bytea,
+    statusdatum character(8),
+    deleted character(1) DEFAULT '0'::bpchar,
+    lastupdate bigint
+);
+
+
+ALTER TABLE public.rechnungen OWNER TO elexis;
+
+--
+-- Name: reminders; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE reminders (
+    id character varying(25) NOT NULL,
+    identid character varying(25),
+    datedue character(8),
+    status character varying(1),
+    typ character varying(1),
+    params text,
+    message text,
+    responsible character varying(25),
+    originid character varying(25),
+    deleted character(1) DEFAULT '0'::bpchar,
+    lastupdate bigint
+);
+
+
+ALTER TABLE public.reminders OWNER TO elexis;
+
+--
+-- Name: reminders_responsible_link; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE reminders_responsible_link (
+    id character varying(25) NOT NULL,
+    reminderid character varying(25),
+    responsibleid character varying(25),
+    deleted character(1) DEFAULT '0'::bpchar,
+    lastupdate bigint
+);
+
+
+ALTER TABLE public.reminders_responsible_link OWNER TO elexis;
+
+--
+-- Name: rezepte; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE rezepte (
+    id character varying(25) NOT NULL,
+    patientid character varying(25),
+    mandantid character varying(25),
+    datum character(8),
+    rptxt text,
+    rpzusatz character varying(80),
+    briefid character varying(25),
+    deleted character(1) DEFAULT '0'::bpchar,
+    lastupdate bigint
+);
+
+
+ALTER TABLE public.rezepte OWNER TO elexis;
+
+--
+-- Name: tarmed; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE tarmed (
+    id character varying(25),
+    parent character varying(14),
+    digniquanti character(5),
+    digniquali character(4),
+    sparte character(4),
+    tx255 character varying(255),
+    nickname character varying(25),
+    gueltigvon character(8),
+    gueltigbis character(8),
+    deleted character(1) DEFAULT '0'::bpchar,
+    lastupdate bigint,
+    code character varying(25)
+);
+
+
+ALTER TABLE public.tarmed OWNER TO elexis;
+
+--
+-- Name: tarmed_daten; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE tarmed_daten (
+    parameter character varying(80),
+    datumvon character(8),
+    datumbis character(8),
+    wert character varying(10)
+);
+
+
+ALTER TABLE public.tarmed_daten OWNER TO elexis;
+
+--
+-- Name: tarmed_definitionen; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE tarmed_definitionen (
+    spalte character varying(20),
+    kuerzel character varying(5),
+    titel character varying(255)
+);
+
+
+ALTER TABLE public.tarmed_definitionen OWNER TO elexis;
+
+--
+-- Name: tarmed_extension; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE tarmed_extension (
+    code character varying(25),
+    limits bytea,
+    med_interpret text,
+    tech_interpret text
+);
+
+
+ALTER TABLE public.tarmed_extension OWNER TO elexis;
+
+--
+-- Name: traces; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE traces (
+    logtime bigint,
+    workstation character varying(50),
+    username character varying(30),
+    action text
+);
+
+
+ALTER TABLE public.traces OWNER TO elexis;
+
+--
+-- Name: userconfig; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE userconfig (
+    userid character varying(25),
+    param character varying(80),
+    value text,
+    lastupdate bigint
+);
+
+
+ALTER TABLE public.userconfig OWNER TO elexis;
+
+--
+-- Name: vk_preise; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE vk_preise (
+    typ character varying(80),
+    id character varying(25),
+    datum_von character(8),
+    datum_bis character(8),
+    multiplikator character varying(8),
+    lastupdate bigint
+);
+
+
+ALTER TABLE public.vk_preise OWNER TO elexis;
+
+--
+-- Name: xid; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE xid (
+    id character varying(25) NOT NULL,
+    deleted character(1) DEFAULT '0'::bpchar,
+    type character varying(80),
+    object character varying(25),
+    domain character varying(255),
+    domain_id character varying(255),
+    quality character(1) DEFAULT '0'::bpchar,
+    lastupdate bigint
+);
+
+
+ALTER TABLE public.xid OWNER TO elexis;
+
+--
+-- Name: zahlungen; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE TABLE zahlungen (
+    id character varying(25) NOT NULL,
+    rechnungsid character varying(25),
+    betrag character(8),
+    datum character(8),
+    bemerkung character varying(80),
+    deleted character(1) DEFAULT '0'::bpchar,
+    lastupdate bigint
+);
+
+
+ALTER TABLE public.zahlungen OWNER TO elexis;
+
+--
+-- Name: agndays_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY agndays
+    ADD CONSTRAINT agndays_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: agnremarks_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY agnremarks
+    ADD CONSTRAINT agnremarks_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: agntermine_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY agntermine
+    ADD CONSTRAINT agntermine_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: artikel_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY artikel
+    ADD CONSTRAINT artikel_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: at_medevit_elexis_medindex_article_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY at_medevit_elexis_medindex_article
+    ADD CONSTRAINT at_medevit_elexis_medindex_article_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: at_medevit_elexis_medindex_product_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY at_medevit_elexis_medindex_product
+    ADD CONSTRAINT at_medevit_elexis_medindex_product_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: at_medevit_medelexis_vat_ch_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY at_medevit_medelexis_vat_ch
+    ADD CONSTRAINT at_medevit_medelexis_vat_ch_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: auf_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY auf
+    ADD CONSTRAINT auf_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: bbs_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY bbs
+    ADD CONSTRAINT bbs_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: behandlungen_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY behandlungen
+    ADD CONSTRAINT behandlungen_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: behdl_dg_joint_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY behdl_dg_joint
+    ADD CONSTRAINT behdl_dg_joint_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: bestellungen_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY bestellungen
+    ADD CONSTRAINT bestellungen_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: bildanzeige_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY bildanzeige
+    ADD CONSTRAINT bildanzeige_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: briefe_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY briefe
+    ADD CONSTRAINT briefe_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: ch_berchtold_privatrechnung_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY ch_berchtold_privatrechnung
+    ADD CONSTRAINT ch_berchtold_privatrechnung_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: ch_elexis_agenda_daymsg_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY ch_elexis_agenda_daymsg
+    ADD CONSTRAINT ch_elexis_agenda_daymsg_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: ch_elexis_arzttarif_ch_rfe_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY ch_elexis_arzttarif_ch_rfe
+    ADD CONSTRAINT ch_elexis_arzttarif_ch_rfe_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: ch_elexis_arzttarife_ch_physio_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY ch_elexis_arzttarife_ch_physio
+    ADD CONSTRAINT ch_elexis_arzttarife_ch_physio_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: ch_elexis_eigendiagnosen_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY ch_elexis_eigendiagnosen
+    ADD CONSTRAINT ch_elexis_eigendiagnosen_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: ch_elexis_icpc_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY ch_elexis_icpc
+    ADD CONSTRAINT ch_elexis_icpc_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: ch_elexis_impfplan_vaccination_types_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY ch_elexis_impfplan_vaccination_types
+    ADD CONSTRAINT ch_elexis_impfplan_vaccination_types_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: ch_elexis_impfplan_vaccinations_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY ch_elexis_impfplan_vaccinations
+    ADD CONSTRAINT ch_elexis_impfplan_vaccinations_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: ch_elexis_medikamente_bag_ext_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY ch_elexis_medikamente_bag_ext
+    ADD CONSTRAINT ch_elexis_medikamente_bag_ext_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: ch_elexis_medikamente_bag_interactions_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY ch_elexis_medikamente_bag_interactions
+    ADD CONSTRAINT ch_elexis_medikamente_bag_interactions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: ch_elexis_medikamente_bag_joint_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY ch_elexis_medikamente_bag_joint
+    ADD CONSTRAINT ch_elexis_medikamente_bag_joint_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: ch_elexis_medikamente_bag_substance_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY ch_elexis_medikamente_bag_substance
+    ADD CONSTRAINT ch_elexis_medikamente_bag_substance_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: ch_elexis_messages_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY ch_elexis_messages
+    ADD CONSTRAINT ch_elexis_messages_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: ch_elexis_omnivore_data_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY ch_elexis_omnivore_data
+    ADD CONSTRAINT ch_elexis_omnivore_data_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: ch_elexis_privatrechnung_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY ch_elexis_privatrechnung
+    ADD CONSTRAINT ch_elexis_privatrechnung_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: ch_elexis_stickynotes_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY ch_elexis_stickynotes
+    ADD CONSTRAINT ch_elexis_stickynotes_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: ch_medelexis_labortarif2009_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY ch_medelexis_labortarif2009
+    ADD CONSTRAINT ch_medelexis_labortarif2009_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: config_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY config
+    ADD CONSTRAINT config_pkey PRIMARY KEY (param);
+
+
+--
+-- Name: dbimage_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY dbimage
+    ADD CONSTRAINT dbimage_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: diagnosen_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY diagnosen
+    ADD CONSTRAINT diagnosen_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: eigenleistungen_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY eigenleistungen
+    ADD CONSTRAINT eigenleistungen_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: elexisbefunde_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY elexisbefunde
+    ADD CONSTRAINT elexisbefunde_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: esrrecords_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY esrrecords
+    ADD CONSTRAINT esrrecords_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: etiketten_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY etiketten
+    ADD CONSTRAINT etiketten_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: faelle_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY faelle
+    ADD CONSTRAINT faelle_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: heap_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY heap
+    ADD CONSTRAINT heap_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: iatrix_problem_behdl_joint_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY iatrix_problem_behdl_joint
+    ADD CONSTRAINT iatrix_problem_behdl_joint_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: iatrix_problem_dauermedikation_joint_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY iatrix_problem_dauermedikation_joint
+    ADD CONSTRAINT iatrix_problem_dauermedikation_joint_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: iatrix_problem_dg_joint_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY iatrix_problem_dg_joint
+    ADD CONSTRAINT iatrix_problem_dg_joint_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: iatrix_problem_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY iatrix_problem
+    ADD CONSTRAINT iatrix_problem_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: icd10_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY icd10
+    ADD CONSTRAINT icd10_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: kontakt_adress_joint_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY kontakt_adress_joint
+    ADD CONSTRAINT kontakt_adress_joint_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: kontakt_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY kontakt
+    ADD CONSTRAINT kontakt_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: konto_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY konto
+    ADD CONSTRAINT konto_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: labgroups_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY labgroups
+    ADD CONSTRAINT labgroups_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: laboritems_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY laboritems
+    ADD CONSTRAINT laboritems_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: laborwerte_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY laborwerte
+    ADD CONSTRAINT laborwerte_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: leistungen_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY leistungen
+    ADD CONSTRAINT leistungen_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: leistungsblock_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY leistungsblock
+    ADD CONSTRAINT leistungsblock_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: logs_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY logs
+    ADD CONSTRAINT logs_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: output_log_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY output_log
+    ADD CONSTRAINT output_log_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: patient_artikel_joint_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY patient_artikel_joint
+    ADD CONSTRAINT patient_artikel_joint_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: percentile_patient_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY percentile_patient
+    ADD CONSTRAINT percentile_patient_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: percentile_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY percentile
+    ADD CONSTRAINT percentile_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: percentile_ref_data_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY percentile_ref_data
+    ADD CONSTRAINT percentile_ref_data_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: rechnungen_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY rechnungen
+    ADD CONSTRAINT rechnungen_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: reminders_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY reminders
+    ADD CONSTRAINT reminders_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: reminders_responsible_link_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY reminders_responsible_link
+    ADD CONSTRAINT reminders_responsible_link_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: rezepte_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY rezepte
+    ADD CONSTRAINT rezepte_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: xid_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY xid
+    ADD CONSTRAINT xid_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: zahlungen_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
+--
+
+ALTER TABLE ONLY zahlungen
+    ADD CONSTRAINT zahlungen_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: agnbereich; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX agnbereich ON agntermine USING btree (bereich);
+
+
+--
+-- Name: aij1; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX aij1 ON kontakt_adress_joint USING btree (myid);
+
+
+--
+-- Name: art1; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX art1 ON artikel USING btree (subid);
+
+
+--
+-- Name: art2; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX art2 ON artikel USING btree (typ);
+
+
+--
+-- Name: art3; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX art3 ON artikel USING btree (codeclass);
+
+
+--
+-- Name: auf1; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX auf1 ON auf USING btree (patientid);
+
+
+--
+-- Name: bal_i1; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX bal_i1 ON output_log USING btree (objectid);
+
+
+--
+-- Name: banz1; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX banz1 ON bildanzeige USING btree (patid);
+
+
+--
+-- Name: bbs1; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX bbs1 ON bbs USING btree (reference);
+
+
+--
+-- Name: bdg1; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX bdg1 ON behdl_dg_joint USING btree (behandlungsid);
+
+
+--
+-- Name: block1; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX block1 ON leistungsblock USING btree (name);
+
+
+--
+-- Name: block2; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX block2 ON leistungsblock USING btree (mandantid);
+
+
+--
+-- Name: cembi1; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX cembi1 ON ch_elexis_medikamente_bag_interactions USING btree (subst1);
+
+
+--
+-- Name: cembi2; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX cembi2 ON ch_elexis_medikamente_bag_interactions USING btree (subst2);
+
+
+--
+-- Name: cembs1; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX cembs1 ON ch_elexis_medikamente_bag_substance USING btree (gruppe);
+
+
+--
+-- Name: cembs2; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX cembs2 ON ch_elexis_medikamente_bag_substance USING btree (name);
+
+
+--
+-- Name: ch_elexis_arzttarif_ch_rfe_idx; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX ch_elexis_arzttarif_ch_rfe_idx ON ch_elexis_arzttarif_ch_rfe USING btree (konsid);
+
+
+--
+-- Name: ch_elexis_eigendiagnosen_idx1; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX ch_elexis_eigendiagnosen_idx1 ON ch_elexis_eigendiagnosen USING btree (parent, code);
+
+
+--
+-- Name: ch_elexis_icpc_encounter1; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX ch_elexis_icpc_encounter1 ON ch_elexis_icpc_encounter USING btree (kons);
+
+
+--
+-- Name: ch_elexis_icpc_encounter2; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX ch_elexis_icpc_encounter2 ON ch_elexis_icpc_encounter USING btree (episode);
+
+
+--
+-- Name: ch_elexis_icpc_episodes1; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX ch_elexis_icpc_episodes1 ON ch_elexis_icpc_episodes USING btree (patientid);
+
+
+--
+-- Name: ch_elexis_icpc_episodes2; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX ch_elexis_icpc_episodes2 ON ch_elexis_icpc_episodes USING btree (title);
+
+
+--
+-- Name: ch_elexis_icpc_idx1; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX ch_elexis_icpc_idx1 ON ch_elexis_icpc USING btree (component);
+
+
+--
+-- Name: ch_elexis_impfplan_vaccinations_idx1; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX ch_elexis_impfplan_vaccinations_idx1 ON ch_elexis_impfplan_vaccinations USING btree (patientid);
+
+
+--
+-- Name: ch_elexis_stickynotes1; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX ch_elexis_stickynotes1 ON ch_elexis_stickynotes USING btree (patientid);
+
+
+--
+-- Name: cheacp; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX cheacp ON ch_elexis_arzttarife_ch_physio USING btree (ziffer);
+
+
+--
+-- Name: chelpr_idx1; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX chelpr_idx1 ON ch_elexis_privatrechnung USING btree (parent, name);
+
+
+--
+-- Name: chelpr_idx2; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX chelpr_idx2 ON ch_elexis_privatrechnung USING btree (valid_from);
+
+
+--
+-- Name: chembj1; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX chembj1 ON ch_elexis_medikamente_bag_joint USING btree (product);
+
+
+--
+-- Name: chembj2; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX chembj2 ON ch_elexis_medikamente_bag_joint USING btree (substance);
+
+
+--
+-- Name: dbimage1; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX dbimage1 ON dbimage USING btree (title);
+
+
+--
+-- Name: dg1; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX dg1 ON diagnosen USING btree (klasse, dg_code);
+
+
+--
+-- Name: ekp1; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX ekp1 ON ek_preise USING btree (typ);
+
+
+--
+-- Name: ekp2; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX ekp2 ON ek_preise USING btree (datum_von);
+
+
+--
+-- Name: eol1; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX eol1 ON etiketten_objclass_link USING btree (objclass);
+
+
+--
+-- Name: esr1; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX esr1 ON esrrecords USING btree (datum);
+
+
+--
+-- Name: esr2; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX esr2 ON esrrecords USING btree (patientid);
+
+
+--
+-- Name: esr3; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX esr3 ON esrrecords USING btree (rejectcode);
+
+
+--
+-- Name: etikette1; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX etikette1 ON etiketten USING btree (name);
+
+
+--
+-- Name: etikette2; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX etikette2 ON etiketten_object_link USING btree (obj);
+
+
+--
+-- Name: etikette3; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX etikette3 ON etiketten_object_link USING btree (etikette);
+
+
+--
+-- Name: i3; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX i3 ON faelle USING btree (patientid);
+
+
+--
+-- Name: i4; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX i4 ON behandlungen USING btree (fallid);
+
+
+--
+-- Name: i5; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX i5 ON artikel USING btree (name);
+
+
+--
+-- Name: i8; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX i8 ON briefe USING btree (behandlungsid);
+
+
+--
+-- Name: icd1; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX icd1 ON icd10 USING btree (parent);
+
+
+--
+-- Name: icd2; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX icd2 ON icd10 USING btree (icdcode);
+
+
+--
+-- Name: idx1; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX idx1 ON at_medevit_medelexis_vat_ch USING btree (objectid);
+
+
+--
+-- Name: idx_elbf1; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX idx_elbf1 ON elexisbefunde USING btree (datum);
+
+
+--
+-- Name: idx_elbf2; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX idx_elbf2 ON elexisbefunde USING btree (patientid);
+
+
+--
+-- Name: idxdscrd; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX idxdscrd ON at_medevit_elexis_medindex_article USING btree (dscrd);
+
+
+--
+-- Name: idxdscrf; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX idxdscrf ON at_medevit_elexis_medindex_article USING btree (dscrf);
+
+
+--
+-- Name: idxphar; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX idxphar ON at_medevit_elexis_medindex_article USING btree (phar);
+
+
+--
+-- Name: idxprdno; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX idxprdno ON at_medevit_elexis_medindex_product USING btree (prdno);
+
+
+--
+-- Name: it; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX it ON agntermine USING btree (tag, beginn, bereich);
+
+
+--
+-- Name: k0; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX k0 ON kontakt USING btree (bezeichnung1);
+
+
+--
+-- Name: konto1; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX konto1 ON konto USING btree (datum);
+
+
+--
+-- Name: konto2; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX konto2 ON konto USING btree (patientid);
+
+
+--
+-- Name: labit1; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX labit1 ON laboritems USING btree (kuerzel);
+
+
+--
+-- Name: labit2; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX labit2 ON laboritems USING btree (laborid);
+
+
+--
+-- Name: labor1; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX labor1 ON laborwerte USING btree (patientid);
+
+
+--
+-- Name: labor2; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX labor2 ON laborwerte USING btree (datum);
+
+
+--
+-- Name: labor3; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX labor3 ON laborwerte USING btree (itemid);
+
+
+--
+-- Name: lst1; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX lst1 ON leistungen USING btree (behandlung);
+
+
+--
+-- Name: lst2; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX lst2 ON leistungen USING btree (klasse, leistg_code);
+
+
+--
+-- Name: omn1; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX omn1 ON ch_elexis_omnivore_data USING btree (patid);
+
+
+--
+-- Name: omn2; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX omn2 ON ch_elexis_omnivore_data USING btree (keywords);
+
+
+--
+-- Name: omn3; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX omn3 ON ch_elexis_omnivore_data USING btree (category);
+
+
+--
+-- Name: omn4; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX omn4 ON ch_elexis_omnivore_data USING btree (mimetype);
+
+
+--
+-- Name: omn5; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX omn5 ON ch_elexis_omnivore_data USING btree (deleted);
+
+
+--
+-- Name: omn6; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX omn6 ON ch_elexis_omnivore_data USING btree (title);
+
+
+--
+-- Name: paj1; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX paj1 ON patient_artikel_joint USING btree (patientid);
+
+
+--
+-- Name: paj2; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX paj2 ON patient_artikel_joint USING btree (rezeptid);
+
+
+--
+-- Name: pattern; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX pattern ON agntermine USING btree (patid);
+
+
+--
+-- Name: per_patient_id; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX per_patient_id ON percentile_patient USING btree (id);
+
+
+--
+-- Name: per_patient_pat_id; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX per_patient_pat_id ON percentile_patient USING btree (patient_id);
+
+
+--
+-- Name: per_ref_data_id; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX per_ref_data_id ON percentile_ref_data USING btree (id);
+
+
+--
+-- Name: percentile_id; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX percentile_id ON percentile USING btree (id);
+
+
+--
+-- Name: percentile_pat; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX percentile_pat ON percentile USING btree (patient_id);
+
+
+--
+-- Name: problembehdl1; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX problembehdl1 ON iatrix_problem_behdl_joint USING btree (problemid);
+
+
+--
+-- Name: problemdauermedikation1; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX problemdauermedikation1 ON iatrix_problem_dauermedikation_joint USING btree (problemid);
+
+
+--
+-- Name: problemdg1; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX problemdg1 ON iatrix_problem_dg_joint USING btree (problemid);
+
+
+--
+-- Name: problemfall1; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX problemfall1 ON iatrix_problem_fall_joint USING btree (problemid);
+
+
+--
+-- Name: rem1; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX rem1 ON reminders USING btree (identid);
+
+
+--
+-- Name: rem2; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX rem2 ON reminders USING btree (datedue);
+
+
+--
+-- Name: rem3; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX rem3 ON reminders USING btree (responsible);
+
+
+--
+-- Name: rn1; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX rn1 ON rechnungen USING btree (fallid);
+
+
+--
+-- Name: rn2; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX rn2 ON rechnungen USING btree (mandantid);
+
+
+--
+-- Name: rp1; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX rp1 ON rezepte USING btree (patientid);
+
+
+--
+-- Name: rrl1; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX rrl1 ON reminders_responsible_link USING btree (reminderid);
+
+
+--
+-- Name: rrl2; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX rrl2 ON reminders_responsible_link USING btree (responsibleid);
+
+
+--
+-- Name: tarmed2; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX tarmed2 ON tarmed USING btree (parent);
+
+
+--
+-- Name: tarmed3; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX tarmed3 ON tarmed_definitionen USING btree (spalte);
+
+
+--
+-- Name: tarmed4; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX tarmed4 ON tarmed_extension USING btree (code);
+
+
+--
+-- Name: tarmed5; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX tarmed5 ON tarmed_daten USING btree (parameter);
+
+
+--
+-- Name: tarmed_id; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX tarmed_id ON tarmed USING btree (id);
+
+
+--
+-- Name: trace1; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX trace1 ON traces USING btree (logtime);
+
+
+--
+-- Name: trace2; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX trace2 ON traces USING btree (username);
+
+
+--
+-- Name: ucfg; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX ucfg ON userconfig USING btree (param);
+
+
+--
+-- Name: ucfg2; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX ucfg2 ON userconfig USING btree (userid);
+
+
+--
+-- Name: vkp1; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX vkp1 ON vk_preise USING btree (typ);
+
+
+--
+-- Name: vkp2; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX vkp2 ON vk_preise USING btree (datum_von);
+
+
+--
+-- Name: xididx1; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX xididx1 ON xid USING btree (domain);
+
+
+--
+-- Name: xididx2; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX xididx2 ON xid USING btree (domain_id);
+
+
+--
+-- Name: xididx3; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX xididx3 ON xid USING btree (object);
+
+
+--
+-- Name: zahl1; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
+--
+
+CREATE INDEX zahl1 ON zahlungen USING btree (rechnungsid);
+
+
+--
+-- Name: public; Type: ACL; Schema: -; Owner: postgres
+--
+
+REVOKE ALL ON SCHEMA public FROM PUBLIC;
+REVOKE ALL ON SCHEMA public FROM postgres;
+GRANT ALL ON SCHEMA public TO postgres;
+GRANT ALL ON SCHEMA public TO PUBLIC;
+
+
+--
+-- PostgreSQL database dump complete
+--
+

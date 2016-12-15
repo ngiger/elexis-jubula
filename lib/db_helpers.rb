@@ -1,12 +1,36 @@
 require 'pp'
 require 'sequel'
 require 'yaml'
+require 'tempfile'
 
 module DbHelpers
   def dump_schema_to_migration(outfile = File.join(info_today, 'db.schema'))
-    system("sequel --dump-migration #{patch_jdbc_for_sequel} > #{outfile}")
+    system("sequel --dump-migration #{opts[:sequel_connect]} > #{outfile}")
   end
 
+  def get_root_cmd(opts) # creates db_root_cmd
+    case opts[:db_type]
+    when /mysql/
+      if opts[:run_in_docker]
+        return "mysql --user elexis --password=elexisTest"
+      else
+        return "mysql --host #{opts[:db_host]} --user root --password=#{opts[:root_pw]}"
+      end
+    when /postgresql/
+      # echo "create database if not exists test_elexis"| sudo -u postgres psql
+      # system full_cmd.sub(" #{opts[:db_name]};", '')+' --user=postgres'
+      # "echo \"create database tst_upgrade\"| psql --user=postgres"
+
+      if opts[:run_in_docker]
+        # return "sudo -u postgres psql --host #{opts[:db_host]} --username elexis"
+        return "psql --user postgres"
+      else
+        return "sudo -u postgres psql"
+      end
+    else
+      fail "Unknown db_type #{opts[:db_type]}"
+    end
+  end
   LOG_START = /^\d+:\d+:\d+\.\d+\s+\[\w+\]\s+\w+\s+/
   def analyse_log(elexis_log)
     # TODO: catch errors in spec/data/no_db_connection.log
@@ -30,10 +54,19 @@ module DbHelpers
   #  jdbc:mysql:[USER/PASSWORD]@[HOST][:PORT]:SID
   # mysql2://elexis:elexisTest@localhost/vece
   # TODO: Support db_host
-  def jdbc_to_hash(jdbc)
+  def jdbc_to_hash(opts)
+    jdbc = opts[:jdbc]
     info = {}
-    info[:db_type] = jdbc.split(':').first.sub('mysql2', 'mysql')
+    if /java/i.match(RUBY_PLATFORM)
+      jdbc = jdbc.sub(/^mysql/, 'jdbc:mysql')
+      info[:db_type] = jdbc.split('/').first.chomp(':')
+    else
+      info[:db_type] = jdbc.split(':').first
+    end
+    info[:db_type] = info[:db_type].sub('jdbc:', '')
     info[:db_name] = jdbc.split('/').last.split('/').last
+    info[:db_name]= 'tst_upgrade' if opts[:upgrade] # keep in sync with upgrader/docker-compose.yaml
+
     info[:db_user] = /\/(\w+)[:@\/]/.match(jdbc)[1]
     if m = /[\/@]([\w-]+)[\/]/.match(jdbc)
       info[:db_host] = m[1]
@@ -44,42 +77,75 @@ module DbHelpers
     info[:db_elexis_params] = "-Dch.elexis.username=#{opts[:elexis_user]} -Dch.elexis.password=#{opts[:elexis_password]} " +
         " -Dch.elexis.dbUser=#{info[:db_user]} -Dch.elexis.dbPw=#{info[:db_password]}  -Dch.elexis.dbFlavor=#{info[:db_type]}" +
         " -Dch.elexis.dbSpec=jdbc:#{info[:db_type]}://#{info[:db_host]}/#{info[:db_name]}"
-    info
-  end
-
-  def patch_jdbc_for_sequel
-    opts[:jdbc].sub('mysql:', 'mysql2:')
+    if /java/.match(RUBY_PLATFORM)
+      case info[:db_type]
+      when /mysql/
+        info[:sequel_connect] = "jdbc:#{info[:db_type]}://address=(protocol=tcp)(host=#{info[:db_host]})(user=#{info[:db_user]})(password=#{info[:db_password]})/test_elexis"
+      when /post/
+        info[:sequel_connect] = "jdbc:postgresql://#{info[:db_host]}/#{info[:db_name]}?user=#{info[:db_user]}&password=#{info[:db_password]}"
+      else
+        fail "unknown db_type #{info[:db_type]}"
+      end
+      # Sequel.connect('jdbc:postgresql://localhost/sbu3?user=elexis&password=elexisTest').tables
+    else
+      info[:sequel_connect] = jdbc
+      info[:sequel_connect].sub!('mysql:', 'mysql2:') if defined? Mysql2
+      info[:sequel_connect].sub!('postgresql', 'postgres')
+      info[:sequel_connect] = 'postgres://postgres/tst_upgrade' if run_in_docker? && /postgres/i.match(info[:db_type])
+    end
+    opts.merge!(info)
+    opts[:db_root_cmd] = get_root_cmd(opts)
   end
 
   # org.osgi.framework.BundleException
   # sequel mysql2://localhost/hgz
   def get_db_elexis_version
-    db  = Sequel.connect(patch_jdbc_for_sequel)
+    @db  = Sequel.connect(opts[:sequel_connect]) unless @db
     return ['0.0', 'x.y'] if opts[:noop]
-    db_version = db[:config].filter[:param => 'dbversion'][:wert]
-    elexis_version = db[:config].filter[:param => 'ElexisVersion'][:wert]
+    db_version = @db[:config].filter[:param => 'dbversion'][:wert]
+    elexis_version = @db[:config].filter[:param => 'ElexisVersion'][:wert]
     puts "db_version #{db_version} elexis_version #{elexis_version}"
-    puts db.run(" select wert from config where param like 'ElexisVersion';")
-    puts db.run(" select wert from config where param like 'dbVersion';")
+    puts @db.run(" select wert from config where param like 'ElexisVersion';")
+    puts @db.run(" select wert from config where param like 'dbVersion';")
     return [db_version, elexis_version]
   end
 
   def create_database
     return true if run_in_docker?
-    cmds =
+    case opts[:db_type]
+      when /mysql/
+        cmds =
         [ "create database if not exists #{opts[:db_name]}",
           "GRANT ALL ON #{opts[:db_name]}.* TO '#{opts[:db_user]}'@'%' IDENTIFIED BY '#{opts[:db_password]}'",
           ]
+      when /postgresql/
+        cmds =
+        [ "create database #{opts[:db_name]}",
+          "create user #{opts[:db_user]}  with UNENCRYPTED password '#{opts[:db_password]}'",
+          "alter  user #{opts[:db_user]}  with UNENCRYPTED password '#{opts[:db_password]}'",
+          "GRANT ALL PRIVILEGES ON DATABASE #{opts[:db_name]} TO #{opts[:db_user]}",
+          "GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO #{opts[:db_user]}",
+          ]
+      else
+        fail "Unknown db_type #{db_info[:db_type]}"
+      end
     cmds.each do |cmd|
-      full_cmd = 'echo "' + cmd + "\"| #{db_root_cmd};"
-      unless system(full_cmd)
-        fail "Unable to create database #{opts[:db_name]} using #{cmd}"
+      full_cmd = 'echo "' + cmd + "\"| #{opts[:db_root_cmd]};"
+      unless system(full_cmd, :may_fail => true)
+        binding.pry
+        # fail "Unable to create database #{opts[:db_name]} using #{cmd}"
       end
     end
   end
   def drop_database
-    cmd = "drop database #{opts[:db_name]}"
-    full_cmd = "#{db_root_cmd}  --execute '#{cmd}'"
+    return if run_in_docker?
+    if /mysql/.match(opts[:db_type])
+      cmd = "drop database #{opts[:db_name]}"
+      full_cmd = "#{opts[:db_root_cmd]}  --execute '#{cmd}'"
+    else
+      cmd = "drop database #{opts[:db_name]}"
+      full_cmd = "#{opts[:db_root_cmd]}  --command '#{cmd}'"
+    end
     unless system(full_cmd)
       puts "Unable to drop database #{opts[:db_name]} using #{cmd}"
     else
@@ -89,19 +155,34 @@ module DbHelpers
 
   def load_database_dump
     fail "Could not read file #{opts[:db_dump]}" unless File.readable? opts[:db_dump]
+    binding.pry
+    puts "Loading #{opts[:db_type]} database #{opts[:db_name]} from #{opts[:db_dump]} (#{size_in_mb(opts[:db_dump])}). This could take a long time"
     # Delete from the database dump the create database and use command
-    cmd = "cat #{opts[:db_dump]} | egrep -v  '^CREATE DATABASE|^USE '| #{db_root_cmd}  #{opts[:db_name]}"
-    puts "Loading database #{opts[:db_name]} from #{opts[:db_dump]} (#{size_in_mb(opts[:db_dump])}). This could take a long time"
     start_time = Time.now
-    system(cmd)
+    case opts[:db_type]
+    when /mysql/
+      cmd = "cat #{opts[:db_dump]} | egrep -v  '^CREATE DATABASE|^USE '| #{opts[:db_root_cmd]}  #{opts[:db_name]}"
+      res = system(cmd)
+    when /postgresql/
+      cmds = [ "zcat #{opts[:db_dump]} |#{opts[:db_root_cmd]} --dbname  #{opts[:db_name]}", ]
+      cmds = [ "zcat #{opts[:db_dump]} |psql #{opts[:db_name]} ", ] if run_in_docker?
+      cmds.each do |cmd|
+        res = system(cmd)
+      end
+      # create user elexis with UNENCRYPTED password 'elexisTest';
+      # create user elexis with password 'elexisTest';
+    else
+      fail "Unknown db_type #{db_info[:db_type]}"
+    end
+    fail "could not load database " unless res
     diff_seconds = (Time.now - start_time).to_i
     puts "Loading the database #{opts[:db_dump]} took #{diff_seconds} seconds"
   end
 
 
   def start_pry
-    db  = Sequel.connect(patch_jdbc_for_sequel)
-    puts db
+    @db  = Sequel.connect(opts[:sequel_connect]) unless @db
+    puts @db
     binding.pry # in start_pry
   end
 
@@ -110,12 +191,19 @@ module DbHelpers
   end
 
   def load_elexis_db_if_not_exist
-    db  = Sequel.connect(patch_jdbc_for_sequel)
+    if /java/.match(RUBY_PLATFORM)
+      @db = Sequel.connect('jdbc:mysql://address=(protocol=tcp)(host=localhost)(user=elexis)(password=elexisTest)/test_elexis') unless @db
+    else
+      @db  = Sequel.connect(opts[:sequel_connect]) unless @db
+    end
     has_tables = false
     begin
-      has_tables = db.tables # Maybe the database does not
+      has_tables = @db.tables # Maybe the database does not
     rescue Sequel::DatabaseConnectionError
     end
+    # jdbc:mysql://[host1][:port1][,[host2][:port2]]...[/[database]] [?propertyName1=propertyValue1[&propertyName2=propertyValue2]...]
+#     db  = Sequel.connect('jdbc:mysql://localhost/test_elexis')
+
     puts "load_elexis_db_if_not_exist has_tables is #{has_tables.inspect} noop #{ opts[:noop]}"
     unless has_tables && has_tables.size > 0
       create_database unless opts[:noop]
@@ -127,14 +215,14 @@ module DbHelpers
     STDOUT.write("Creating elexis_database_info."); STDOUT.sync = true
     load_elexis_db_if_not_exist
     db_info = {}
-    db_info[:db_label]       = File.basename(opts[:db_dump]).split('_').first
+    db_info[:db_label]       = opts[:db_label]
+    db_info[:db_label]       ||= File.basename(opts[:db_dump]).split('_').first
     db_info[:sql_dump]       = opts[:db_dump]
     db_info[:sql_dump_size]  = size_in_mb(opts[:db_dump]) if File.exist?(opts[:db_dump])
-    db_info[:db_type]        = 'mysql'
-    db_info[:db_client]      = Mysql2::Client.info
+    db_info[:db_type]        = opts[:db_type]
     unless opts[:noop]
-      db_info[:db_version]     = db[:config].filter[:param => 'dbversion'][:wert]
-      db_info[:elexis_version] = db[:config].filter[:param => 'ElexisVersion'][:wert]
+      db_info[:db_version]     = @db[:config].filter[:param => 'dbversion'][:wert]
+      db_info[:elexis_version] = @db[:config].filter[:param => 'ElexisVersion'][:wert]
     end
     all_tables = {}
 
@@ -146,19 +234,28 @@ module DbHelpers
     my_root = File.exist?(new_db_elexis) ? info_today : new_db_elexis
     opts[:db_info_root] = my_root
     FileUtils.makedirs(my_root, :noop => opts[:noop])
+      report_db_useage( File.join(my_root, 'db.useage'))
     # TODO: append output of the following MySQL commands
     # SHOW GLOBAL VARIABLES LIKE '%version%';
     # status
+    # select to_timestamp(min(logtime)/1000) from traces;
+    # select to_timestamp(max(logtime)/1000) from traces;
 
-    db.tables.each do |tablename|
+    @db.tables.each do |tablename|
       STDOUT.write('.')
-      this_table = {:nr_rows => db[tablename].all.size}
-      if db[tablename].columns.index(:lastupdate)
-        dataset = db["SELECT FROM_UNIXTIME(lastupdate/1000) as human FROM  #{tablename} where lastupdate is not null"]
+      this_table = {:nr_rows => @db[tablename].all.size}
+      if @db[tablename].columns.index(:lastupdate)
+        # select *, to_timestamp(time in milli sec / 1000) from mytable
+        if /mysql/.match(opts[:db_type])
+          dataset = @db["SELECT FROM_UNIXTIME(lastupdate/1000) as human FROM  #{tablename} where lastupdate is not null"]
+        else
+          dataset = @db["SELECT to_timestamp(lastupdate/1000) as human FROM  #{tablename} where lastupdate is not null"]
+        end
         dataset.map(:human)
         this_table[:last_update] = [dataset.map(:human).min, dataset.map(:human).max]
       end
       all_tables[tablename] = this_table
+      # binding.pry if @db[:extinfo]
     end
     db_info[:tables] = all_tables
     db_yaml = File.join(my_root, 'db.yaml')
@@ -166,8 +263,12 @@ module DbHelpers
     puts
     db_schema = File.join(my_root, 'db.schema')
     dump_schema_to_migration(db_schema)
-    sql_schema = File.join(my_root, 'db.mysql')
-    cmd = "#{db_root_cmd} --user #{opts[:db_user]} --password=#{opts[:db_password]} --no-data #{opts[:db_name]} > #{sql_schema}".sub('mysql', 'mysqldump')
+    sql_schema = File.join(my_root, 'db.' + opts[:db_type])
+    if /mysql/.match(opts[:db_type])
+      cmd = "#{opts[:db_root_cmd]} --user #{opts[:db_user]} --password=#{opts[:db_password]} --no-data #{opts[:db_name]} > #{sql_schema}".sub('mysql', 'mysqldump')
+    else
+      cmd = "pg_dump --user #{opts[:db_user]} --schema-only #{opts[:db_name]} > #{sql_schema}"
+    end
     fail "Unable to to dump schema using #{cmd}" unless system(cmd)
     puts "Stored info under #{my_root}"
     if my_root.eql?(new_db_elexis)
@@ -178,4 +279,53 @@ module DbHelpers
     end
   end
 
+  def getExtinfo
+    require 'java'
+    x = %(
+  private static Map mimicGetMap(ResultSet rs, final String field){
+    byte[] blob;
+    try {
+      blob = rs.getBytes(field);
+    } catch (SQLException e) {
+      return new Hashtable();
+    }
+    if (blob == null) {
+      return new Hashtable();
+    }
+    Hashtable<Object, Object> ret = fold(blob);
+    if (ret == null) {
+      return new Hashtable();
+    }
+    return ret;
+  }
+  *)
+  end
+  def report_db_useage(outfile)
+    return if /mysql/.match(opts[:db_type])
+    # see https://wiki.postgresql.org/wiki/Disk_Usage
+    psql_cmd = %(SELECT *, pg_size_pretty(total_bytes) AS total
+    , pg_size_pretty(index_bytes) AS INDEX
+    , pg_size_pretty(toast_bytes) AS toast
+    , pg_size_pretty(table_bytes) AS TABLE
+  FROM (
+  SELECT *, total_bytes-index_bytes-COALESCE(toast_bytes,0) AS table_bytes FROM (
+      SELECT c.oid,nspname AS table_schema, relname AS TABLE_NAME
+              , c.reltuples AS row_estimate
+              , pg_total_relation_size(c.oid) AS total_bytes
+              , pg_indexes_size(c.oid) AS index_bytes
+              , pg_total_relation_size(reltoastrelid) AS toast_bytes
+          FROM pg_class c
+          LEFT JOIN pg_namespace n ON n.oid = c.relnamespace
+          WHERE relkind = 'r'
+  ) a
+) a order by total_bytes desc;
+)
+    file = Tempfile.new('report_db_useage')
+    file.puts(psql_cmd)
+    file.close
+    cmd = "cat  #{file.path} | psql --user #{opts[:db_user]} --dbname #{opts[:db_name]} | tee #{outfile}"
+    res = system(cmd)
+    puts "Created info about database size in #{outfile}. res #{res}"
+    file.unlink if res
+  end
 end
