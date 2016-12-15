@@ -71,9 +71,10 @@ module DbHelpers
     info[:sequel_connect].sub!('mysql:', 'mysql2:') if defined? Mysql2
     info[:sequel_connect].sub!('postgresql', 'postgres')
     info[:sequel_connect] = 'postgres://postgres/tst_upgrade' if run_in_docker? && /postgres/i.match(info[:db_type])
-    opts[:db_root_cmd] = get_root_cmd(info)
-    info
     opts.merge!(info)
+    info[:root_pw] = opts[:root_pw]
+    opts[:db_root_cmd] = get_root_cmd(info)
+    opts
   end
 
   def patch_jdbc_for_sequel
@@ -103,11 +104,11 @@ module DbHelpers
             ]
       when /postgresql/
         cmds =
-        [ "create database #{opts[:db_name]}",
-          "create user #{opts[:db_user]}  with UNENCRYPTED password '#{opts[:db_password]}'",
-          "alter  user #{opts[:db_user]}  with UNENCRYPTED password '#{opts[:db_password]}'",
-          "GRANT ALL PRIVILEGES ON DATABASE #{opts[:db_name]} TO #{opts[:db_user]}",
-          "GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO #{opts[:db_user]}",
+        [ "create database #{opts[:db_name]};",
+          "create user #{opts[:db_user]}  with UNENCRYPTED password '#{opts[:db_password]}';",
+          "alter  user #{opts[:db_user]}  with UNENCRYPTED password '#{opts[:db_password]}';",
+          "GRANT ALL PRIVILEGES ON DATABASE #{opts[:db_name]} TO #{opts[:db_user]};",
+          "GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO #{opts[:db_user]};",
           ]
       else
         fail "Unknown db_type #{db_info[:db_type]}"
@@ -121,7 +122,7 @@ module DbHelpers
   end
   def drop_database
     return if run_in_docker?
-    cmd = "drop database #{opts[:db_name]}"
+    cmd = "drop database IF EXISTS #{opts[:db_name]}"
     if /mysql/.match(opts[:db_type])
       full_cmd = "#{opts[:db_root_cmd]}  --execute '#{cmd}'"
     else
@@ -143,8 +144,9 @@ module DbHelpers
     when /mysql/
       cmd = "cat #{opts[:db_dump]} | egrep -v  '^CREATE DATABASE|^USE '| #{opts[:db_root_cmd]} #{opts[:db_name]}"
     when /postgresql/
-      cmd = "zcat #{opts[:db_dump]} |#{opts[:db_root_cmd]} --dbname  #{opts[:db_name]}"
-      cmd = "zcat #{opts[:db_dump]} |psql #{opts[:db_name]} " if run_in_docker?
+      cat = /sql$/.match(opts[:db_dump]) ? 'cat' : 'zcat' # check whether we have a compressed sql dump
+      cmd = "#{cat} #{opts[:db_dump]} |#{opts[:db_root_cmd]} --dbname  #{opts[:db_name]}"
+      cmd = "#{cat} #{opts[:db_dump]} |psql #{opts[:db_name]} " if run_in_docker?
     else
       fail "Unknown db_type #{db_info[:db_type]}"
     end
@@ -176,7 +178,7 @@ module DbHelpers
     rescue Sequel::DatabaseConnectionError
     end
     puts "load_elexis_db_if_not_exist has_tables is #{has_tables.inspect} noop #{ opts[:noop]}"
-    unless has_tables && has_tables.size > 0
+    unless has_tables && has_tables.size > 0 && !opts[:noop]
       create_database unless opts[:noop]
       load_database_dump
     end

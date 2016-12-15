@@ -126,7 +126,7 @@ bin/tst_upgrade.rb --clean --upgrade --run-in-docker #{opts[:definition] ? ('--d
       return okay
     else
       puts "#{Time.now.strftime('%Y.%m.%d %H:%M:%S')}: took #{diff_seconds} seconds to run. Exit status 0 if #{okay.inspect}"
-      exit(okay ? 0 : 1)
+      exit(okay ? 0 : 1) unless defined?(RSpec)
     end
   end
 end

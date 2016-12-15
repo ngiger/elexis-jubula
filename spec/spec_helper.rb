@@ -22,6 +22,15 @@ module Kernel
   end
 end
 
+
+# Here we test only using via the noop to see
+def check_drop_database(cli_output, clean= true)
+  expect(cli_output).to match(/drop database test_elexis/) unless clean
+  expect(cli_output).to match(/Successfully dropped/)
+end
+
+LOAD_MYSQL_DB = /Loading mysql database /
+
 def cleanup_directories
   Dir.chdir(File.expand_path(File.dirname(File.dirname(__FILE__))))
   [ Dir.glob("results_*") +

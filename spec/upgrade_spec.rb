@@ -5,12 +5,14 @@ require 'jubula_runner'
 require 'upgrade_runner'
 
 # Here we test only using via the noop to see
-RSpec.describe "bin/tst_upgrade.rb" do
+def check_drop_database(cli_output, clean= true)
+  expect(cli_output).to match(/drop database test_elexis/) unless clean
+  expect(cli_output).to match(/Successfully dropped/)
+end
+LOAD_MYSQL_DB = /Loading mysql database /
 
-  def check_drop_database(cli_output, clean= true)
-    expect(cli_output).to match(/drop database test_elexis/) unless clean
-    expect(cli_output).to match(/Successfully dropped/)
-  end
+RSpec.describe "bin/tst_upgrade.rb noop" do
+
 
   context 'when --noop, --run-in-docker and Screenshot option is given' do
     before(:all) do
@@ -19,6 +21,7 @@ RSpec.describe "bin/tst_upgrade.rb" do
       expect(@options[:noop]).to eq true
       @cli = JubulaRunner.new
       expect{  @cli_output = buildr_capture { @cli.run(@options)} }.not_to raise_error
+      expect(@cli_output).not_to be_nil
     end
 
     it "should stop the docker" do
@@ -44,7 +47,7 @@ RSpec.describe "bin/tst_upgrade.rb" do
   end
 
   context 'when --noop and --clean option is given' do
-    before(:each) do
+    before(:all) do
       cleanup_directories
       @options = UpgradeOptions.new(["--noop", "--clean"])
       puts @options.inspect
@@ -65,12 +68,13 @@ RSpec.describe "bin/tst_upgrade.rb" do
 
   end
   context 'when --noop and --upgrade option is given' do
-    before(:each) do
+    before(:all) do
       cleanup_directories
       @options = UpgradeOptions.new(["--noop", "--upgrade", '--no-run-in-docker'])
       @cli = UpgradeRunner.new
       # @cli.run(@options)
       expect{  @cli_output = buildr_capture { @cli.run(@options)} }.not_to raise_error
+      expect(@cli_output).not_to be_nil
     end
 
     it "should download the zip from correct URL" do
@@ -86,11 +90,11 @@ RSpec.describe "bin/tst_upgrade.rb" do
     end
 
     it "should load the database" do
-      expect(@cli_output).to match(/Loading database /)
+      expect(@cli_output).to match(LOAD_MYSQL_DB)
     end
 
     it "should call the installer for the second installation with parameter" do
-      expect(@cli_output).to match(/install_sw_medelexis.rb.* prerelease results_prerelease\/test_elexis.*-Dch.elexis.username=elexis/)
+      expect(@cli_output).to match(/install_sw_medelexis.rb.* prerelease results_prerelease\/tst_upgrade.*-Dch.elexis.username=elexis/)
     end
 
     it "should save the database info" do
@@ -104,12 +108,13 @@ RSpec.describe "bin/tst_upgrade.rb" do
 
   end
   context 'when --noop, --clean, --definition=rgw and --upgrade option is given' do
-    before(:each) do
+    before(:all) do
       cleanup_directories
       @options = UpgradeOptions.new(['--noop', '--clean', '--upgrade', '--no-run-in-docker', '--definition=rgw'])
       @cli = UpgradeRunner.new
-      @cli.run(@options)
-      # expect{  @cli_output = buildr_capture { @cli.run(@options)} }.not_to raise_error
+      # @cli.run(@options)
+      expect{  @cli_output = buildr_capture { @cli.run(@options)} }.not_to raise_error
+      expect(@cli_output).not_to be_nil
     end
 
     it "should login as elexis user test" do
@@ -119,11 +124,12 @@ RSpec.describe "bin/tst_upgrade.rb" do
 
   end
   context 'when --noop, --clean and --info option is given' do
-    before(:each) do
+    before(:all) do
       cleanup_directories
       @options = UpgradeOptions.new(["--noop", '--clean', "--info"])
       @cli = UpgradeRunner.new
       expect{  @cli_output = buildr_capture { @cli.run(@options)} }.not_to raise_error
+      expect(@cli_output).not_to be_nil
     end
 
     it "should drop the database" do
@@ -132,7 +138,7 @@ RSpec.describe "bin/tst_upgrade.rb" do
     end
 
     it "should load the database" do
-      expect(@cli_output).to match(/Loading database /)
+      expect(@cli_output).to match(LOAD_MYSQL_DB)
     end
 
     it "should save the database info" do
