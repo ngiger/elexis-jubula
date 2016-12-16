@@ -1,0 +1,7 @@
+---
+# Here we define the parameter which are the same when using
+# the database from Gerry for the different variants/varsions and licenses
+  :db_dump: /opt/db_dumps/db_schoebu_2013_05_10.sql
+  :db_label: sbu
+  :db_name: tst_upgrade
+  :jdbc: postgresql://elexis:elexisTest@localhost/tst_upgrade

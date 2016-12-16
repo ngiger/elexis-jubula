@@ -1,0 +1,9 @@
+---
+# Here we define the parameter which are the same when using
+# the database from Gerry for the different variants/varsions and licenses
+  :db_dump: jubula-tests/rsc/db/mysql/simpel.sql
+  :db_label: tst_upgrade
+  :root_pw: elexisTest
+  :elexis_user: test
+  :elexis_password: test
+  :jdbc: mysql://elexis:elexisTest@localhost/tst_upgrade
