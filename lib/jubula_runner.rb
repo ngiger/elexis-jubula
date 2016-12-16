@@ -178,7 +178,7 @@ export agent_port=#{@opts[:agent_port]}
     FileUtils.rm_rf(destination, :verbose => true, :noop => opts[:noop])
     FileUtils.cp_r(@result_dir, destination, verbose: true, noop: opts[:noop], preserve: true) if File.exist?(@result_dir)
     FileUtils.cp(@elexis_log, destination, verbose: true, noop: opts[:noop], preserve: true)  if @elexis_log && File.exist?(@elexis_log)
-    if opts[:run_in_docker]
+    if opts[:run_in_docker] && @docker
       files = Dir.glob(File.join(@docker.container_home, '*/*/surefire-reports/*'))
       sure_dest = File.join(destination, 'surefire-reports')
       puts "Saving surefire-reports to #{sure_dest} #{files.join("\n")}"

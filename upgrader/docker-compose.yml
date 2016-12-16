@@ -40,8 +40,8 @@ services:
       private:
     volumes_from:
       - pgdata
-#    volumes:
-#      - ${PWD}/wheezy/postgres:/docker-entrypoint-initdb.d
+    volumes:
+      - ${PWD}/wheezy/postgres:/docker-entrypoint-initdb.d
     environment:
       # LANG: 'de_CH.UTF-8'
       PGUSER: elexis

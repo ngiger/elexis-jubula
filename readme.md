@@ -12,6 +12,7 @@ Here Niklaus tries to make a new, better environment for running the Jubula GUI-
 * docker
 * maven
 * Java-8
+* rubygems pg libpq-dev
 
 ## Continuos integration
 
