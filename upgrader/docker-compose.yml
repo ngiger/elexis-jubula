@@ -13,10 +13,17 @@
 # ENV LANG de_DE.utf8
 version: '2.0'
 services:
+  mysql_data_tst_upgrade:
+    image: busybox
+    networks:
+      private:
+
   mysql:
     image: mysql:5.7
     networks:
       private:
+    volumes_from:
+      - mysql_data_tst_upgrade
     volumes:
       # File in this directory must not be world readable or the mysqld will simply ignore it!
       - ${PWD}/wheezy/mysql:/etc/mysql/conf.d
@@ -28,9 +35,8 @@ services:
       MYSQL_PASSWORD: elexisTest
       MYSQL_DATABASE: tst_upgrade
 
-  pgdata:
-    image: postgres:9.1
-    entrypoint: /bin/bash
+  pg_data_tst_upgrade:
+    image: busybox
     networks:
       private:
 
@@ -39,16 +45,15 @@ services:
     networks:
       private:
     volumes_from:
-      - pgdata
-    volumes:
-      - ${PWD}/wheezy/postgres:/docker-entrypoint-initdb.d
+      - pg_data_tst_upgrade
+#    volumes:
+#      - ${PWD}/upgrader/postgres:/docker-entrypoint-initdb.d
     environment:
-      # LANG: 'de_CH.UTF-8'
+      # LANG: 'de_CH.UTF-8' postgres docker 9.1 does not have all locales installed!
       PGUSER: elexis
       POSTGRES_DB: tst_upgrade
       POSTGRES_USER: elexis
       POSTGRES_PASSWORD: elexisTest
-
   runner:
     build: .
     # image: ngiger/jubula_runner:${JUBULA_RUNNER_VERSION}

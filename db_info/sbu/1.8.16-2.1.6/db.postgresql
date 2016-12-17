@@ -3,7 +3,6 @@
 --
 
 SET statement_timeout = 0;
-SET lock_timeout = 0;
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
 SET check_function_bodies = false;
@@ -689,27 +688,6 @@ CREATE TABLE ch_elexis_notes (
 
 
 ALTER TABLE public.ch_elexis_notes OWNER TO elexis;
-
---
--- Name: ch_elexis_omnivore_data; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
---
-
-CREATE TABLE ch_elexis_omnivore_data (
-    id character varying(25) NOT NULL,
-    patid character varying(25),
-    datum character(8),
-    title character varying(255),
-    mimetype character varying(255),
-    keywords character varying(255),
-    path character varying(80),
-    doc bytea,
-    deleted character(1) DEFAULT '0'::bpchar,
-    category character varying(80),
-    lastupdate bigint DEFAULT 0
-);
-
-
-ALTER TABLE public.ch_elexis_omnivore_data OWNER TO elexis;
 
 --
 -- Name: ch_elexis_privatrechnung; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
@@ -1541,20 +1519,6 @@ CREATE TABLE tarmed_extension (
 ALTER TABLE public.tarmed_extension OWNER TO elexis;
 
 --
--- Name: traces; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
---
-
-CREATE TABLE traces (
-    logtime bigint,
-    workstation character varying(50),
-    username character varying(30),
-    action text
-);
-
-
-ALTER TABLE public.traces OWNER TO elexis;
-
---
 -- Name: userconfig; Type: TABLE; Schema: public; Owner: elexis; Tablespace: 
 --
 
@@ -1833,14 +1797,6 @@ ALTER TABLE ONLY ch_elexis_medikamente_bag_substance
 
 ALTER TABLE ONLY ch_elexis_messages
     ADD CONSTRAINT ch_elexis_messages_pkey PRIMARY KEY (id);
-
-
---
--- Name: ch_elexis_omnivore_data_pkey; Type: CONSTRAINT; Schema: public; Owner: elexis; Tablespace: 
---
-
-ALTER TABLE ONLY ch_elexis_omnivore_data
-    ADD CONSTRAINT ch_elexis_omnivore_data_pkey PRIMARY KEY (id);
 
 
 --
@@ -2595,48 +2551,6 @@ CREATE INDEX lst2 ON leistungen USING btree (klasse, leistg_code);
 
 
 --
--- Name: omn1; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
---
-
-CREATE INDEX omn1 ON ch_elexis_omnivore_data USING btree (patid);
-
-
---
--- Name: omn2; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
---
-
-CREATE INDEX omn2 ON ch_elexis_omnivore_data USING btree (keywords);
-
-
---
--- Name: omn3; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
---
-
-CREATE INDEX omn3 ON ch_elexis_omnivore_data USING btree (category);
-
-
---
--- Name: omn4; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
---
-
-CREATE INDEX omn4 ON ch_elexis_omnivore_data USING btree (mimetype);
-
-
---
--- Name: omn5; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
---
-
-CREATE INDEX omn5 ON ch_elexis_omnivore_data USING btree (deleted);
-
-
---
--- Name: omn6; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
---
-
-CREATE INDEX omn6 ON ch_elexis_omnivore_data USING btree (title);
-
-
---
 -- Name: paj1; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
 --
 
@@ -2809,20 +2723,6 @@ CREATE INDEX tarmed5 ON tarmed_daten USING btree (parameter);
 --
 
 CREATE INDEX tarmed_id ON tarmed USING btree (id);
-
-
---
--- Name: trace1; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
---
-
-CREATE INDEX trace1 ON traces USING btree (logtime);
-
-
---
--- Name: trace2; Type: INDEX; Schema: public; Owner: elexis; Tablespace: 
---
-
-CREATE INDEX trace2 ON traces USING btree (username);
 
 
 --

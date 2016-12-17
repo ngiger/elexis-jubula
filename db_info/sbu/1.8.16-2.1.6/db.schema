@@ -1,5 +1,5 @@
 Sequel.migration do
-  change do
+  up do
     create_table(:agndays) do
       String :id, :size=>10, :null=>false
       String :message, :text=>true
@@ -543,29 +543,6 @@ Sequel.migration do
       String :keywords, :size=>255
       String :mimetype, :size=>80
       Bignum :lastupdate
-    end
-    
-    create_table(:ch_elexis_omnivore_data, :ignore_index_errors=>true) do
-      String :id, :size=>25, :null=>false
-      String :patid, :size=>25
-      String :datum, :size=>8, :fixed=>true
-      String :title, :size=>255
-      String :mimetype, :size=>255
-      String :keywords, :size=>255
-      String :path, :size=>80
-      File :doc
-      String :deleted, :default=>"0", :size=>1, :fixed=>true
-      String :category, :size=>80
-      Bignum :lastupdate, :default=>0
-      
-      primary_key [:id]
-      
-      index [:patid], :name=>:omn1
-      index [:keywords], :name=>:omn2
-      index [:category], :name=>:omn3
-      index [:mimetype], :name=>:omn4
-      index [:deleted], :name=>:omn5
-      index [:title], :name=>:omn6
     end
     
     create_table(:ch_elexis_privatrechnung, :ignore_index_errors=>true) do
@@ -1245,16 +1222,6 @@ Sequel.migration do
       index [:code], :name=>:tarmed4
     end
     
-    create_table(:traces, :ignore_index_errors=>true) do
-      Bignum :logtime
-      String :workstation, :size=>50
-      String :username, :size=>30
-      String :action, :text=>true
-      
-      index [:logtime], :name=>:trace1
-      index [:username], :name=>:trace2
-    end
-    
     create_table(:userconfig, :ignore_index_errors=>true) do
       String :userid, :size=>25
       String :param, :size=>80
@@ -1307,5 +1274,9 @@ Sequel.migration do
       
       index [:rechnungsid], :name=>:zahl1
     end
+  end
+  
+  down do
+    drop_table(:zahlungen, :xid, :vk_preise, :userconfig, :tarmed_extension, :tarmed_definitionen, :tarmed_daten, :tarmed, :rezepte, :reminders_responsible_link, :reminders, :rechnungen, :percentile_ref_data, :percentile_patient, :percentile, :patient_artikel_joint, :output_log, :logs, :leistungsblock, :leistungen, :laborwerte, :laboritems, :labgroups, :labgroup_item_joint, :konto, :kontakt_adress_joint, :kontakt, :icd10, :iatrix_problem_fall_joint, :iatrix_problem_dg_joint, :iatrix_problem_dauermedikation_joint, :iatrix_problem_behdl_joint, :iatrix_problem, :heap2, :heap, :faelle, :etiketten_object_link, :etiketten_objclass_link, :etiketten, :esrrecords, :elexisbefunde, :ek_preise, :eigenleistungen, :diagnosen, :dbimage, :config, :ch_medelexis_labortarif2009, :ch_elexis_stickynotes, :ch_elexis_privatrechnung, :ch_elexis_notes, :ch_elexis_messages, :ch_elexis_medikamente_bag_substance, :ch_elexis_medikamente_bag_joint, :ch_elexis_medikamente_bag_interactions, :ch_elexis_medikamente_bag_ext, :ch_elexis_impfplan_vaccinations, :ch_elexis_impfplan_vaccination_types, :ch_elexis_icpc_episodes_diagnoses_link, :ch_elexis_icpc_episodes, :ch_elexis_icpc_encounter, :ch_elexis_icpc, :ch_elexis_eigendiagnosen, :ch_elexis_arzttarife_ch_physio, :ch_elexis_arzttarif_ch_rfe, :ch_elexis_agenda_daymsg, :ch_berchtold_privatrechnung, :briefe, :bildanzeige, :bestellungen, :behdl_dg_joint, :behandlungen, :bbs, :auf, :at_medevit_medelexis_vat_ch, :at_medevit_elexis_medindex_product, :at_medevit_elexis_medindex_article, :artikel_details, :artikel, :agntermine, :agnremarks, :agndays)
   end
 end

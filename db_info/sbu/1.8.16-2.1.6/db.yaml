@@ -1,7 +1,7 @@
 ---
 :db_label: sbu
-:sql_dump: "/opt/db_dumps/db_schoebu_2013_05_10.sql"
-:sql_dump_size: 2107 MB
+:sql_dump: /opt/db_dumps/sbu_mit_test.sql.gz
+:sql_dump_size: 627 MB
 :db_type: postgresql
 :db_version: 1.8.16
 :elexis_version: 2.1.6
@@ -14,14 +14,14 @@
     :nr_rows: 38686
   :artikel:
     :nr_rows: 102344
-  :at_medevit_medelexis_vat_ch:
-    :nr_rows: 312
   :artikel_details:
     :nr_rows: 0
   :at_medevit_elexis_medindex_article:
     :nr_rows: 1
   :at_medevit_elexis_medindex_product:
     :nr_rows: 1
+  :at_medevit_medelexis_vat_ch:
+    :nr_rows: 312
   :auf:
     :nr_rows: 1955
   :bbs:
@@ -32,8 +32,6 @@
     :nr_rows: 20872
   :bestellungen:
     :nr_rows: 349
-  :ch_elexis_arzttarif_ch_rfe:
-    :nr_rows: 2
   :bildanzeige:
     :nr_rows: 17
   :briefe:
@@ -42,18 +40,20 @@
     :nr_rows: 1
   :ch_elexis_agenda_daymsg:
     :nr_rows: 718
+  :ch_elexis_arzttarif_ch_rfe:
+    :nr_rows: 2
   :ch_elexis_arzttarife_ch_physio:
     :nr_rows: 1
   :ch_elexis_eigendiagnosen:
     :nr_rows: 1
-  :ch_elexis_icpc_episodes:
-    :nr_rows: 56529
   :ch_elexis_icpc:
     :nr_rows: 1371
   :ch_elexis_icpc_encounter:
-    :nr_rows: 43038
+    :nr_rows: 14346
+  :ch_elexis_icpc_episodes:
+    :nr_rows: 18843
   :ch_elexis_icpc_episodes_diagnoses_link:
-    :nr_rows: 11196
+    :nr_rows: 3732
   :ch_elexis_impfplan_vaccination_types:
     :nr_rows: 2
   :ch_elexis_impfplan_vaccinations:
@@ -68,44 +68,40 @@
     :nr_rows: 2091
   :ch_elexis_messages:
     :nr_rows: 9136
-  :ch_elexis_stickynotes:
-    :nr_rows: 8
   :ch_elexis_notes:
-    :nr_rows: 54
-  :ch_elexis_omnivore_data:
-    :nr_rows: 12080
+    :nr_rows: 18
   :ch_elexis_privatrechnung:
     :nr_rows: 1
-  :dbimage:
-    :nr_rows: 36
+  :ch_elexis_stickynotes:
+    :nr_rows: 8
   :ch_medelexis_labortarif2009:
     :nr_rows: 1723
   :config:
     :nr_rows: 732
+  :dbimage:
+    :nr_rows: 36
   :diagnosen:
     :nr_rows: 456
   :eigenleistungen:
     :nr_rows: 12
   :ek_preise:
     :nr_rows: 0
-  :esrrecords:
-    :nr_rows: 14569
   :elexisbefunde:
     :nr_rows: 19
+  :esrrecords:
+    :nr_rows: 14569
   :etiketten:
     :nr_rows: 48
   :etiketten_objclass_link:
-    :nr_rows: 50
+    :nr_rows: 25
   :etiketten_object_link:
-    :nr_rows: 2946
+    :nr_rows: 1473
   :faelle:
     :nr_rows: 6223
   :heap:
     :nr_rows: 58044
   :heap2:
     :nr_rows: 395
-  :kontakt_adress_joint:
-    :nr_rows: 1152
   :iatrix_problem:
     :nr_rows: 1331
   :iatrix_problem_behdl_joint:
@@ -120,18 +116,20 @@
     :nr_rows: 12288
   :kontakt:
     :nr_rows: 8979
+  :kontakt_adress_joint:
+    :nr_rows: 1152
   :konto:
     :nr_rows: 36112
   :labgroup_item_joint:
     :nr_rows: 290
   :labgroups:
     :nr_rows: 21
-  :leistungen:
-    :nr_rows: 132578
   :laboritems:
     :nr_rows: 967
   :laborwerte:
     :nr_rows: 87744
+  :leistungen:
+    :nr_rows: 132578
   :leistungsblock:
     :nr_rows: 309
   :logs:
@@ -152,8 +150,6 @@
     :nr_rows: 6840
   :reminders_responsible_link:
     :nr_rows: 123
-  :vk_preise:
-    :nr_rows: 21
   :rezepte:
     :nr_rows: 1874
   :tarmed:
@@ -164,10 +160,10 @@
     :nr_rows: 386
   :tarmed_extension:
     :nr_rows: 6850
-  :traces:
-    :nr_rows: 7607386
   :userconfig:
     :nr_rows: 812
+  :vk_preise:
+    :nr_rows: 21
   :xid:
     :nr_rows: 6327
   :zahlungen:

@@ -72,8 +72,6 @@ class DockerRunner
       # @start_with + 'build',
       # Only possibility to make it work under compose 1.8
       @start_with + 'up -d', # create and start do not create a network with compose 1.8, up -d does
-      # TODO: How to run several instances of jenkinstest in parallel
-      # using docker-compose scale and exec --index
       # added -T to work around bug https://github.com/docker/compose/pull/4059
       @start_with + "exec -T --user elexis #{@opts[:docker_name]} #{cmd_name}",
     ].each do |a_cmd|
@@ -193,7 +191,7 @@ class DockerRunner
 export LANGUAGE=de_CH
 export DISPLAY=#{@display}
 export VARIANT=#{opts[:variant]}
-Xvfb :1 -screen 5 1600x1280x24 -nolisten tcp &
+Xvfb :1 -screen 5 1600x1280x24 -nolisten tcp >/dev/null &
 echo "I am" `whoami`: `id`
 # idea from https://gist.github.com/tullmann/476cc71169295d5c3fe6
 echo `date`: waiting for Xserver to be ready
@@ -210,13 +208,14 @@ done
 echo `date`: Xserver on display #{@display} seems to be ready
 )
     cmd += %(
-/usr/bin/metacity --replace --sm-disable &
+/usr/bin/metacity --replace --sm-disable >/dev/null &
 sleep 1
-/usr/bin/metacity-message disable-keybindings
+/usr/bin/metacity-message disable-keybindings >/dev/null
 )
     cmd += %(/usr/bin/xclock -digital -twentyfour & # Gives early feedback, that X is running
 echo 'Waiting for mysql'
-/home/elexis/wheezy/assets/wait-for-it.sh --timeout=90 mysql:3306 -- echo "mysql server is up"
+/home/elexis/wheezy/assets/wait-for-it.sh --timeout=30 postgres:5432 -- echo "postgres database server is up"
+/home/elexis/wheezy/assets/wait-for-it.sh --timeout=90 mysql:3306 -- echo "mysql database server is up"
 ) unless opts[:use_x11]
     cmd
   end
@@ -225,7 +224,6 @@ echo 'Waiting for mysql'
 #{cmd}
 export status=$?
 date
-pwd
 # find $PWD -name surefire-reports | xargs ls -lrt # needed sometimes for debugging
 ps -ef
 echo $status | tee #{opts[:result_dir]}/result_of_test_run
