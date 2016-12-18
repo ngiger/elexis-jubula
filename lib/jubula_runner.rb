@@ -16,6 +16,8 @@ class JubulaRunner
     @opts = options
     opts[:result_dir] ||= 'results'
     puts "#{opts[:variant]} #{test_cases.join(' ')} opts[:noop] is #{opts[:noop]} opts[:use_x11] #{opts[:use_x11]} RUN_IN_DOCKER #{opts[:run_in_docker]} opts[:medelexis] #{opts[:medelexis]} tag #{ENV['JUBULA_RUNNER_VERSION']}"
+    fail "env JUBULA_RUNNER_VERSION must be defined" unless ENV['JUBULA_RUNNER_VERSION']
+    fail "env AGENT_PORT must be defined" unless ENV['AGENT_PORT']
     res = 0
     if opts[:definition]
       name = "definitions/#{opts[:definition]}.yaml"
@@ -64,11 +66,10 @@ class JubulaRunner
     begin
       server = TCPServer.new('127.0.0.1', port)
     rescue Errno::EADDRINUSE
-      puts "port was used. Will try next one"
-      port += 1
-      retry
+      puts "port was used. We will kill still running docker processes"
+      system("docker ps | /bin/grep jubula#{port}")
     end
-    server.close
+    server.close if server
     server = nil # release port
     puts "Using now #{port} for Jubula autagent from test options #{opts[:agent_port]} #{opts[:variant]} opts[:medelexis] #{opts[:medelexis].inspect}"
     port
@@ -183,8 +184,8 @@ export agent_port=#{@opts[:agent_port]}
       sure_dest = File.join(destination, 'surefire-reports')
       puts "Saving surefire-reports to #{sure_dest} #{files.join("\n")}"
       FileUtils.makedirs(sure_dest)
-      FileUtils.cp_r(files, sure_dest, verbose: true, noop: opts[:noop], preserve: true)
-      FileUtils.cp_r(files, @result_dir, verbose: true, noop: opts[:noop], preserve: true)
+      FileUtils.cp_r(files, sure_dest, verbose: true, noop: opts[:noop], preserve: true) if files.size > 0
+      FileUtils.cp_r(files, @result_dir, verbose: true, noop: opts[:noop], preserve: true) if files.size > 0
     end
     diff_time = (Time.now - @start_time).to_i
     puts "Total time #{diff_time / 60 }:#{sprintf('%02d', diff_time % 60)}. Result #{@exitValue == 0 ? 'SUCCESS' : opts[:noop] ? 'opts[:noop]' : 'FAILURE'}"
