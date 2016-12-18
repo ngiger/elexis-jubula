@@ -14,10 +14,10 @@ class JubulaRunner
 
   def run(options, test_cases=ARGV)
     @opts = options
+    ENV['JUBULA_RUNNER_VERSION'] ||= ElexisJubula::VERSION
     opts[:result_dir] ||= 'results'
     puts "#{opts[:variant]} #{test_cases.join(' ')} opts[:noop] is #{opts[:noop]} opts[:use_x11] #{opts[:use_x11]} RUN_IN_DOCKER #{opts[:run_in_docker]} opts[:medelexis] #{opts[:medelexis]} tag #{ENV['JUBULA_RUNNER_VERSION']}"
     fail "env JUBULA_RUNNER_VERSION must be defined" unless ENV['JUBULA_RUNNER_VERSION']
-    fail "env AGENT_PORT must be defined" unless ENV['AGENT_PORT']
     res = 0
     if opts[:definition]
       name = "definitions/#{opts[:definition]}.yaml"
@@ -49,9 +49,13 @@ class JubulaRunner
     "-dburl 'jdbc:h2:#{full_path};MVCC=TRUE;AUTO_SERVER=TRUE;DB_CLOSE_ON_EXIT=FALSE' -dbuser 'sa' -dbpw ''"
   end
 
-  def get_unused_agent_port(opts)
+  def get_uniq_agent_port(opts)
     # Pick a random port for agent, which should not interfere with other parallel docker instances
     port = opts[:agent_port] || 6888
+    test_suites = Dir.glob('jubula-tests/src/ch/ngiger/jubula/testsuites/*.java')
+    index = test_suites.find_index{|name| /#{opts[:test_to_run]}.java/i.match(name) }
+    fail "Could not find test_suite matching #{opts[:test_to_run]}" unless index
+    port += index
     port += 10000 if opts[:medelexis]
     case opts[:variant]
     when /beta/
@@ -200,7 +204,7 @@ export agent_port=#{@opts[:agent_port]}
     @test_params.merge!(YAML.load_file(test_definitions)) if File.exist?(test_definitions)
     @test_params.merge!(opts)
     @test_params[:test_to_run] = test2run
-    @opts[:agent_port] = get_unused_agent_port(@test_params)
+    @opts[:agent_port] = get_uniq_agent_port(@test_params)
     ENV['AGENT_PORT'] = @opts[:agent_port].to_s # for docker-compose.yml
     show_configuration if $VERBOSE || opts[:noop]
     if opts[:medelexis]
