@@ -53,7 +53,7 @@ class DockerRunner
       @stop_commands = []
     else
       @cleanup_networks =  "docker network rm  #{@project_name}_public 2>/dev/null; sleep 1; docker network rm  #{@project_name}_private 2>/dev/null"
-      @stop_commands = ["#{@start_with} stop", "#{@start_with} rm --force --all", @cleanup_networks]
+      @stop_commands = ["#{@start_with} stop", "#{@start_with} down", "#{@start_with} rm --force --all", @cleanup_networks]
     end
     return true if @noop
     @stop_commands.each do |cmd| system(cmd, MAY_FAIL) end
