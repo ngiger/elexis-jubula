@@ -10,5 +10,3 @@ chmod 0440 /etc/sudoers.d/elexis
 ls -l /etc/sudoers.d/elexis /home/elexis
 sudo -u elexis mkdir -p elexis /home/elexis/work /home/elexis/results
 echo "I am" `whoami`: `id`
-echo "Waiting up to an hour for more commands"
-/bin/sleep 3600

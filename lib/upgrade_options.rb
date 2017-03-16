@@ -18,7 +18,7 @@ class UpgradeOptions < Hash
       opt :definition,    "If given, the value from the definition/<definition>.yaml will override the defaults", :type => String, :default => nil
       opt :drop,          "Drop the database"
       opt :noop,          "No-Operation. Show configuration and commands without executing them", :default => false
-      opt :medelexis,     "Use the medelexis variant", :default => true
+      opt :medelexis,     "Use the medelexis variant", :default => false
       opt :jdbc,          "The jdbc parameter to connect to e.g.", :type => String, :default => DEFAULT_JDBC
       opt :elexis_user,    'Username for Elexis', :type => String, :default => 'elexis'
       opt :elexis_password, 'Username for Elexis', :type => String, :default => 'elexisTest'

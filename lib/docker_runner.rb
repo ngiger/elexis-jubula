@@ -1,4 +1,5 @@
 require 'common'
+require 'timeout'
 
 def run_in_docker?
   return File.exist?('/.dockerenv')
@@ -53,7 +54,7 @@ class DockerRunner
       @stop_commands = []
     else
       @cleanup_networks =  "docker network rm  #{@project_name}_public 2>/dev/null; sleep 1; docker network rm  #{@project_name}_private 2>/dev/null"
-      @stop_commands = ["#{@start_with} stop", "#{@start_with} down", "#{@start_with} rm --force --all", @cleanup_networks]
+      @stop_commands = ["#{@start_with} stop", "#{@start_with} down", "#{@start_with} rm --force", @cleanup_networks]
     end
     return true if @noop
     @stop_commands.each do |cmd| system(cmd, MAY_FAIL) end
@@ -67,7 +68,7 @@ class DockerRunner
     system('xhost local:root', :noop => opts[:noop]) if opts[:use_x11]
     script = create_docker_script(cmd_name, cmd)
     store_cmd(cmd_name, script)
-    puts "cmd_in_docker #{cmd_name} with uid #{ENV['HOST_UID']}"
+    puts "#{Time.now}: cmd_in_docker #{cmd_name} with uid #{ENV['HOST_UID']}"
     [ # instead of calling build, create, start we can use compose up -d
       # @start_with + 'build',
       # Only possibility to make it work under compose 1.8
@@ -80,7 +81,11 @@ class DockerRunner
       if @test_name.eql?('build_docker')
         res = system(a_cmd, MAY_FAIL) if /build/i.match(a_cmd)
       else
-        res = system(a_cmd, MAY_FAIL)
+        res = -27
+        status = Timeout::timeout(30*60) { # 30 minutes timeout
+          res = system(a_cmd, MAY_FAIL)
+        }
+        puts "#{Time.now}: After timeout status #{status} res #{res}"
       end
     end
     rescue RuntimeError => e
@@ -191,6 +196,7 @@ class DockerRunner
 export LANGUAGE=de_CH
 export DISPLAY=#{@display}
 export VARIANT=#{opts[:variant]}
+/app/create_elexis_user.sh
 Xvfb :1 -screen 5 1600x1280x24 -nolisten tcp >/dev/null &
 echo "I am" `whoami`: `id`
 # idea from https://gist.github.com/tullmann/476cc71169295d5c3fe6
@@ -234,8 +240,10 @@ ls -l #{opts[:result_dir]}/result_of_test_run
 sync # ensure that everything is written to the disk
 sleep 1
 echo killing children process
-pkill -P $$
-echo about to exit with status $status
+sleep 0.1
+pkill --signal 9 -P $$
+echo about to exit with status $status for $VARIANT
+sleep 0.1
 exit $status
 )
   end

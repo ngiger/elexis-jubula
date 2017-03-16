@@ -53,7 +53,7 @@ class JubulaRunner
   def get_uniq_agent_port(opts)
     # Pick a random port for agent, which should not interfere with other parallel docker instances
     port = opts[:agent_port] || 6888
-    test_suites = Dir.glob('jubula-tests/src/ch/ngiger/jubula/testsuites/*.java')
+    test_suites = Dir.glob('jubula-tests/src/ch/ngiger/jubula/testsuites/*.java').sort
     index = test_suites.find_index{|name| /#{opts[:test_to_run]}.java/i.match(name) }
     fail "Could not find test_suite matching #{opts[:test_to_run]}" unless index
     port += index
@@ -77,7 +77,7 @@ class JubulaRunner
     end
     server.close if server
     server = nil # release port
-    puts "Using now #{port} for Jubula autagent from test options #{opts[:agent_port]} #{opts[:variant]} opts[:medelexis] #{opts[:medelexis].inspect}"
+    puts "Using now #{port} index #{index} for Jubula autagent from test options #{opts[:agent_port]} #{opts[:variant]} opts[:medelexis] #{opts[:medelexis].inspect}"
     port
   end
   def run_test_in_docker
@@ -94,16 +94,15 @@ mkdir -p /home/elexis/elexis/GlobalInbox
 env | sort
 export AGENT_PORT=#{@opts[:agent_port]}
 export agent_port=#{@opts[:agent_port]}
-# */org.eclipse.jubula.product.autagent.start/target/products/org.eclipse.jubula.product.autagent.start/linux/gtk/x86_64/autagent -l -p #{@opts[:agent_port]} -vm /usr/bin/java
-#{@opts[:medelexis] ? '/app/install_sw_medelexis.rb /home/elexis/work/Medelexis ' + opts[:variant] + ' /home/elexis/#{opts[:result_dir] 2>&1' +
-    '| tee /home/elexis/#{opts[:result_dir]/install_sw_medelexis.log' : ''}
-/app/start_jubula.rb localhost 8752 2>&1 | /usr/bin/tee --append /home/elexis/#{opts[:result_dir]}/start_jubula.log &
-#{@mvn_cmd}
 )
-    cmd_name = "/home/elexis/maven_#{@test_name}.sh"
+    if @opts[:medelexis]
+      cmd += "/app/install_sw_medelexis.rb /home/elexis/work/Medelexis #{opts[:variant]} /home/elexis/#{opts[:result_dir]} 2>&1"
+          +  "| tee /home/elexis/#{opts[:result_dir]}/install_sw_medelexis.log\n"
+    end
+    cmd += "#{@mvn_cmd}\n"
     begin
-      puts "Starting HOST_UID is #{ENV['HOST_UID'].inspect} from process #{Process.uid.to_s} AGENT_PORT #{opts[:agent_port]} cmd: #{cmd_name}"
-      res = @docker.run_cmd_in_docker(cmd_name, cmd)
+      puts "Starting HOST_UID is #{ENV['HOST_UID'].inspect} from process #{Process.uid.to_s} AGENT_PORT #{opts[:agent_port]} cmd: #{@opts[:entrypoint]}"
+      res = @docker.run_cmd_in_docker(@opts[:entrypoint], cmd)
       sleep(0.5)
       result = File.join(RESULT_DIR, 'result_of_test_run')
       if !File.exist?(result)
@@ -113,7 +112,7 @@ export agent_port=#{@opts[:agent_port]}
         inhalt = IO.readlines(result)
         @exitValue = File.exist?(result) && inhalt.first.to_i
       end
-      puts "@exitValue #{@exitValue} res is #{cmd_name} is #{res} aus result #{result} mit Inhalt\n#{inhalt}"
+      puts "@exitValue #{@exitValue} res is #{@opts[:entrypoint]} is #{res} aus result #{result} mit Inhalt\n#{inhalt}"
       if res && /smoketest|medelexis/i.match(@test_params[:test_to_run])
         puts "smoketest: Copy newly installed plugins for further tests back"
         FileUtils.cp_r(Dir.glob(File.join(@docker.container_home, 'work/*')), WorkDir, verbose: true, :noop => opts[:noop])
@@ -182,7 +181,7 @@ export agent_port=#{@opts[:agent_port]}
     @docker.stop_docker if opts[:run_in_docker] && @docker
     destination =  @result_dir + '-' + @test_params[:test_to_run]
     FileUtils.rm_rf(destination, :verbose => true, :noop => opts[:noop])
-    FileUtils.cp_r(@result_dir, destination, verbose: true, noop: opts[:noop], preserve: true) if File.exist?(@result_dir)
+    FileUtils.mv(@result_dir, destination, verbose: true, noop: opts[:noop]) if File.exist?(@result_dir)
     FileUtils.cp(@elexis_log, destination, verbose: true, noop: opts[:noop], preserve: true)  if @elexis_log && File.exist?(@elexis_log)
     if opts[:run_in_docker] && @docker
       files = Dir.glob(File.join(@docker.container_home, '*/*/surefire-reports/*'))
@@ -190,7 +189,6 @@ export agent_port=#{@opts[:agent_port]}
       puts "Saving surefire-reports to #{sure_dest} #{files.join("\n")}"
       FileUtils.makedirs(sure_dest)
       FileUtils.cp_r(files, sure_dest, verbose: true, noop: opts[:noop], preserve: true) if files.size > 0
-      FileUtils.cp_r(files, @result_dir, verbose: true, noop: opts[:noop], preserve: true) if files.size > 0
     end
     diff_time = (Time.now - @start_time).to_i
     puts "Total time #{diff_time / 60 }:#{sprintf('%02d', diff_time % 60)}. Result #{@exitValue == 0 ? 'SUCCESS' : opts[:noop] ? 'opts[:noop]' : 'FAILURE'}"
@@ -205,8 +203,10 @@ export agent_port=#{@opts[:agent_port]}
     @test_params.merge!(YAML.load_file(test_definitions)) if File.exist?(test_definitions)
     @test_params.merge!(opts)
     @test_params[:test_to_run] = test2run
+    @opts[:entrypoint] = "/home/elexis/maven_#{test2run}.sh"
     @opts[:agent_port] = get_uniq_agent_port(@test_params)
     ENV['AGENT_PORT'] = @opts[:agent_port].to_s # for docker-compose.yml
+    ENV['ENTRYPOINT'] = @opts[:entrypoint] # for docker-compose.yml
     show_configuration if $VERBOSE || opts[:noop]
     if opts[:medelexis]
       glob_pattern = "*medelexis*application*.zip"

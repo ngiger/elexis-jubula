@@ -25,6 +25,7 @@ progress "Starting with CMD #{CMD.inspect} pid #{Process.pid}"
 
 def get_status
   uptimedata = []
+  # disconnect to exit console
   status = Timeout::timeout(2) do PTY.spawn(CMD) do |ssh_read,ssh_write,pid|
     ssh_read.expect(/osgi> /) { |msg| ssh_write.printf("ss\n") }
       loop do

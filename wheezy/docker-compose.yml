@@ -49,8 +49,8 @@ services:
       POSTGRES_PASSWORD: elexisTestPassword
 
   jenkinstest:
-    # build: .
-    image: ngiger/jubula_runner:${JUBULA_RUNNER_VERSION}
+    build: .
+    # image: ngiger/jubula_runner:${JUBULA_RUNNER_VERSION}
     networks:
       private:
       public:
@@ -60,7 +60,7 @@ services:
       - "127.0.0.1::${HOST_UID}"
     working_dir: /home/elexis
     # We want silently kill the docker after an hour
-    entrypoint: '/app/create_elexis_user.sh'
+    entrypoint: ${ENTRYPOINT}
     volumes:
       - ${PWD}/results:/home/elexis/results
       - ${PWD}/container_home_m2:/home/elexis/.m2

@@ -42,8 +42,13 @@ public class Invoice extends Common {
 
 	public String getInvoicesAsString(String snapshot){
 		views.openViewByName("Abrechnung/Rechnungsübersicht.*");
-		clickComponent(OM.Pat_List_tbl);
-		contextMenuByText(OM.BillSummary_ToolItem, "Export.*", false);
+    AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "invoice_overview_a.png");
+    Utils.sleep1second();
+    AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "invoice_overview_b.png");
+    clickComponent(OM.Pat_List_tbl);
+    AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "invoice_overview_c.png");
+    Utils.sleep1second();
+    contextMenuByText(OM.BillSummary_ToolItem, "Export.*", false);
 		Utils.sleep1second(); // Sometimes we got an empty String
 		String text = getClipboarAsString();
 		if (snapshot != null) {
