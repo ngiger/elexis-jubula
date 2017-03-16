@@ -68,26 +68,17 @@ class JubulaRunner
     else
       # use default
     end
-    server = 1
-    while server
-      puts "Checking for server on port #{port}"
-      begin
-        server = TCPServer.new('127.0.0.1', port)
-      rescue Errno::EADDRINUSE
-        kill_docker_on_port(port)
-      end
-      server.close if server
-      server = nil # release port
+    puts "Checking for server on port #{port}"
+    begin
+      server = TCPServer.new('127.0.0.1', port)
+    rescue Errno::EADDRINUSE
+      puts "Cannot continue as there is already a process running on port #{port}"
+      exit 2
     end
+    server.close if server
+    server = nil # release port
     puts "Using now #{port} for Jubula autagent from test options #{opts[:agent_port]} #{opts[:variant]} opts[:medelexis] #{opts[:medelexis].inspect}"
     port
-  end
-  def kill_docker_on_port(port)
-    puts "port was used. We will kill still running docker processes"
-    docker_id = `docker ps | /bin/grep jubula#{port} | cut -f1 -d1`.chomp
-    cmd = "docker rm -f #{docker_id}"
-    puts "Docker-id is is #{docker_id}. Removing it with #{cmd}"
-    system(cmd)
   end
   def run_test_in_docker
     res = false
