@@ -76,6 +76,9 @@ If you have ruby installed, run once `gem install bundler && bundle install --wi
 
 To run a testsuite e.g. Screenshot just call `rake run_inside_docker Screenshot`. Insure that you got a nice screenshot under results/images/ before proceeding to more complex tests.
 
+As the Jenkins-CI often hand problems we followed https://wiki.jenkins-ci.org/display/JENKINS/Spawning+processes+from+build and added daemonize binary from 1.7.7 from http://software.clapper.org/daemonize/.
+
+
 ### Special considerations for running inside docker
 
 It took my quite a few hours to overcome the following problems

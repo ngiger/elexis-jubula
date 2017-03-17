@@ -85,15 +85,18 @@ class JubulaRunner
     puts "run_test_in_docker from #{Dir.pwd}"
     FileUtils.rm_f('jubula-tests/AUT_run.log', verbose: true, :noop => opts[:noop]) if File.exist?('jubula-tests/AUT_run.log')
     @test_params[:environment].each do |v,k| cmd += "export #{v}=#{k}\n" end if @test_params[:environment]
-    cmd  = %(status=99
+    cmd  = %(
+status=99
 # /home/elexis/#{opts[:result_dir]} is mounted via docker-compose.yml
-cp $0 #{opts[:result_dir]}
-du -shx /home/elexis/.m2/repository
+if test -f /home/elexis/.m2 ; then du -shx /home/elexis/.m2; else echo "no /home/elexis/.m2 (Okay for first time)"; fi
 rm -rf /home/elexis/p2
 mkdir -p /home/elexis/elexis/GlobalInbox
 env | sort
 export AGENT_PORT=#{@opts[:agent_port]}
 export agent_port=#{@opts[:agent_port]}
+grep elexis /etc/passwd
+echo elexis should have UID #{ENV['HOST_UID']}
+whoami
 )
     if @opts[:medelexis]
       cmd += "/app/install_sw_medelexis.rb /home/elexis/work/Medelexis #{opts[:variant]} /home/elexis/#{opts[:result_dir]} 2>&1"
@@ -206,7 +209,6 @@ export agent_port=#{@opts[:agent_port]}
     @opts[:entrypoint] = "/home/elexis/maven_#{test2run}.sh"
     @opts[:agent_port] = get_uniq_agent_port(@test_params)
     ENV['AGENT_PORT'] = @opts[:agent_port].to_s # for docker-compose.yml
-    ENV['ENTRYPOINT'] = @opts[:entrypoint] # for docker-compose.yml
     show_configuration if $VERBOSE || opts[:noop]
     if opts[:medelexis]
       glob_pattern = "*medelexis*application*.zip"

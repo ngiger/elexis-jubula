@@ -59,8 +59,8 @@ services:
       # Force an error if HOST_UID is not given!
       - "127.0.0.1::${HOST_UID}"
     working_dir: /home/elexis
-    # We want silently kill the docker after an hour
-    entrypoint: ${ENTRYPOINT}
+    # create_elexis_user.sh silently exits the docker after an hour
+    entrypoint: /app/create_elexis_user.sh
     volumes:
       - ${PWD}/results:/home/elexis/results
       - ${PWD}/container_home_m2:/home/elexis/.m2

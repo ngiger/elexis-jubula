@@ -72,7 +72,7 @@ class DockerRunner
     [ # instead of calling build, create, start we can use compose up -d
       # @start_with + 'build',
       # Only possibility to make it work under compose 1.8
-      @start_with + 'up -d', # create and start do not create a network with compose 1.8, up -d does
+      @start_with + 'up  --build --force-recreate -d', # create and start do not create a network with compose 1.8, up -d does
       # added -T to work around bug https://github.com/docker/compose/pull/4059
       @start_with + "exec -T --user elexis #{@opts[:docker_name]} #{cmd_name}",
     ].each do |a_cmd|
@@ -196,8 +196,9 @@ class DockerRunner
 export LANGUAGE=de_CH
 export DISPLAY=#{@display}
 export VARIANT=#{opts[:variant]}
-/app/create_elexis_user.sh
-Xvfb :1 -screen 5 1600x1280x24 -nolisten tcp >/dev/null &
+if ! test -f /app/daemonize ; then echo daemonize not installed; exit 2; fi
+/app/daemonize /usr/bin/Xvfb :1 -screen 5 1600x1280x24 -nolisten tcp
+ps -ef | grep -i xvfb
 echo "I am" `whoami`: `id`
 # idea from https://gist.github.com/tullmann/476cc71169295d5c3fe6
 echo `date`: waiting for Xserver to be ready
@@ -214,14 +215,15 @@ done
 echo `date`: Xserver on display #{@display} seems to be ready
 )
     cmd += %(
-/usr/bin/metacity --replace --sm-disable >/dev/null &
+/app/daemonize /usr/bin/metacity --replace --sm-disable
 sleep 1
-/usr/bin/metacity-message disable-keybindings >/dev/null
+/app/daemonize /usr/bin/metacity-message disable-keybindings
 )
-    cmd += %(/usr/bin/xclock -digital -twentyfour & # Gives early feedback, that X is running
-echo 'Waiting for mysql'
-/home/elexis/wheezy/assets/wait-for-it.sh --timeout=30 postgres:5432 -- echo "postgres database server is up"
-/home/elexis/wheezy/assets/wait-for-it.sh --timeout=90 mysql:3306 -- echo "mysql database server is up"
+    cmd += %(
+/app/daemonize /usr/bin/xclock -digital -twentyfour
+echo 'Not waiting for databases'
+# /app/wait-for-it.sh --timeout=30 postgres:5432 -- echo "postgres database server is up"
+# /app/wait-for-it.sh --timeout=90 mysql:3306 -- echo "mysql database server is up"
 ) unless opts[:use_x11]
     cmd
   end
@@ -236,7 +238,6 @@ echo $status | tee #{opts[:result_dir]}/result_of_test_run
 echo Resultat von #{cmd_name} um `date` war $status | tee --append #{opts[:result_dir]}/result_of_test_run
 cat #{opts[:result_dir]}/result_of_test_run
 ls -l #{opts[:result_dir]}/result_of_test_run
-# sleep 3600 # some time for debugging uncomment this line if needed
 sync # ensure that everything is written to the disk
 sleep 1
 echo killing children process
