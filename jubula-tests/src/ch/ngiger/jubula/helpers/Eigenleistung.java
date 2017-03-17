@@ -12,6 +12,7 @@ package ch.ngiger.jubula.helpers;
 
 import org.eclipse.jubula.client.AUT;
 import org.eclipse.jubula.toolkit.concrete.components.Application;
+import org.eclipse.jubula.tools.ComponentIdentifier;
 import org.junit.Assert;
 
 import ch.ngiger.jubula.elexiscore.OM;
@@ -86,15 +87,23 @@ public class Eigenleistung extends Common {
 	public void selectEigenleistung(String abbrev, String description){
 		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "eigenleistung/select_" + abbrev + ".png"); //$NON-NLS-1$
 		selectTabByValue(OM.CTabFolder_1_tpn, "Eigenleistung");
-		Utils.dbg_msg("selectEigenleistung: " + abbrev + " desc: " + description);
-
-		if (isEnabled(OM.Eigenleistung_Code_txf)) {
-			Utils.dbg_msg("selectEigenleistung: OM.Eigenleistung_Code_txf ");
-			clickComponent(OM.Eigenleistung_Code_txf);
-			synchronizedTextReplace(OM.Eigenleistung_Code_txf, abbrev.substring(0, 3));
+		@SuppressWarnings("rawtypes")
+		ComponentIdentifier cid = null;
+		if (componentIsEnabled(OM.Eigenleistung_3_1_Code_txf)) { // Elexis 3.1 and previous
+			cid = OM.Eigenleistung_3_1_Code_txf;
+		} else if (componentIsEnabled(OM.Eigenleistung_Code_Search_txt))
+		{
+			cid = OM.Eigenleistung_Code_Search_txt;
+		}
+		else if (isEnabled(OM.Eigenleistung_Code_txf)) {
+			cid = OM.Eigenleistung_Code_txf;
 		} else {
 			Utils.dbg_msg("selectEigenleistung: OM.Eigenleistung_Code_txf not available. Cannot select");
+			return;
 		}
+		Utils.dbg_msg("selectEigenleistung: " + abbrev + " desc: " + description + " cid " + cid);
+		clickComponent(cid);
+		synchronizedTextReplace(cid, abbrev.substring(0, 3));
 		Utils.sleep1second();
 	}
 

@@ -11,7 +11,13 @@
 package ch.ngiger.jubula.helpers;
 
 import org.eclipse.jubula.client.AUT;
+import org.eclipse.jubula.toolkit.concrete.ConcreteComponents;
 import org.eclipse.jubula.toolkit.concrete.components.Application;
+import org.eclipse.jubula.toolkit.concrete.components.TableComponent;
+import org.eclipse.jubula.toolkit.enums.ValueSets.BinaryChoice;
+import org.eclipse.jubula.toolkit.enums.ValueSets.InteractionMode;
+import org.eclipse.jubula.toolkit.enums.ValueSets.Operator;
+import org.eclipse.jubula.toolkit.enums.ValueSets.Unit;
 
 import ch.ngiger.jubula.elexiscore.OM;
 
@@ -44,8 +50,15 @@ public class Invoice extends Common {
 		views.openViewByName("Abrechnung/Rechnungsübersicht.*");
     AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "invoice_overview_a.png");
     Utils.sleep1second();
-    AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "invoice_overview_b.png");
-    clickComponent(OM.Pat_List_tbl);
+    clickInMiddleOfComponent(OM.Bills_Overview_tbl);
+	@SuppressWarnings("unchecked")
+	TableComponent tbl = ConcreteComponents.createTableComponent(OM.Bills_Overview_tbl);
+	tbl.click(1, InteractionMode.primary);
+	tbl.selectCell("1", Operator.equals, "1", Operator.equals, new Integer(1), new Integer(50),
+		Unit.percent, new Integer(50), Unit.percent, BinaryChoice.no, InteractionMode.primary);
+	tbl.click(1, InteractionMode.primary);
+
+    // clickComponent(OM.Pat_List_tbl);
     AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "invoice_overview_c.png");
     Utils.sleep1second();
     contextMenuByText(OM.BillSummary_ToolItem, "Export.*", false);

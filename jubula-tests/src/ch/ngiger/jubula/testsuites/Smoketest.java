@@ -198,6 +198,7 @@ public class Smoketest {
 
 		pat.eigenleistungVerrechnen(eigenleistung, leistung_short, leistungs_name);
 		pat.invoiceActiveConsultation();
+		pat.selectFirstPatient();
 		String test = invoice.getInvoicesAsString("invoice/after_first_invoice.png");
 		Pattern p = Pattern.compile("[0-9]{4}.*Testperson.*ArmesWesen.*1990");
 		Matcher m = p.matcher(test);
