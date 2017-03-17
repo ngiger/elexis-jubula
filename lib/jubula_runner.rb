@@ -94,13 +94,17 @@ mkdir -p /home/elexis/elexis/GlobalInbox
 env | sort
 export AGENT_PORT=#{@opts[:agent_port]}
 export agent_port=#{@opts[:agent_port]}
+export SWT_GTK3=0
 grep elexis /etc/passwd
 echo elexis should have UID #{ENV['HOST_UID']}
 whoami
 )
     if @opts[:medelexis]
-      cmd += "/app/install_sw_medelexis.rb /home/elexis/work/Medelexis #{opts[:variant]} /home/elexis/#{opts[:result_dir]} 2>&1"
-          +  "| tee /home/elexis/#{opts[:result_dir]}/install_sw_medelexis.log\n"
+      cmd += "\n find . -name '*license.xml'"
+      cmd += "\n cp medelexis_jubula_license.xml /home/elexis/elexis/license.xml"
+      cmd += "\necho Starting Medelexis SW-Installation\n ls -l /home/elexis/elexis/license.xml\n"
+      cmd += "/app/install_sw_medelexis.rb /home/elexis/work/Medelexis #{opts[:variant]} /home/elexis/#{opts[:result_dir]} 2>&1 | tee /home/elexis/#{opts[:result_dir]}/install_sw_medelexis.log"
+      cmd += "\necho  finished Medelexis SW-installation\n"
     end
     cmd += "#{@mvn_cmd}\n"
     begin
