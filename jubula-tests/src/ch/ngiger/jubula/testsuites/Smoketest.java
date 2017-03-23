@@ -40,7 +40,7 @@ import ch.ngiger.jubula.helpers.Views;
 public class Smoketest {
 	private static final boolean show_sw = true;
 	private static final boolean install_sw = true;
-	private static final boolean with_artikelstamm = true;
+	private static boolean with_artikelstamm = true;
 
 	public static String SAVE_RESULTS_DIR = null;
 	private static String watchedLog = "Started:\n";
@@ -95,6 +95,11 @@ public class Smoketest {
 		artikelstamm = new Artikelstamm(AUT_run.m_aut, AUT_run.app, perspectives);
 		perspectives.initialSetup();
 		artikelstamm.openArtikelstammView(); // Force migration
+		// At the moment we do cannot test the Artikelstamm with Medelexis, as the Database do not contain any items
+		// And we do not want to import all items
+		if (AUT_run.isMedelexis) {
+			with_artikelstamm = false;
+		}
 	}
 
 	private static void showVars(){
@@ -166,7 +171,7 @@ public class Smoketest {
 		// showVars();
 		Utils.dbg_msg("Smoketest with_artikelstamm " + with_artikelstamm + " v4 "
 			+ software.isArtikelstamm_v4());
-		if (with_artikelstamm) {
+		if (with_artikelstamm ) {
 			String filename = "";
 			if (software.isArtikelstamm_v4()) {
 				filename = AUT_run.class.getClassLoader()
