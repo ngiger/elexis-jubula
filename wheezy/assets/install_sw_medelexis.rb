@@ -21,9 +21,11 @@ RESULT_DIR = File.expand_path(ARGV[2])
 MAX_WAIT = 120
 FLAG_FILE = File.join(RESULT_DIR, File.basename(__FILE__, '.rb') + '.done')
 ERROR_FILE = File.join(RESULT_DIR, File.basename(__FILE__, '.rb') + '.errors')
-PASSWORD_FILE = File.expand_path('~') + '/.medelexis.dummy.password'
+PASSWORD_FILE = File.join(Dir.home, '.medelexis.dummy.password')
 ACCEPTED_LICENSE  =  File.dirname(MEDELEXIS_EXE)+ '/configuration/.settings/MedelexisDesk.prefs'
-LICENSE_INSTALLED =  File.expand_path('~') +'/elexis/license.xml'
+BUNDLES_INFO = File.expand_path(File.dirname(MEDELEXIS_EXE)+ '/configuration/org.eclipse.equinox.simpleconfigurator/bundles.info')
+CONFIG_INI_BACKUP = File.join(Dir.home, 'config.backup')
+LICENSE_INSTALLED =  File.join(Dir.home, 'elexis/license.xml')
 ERROR_WINDOW  = 'Problem Occurred'  # eg. 'Additional p2 locations' has encounter a problem
 $sw_errors = 0
 
@@ -83,7 +85,7 @@ def prepare_medelexis
   if false && $VERBOSE
     system('env')
     system("echo 'I am' `whoami`: `id`")
-    system("ls -l #{File.expand_path('~')}")
+    system("ls -l #{Dir.home}")
   end
   if  File.readable?(LICENSE_INSTALLED)
     system("ls -l #{LICENSE_INSTALLED}")
@@ -94,6 +96,7 @@ def prepare_medelexis
   File.open(PASSWORD_FILE, 'w+') {|f| f.puts 'dummy_password_from_'+ File.basename(__FILE__) }
   progress "prepared #{PASSWORD_FILE}"
   FileUtils.makedirs(File.dirname(ACCEPTED_LICENSE))
+  FileUtils.cp(BUNDLES_INFO, CONFIG_INI_BACKUP, verbose: true)
   File.open(ACCEPTED_LICENSE, 'w+') {|f| f.puts %(eclipse.preferences.version=1
 usageConditionAcceptanceDate=#{Time.now}
 usageConditionAccepted=true
@@ -218,6 +221,10 @@ begin
   create_snapshot('install_sw_before')
   install_sw
 ensure
+  cmd = "grep jubula #{CONFIG_INI_BACKUP} >> #{BUNDLES_INFO}"
+  puts cmd
+  system(cmd)
+  system("diff #{CONFIG_INI_BACKUP}  #{BUNDLES_INFO}")
   create_snapshot("install_finished", true)
   diff = (Time.now - StartTime).to_i
   progress("done #{diff} seconds. We have #{$sw_errors} error")
