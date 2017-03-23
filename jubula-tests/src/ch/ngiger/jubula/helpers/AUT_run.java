@@ -19,6 +19,8 @@ import org.eclipse.jubula.client.exceptions.CommunicationException;
 import org.eclipse.jubula.client.launch.AUTConfiguration;
 import org.eclipse.jubula.toolkit.concrete.components.Application;
 import org.eclipse.jubula.toolkit.enums.ValueSets.AUTActivationMethod;
+import org.eclipse.jubula.toolkit.enums.ValueSets.Modifier;
+import org.eclipse.jubula.toolkit.enums.ValueSets.Operator;
 import org.eclipse.jubula.toolkit.rcp.config.RCPAUTConfiguration;
 import org.eclipse.jubula.toolkit.swt.SwtComponents;
 import org.eclipse.jubula.tools.AUTIdentifier;
@@ -237,24 +239,40 @@ public class AUT_run {
 				Utils.dbg_msg("startAUT: started AUT as " + aut_id.getID());
 				new_aut = m_agent.getAUT(aut_id, SwtComponents.getToolkitInformation());
 				Utils.dbg_msg("startAUT: AUT will connect");
-				new_aut.connect();
+				m_aut = new_aut;
+				m_aut.connect();
 				Utils.dbg_msg("startAUT: AUT connected");
+				// Press space for Medelexis app if a pop up is present.
+				int k = 0;
+				while (k < 4 ) {
+					k++;
+					try {
+						m_aut.execute(
+							app.waitForWindowActivation("Elexis.*", Operator.matches, 200, 0),
+							null);
+						break;
+					} catch (ActionException e) {
+						takeScreenshot(m_aut, app, "start_press_okay_"+ k + ".png");
+						Utils.dbg_msg("startAUT: Need to press Space: " + k);
+						new_aut.execute(app.externalKeyCombination(new Modifier[] {}, "Space"), null);
+					}
+				}
 			} else {
 				Assert.fail("startAUT did not start as expected? Why"); //$NON-NLS-1$
 			}
 			Utils.dbg_msg("startAUT: activate via titlebar");
-			activate(new_aut);
+			activate(m_aut);
 
 			Utils.dbg_msg("startAUT: AUT created and activated");
 		} catch (ActionException | CommunicationException e) {
-			Utils.dbg_msg("startAUT: Action Exception startAUT reason: " + e.getMessage()); //$NON-NLS-1$
+			Utils.dbg_msg("startAUT: " + e +" startAUT reason: " + e.getMessage() + " new_aut " + new_aut); //$NON-NLS-1$$
+			new_aut.execute(app.externalKeyCombination(new Modifier[] {}, "Space"), null);
 			takeScreenshot(m_aut, app, "start_aut_failed.png");
 			Assert.fail("startAUT: unable to start AUT"); //$NON-NLS-1$
 
 		}
-		m_aut = new_aut;
 		starting_autagent = false;
-		return new_aut;
+		return m_aut;
 	}
 
 	@BeforeClass
