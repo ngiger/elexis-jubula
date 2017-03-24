@@ -382,6 +382,10 @@ public class Patients extends Common {
 	}
 
 	public void artikelstammItemVerrechnen(Artikelstamm artikelstamm, String item){
+		if (AUT_run.isMedelexis) {
+			Utils.dbg_msg("Da medelexis kein artikelstammItemVerrechnen: " + item); //$NON-NLS-1$
+			return;
+		}
 		Utils.dbg_msg("artikelstammItemVerrechnen: " + item); //$NON-NLS-1$
 		if (!componentIsEnabled(OM.Kons_Verrechnung_grc))  {
 			perspectives.openPatientenPerspective();
