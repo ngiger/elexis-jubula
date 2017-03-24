@@ -209,6 +209,7 @@ public class AUT_run {
 
 	public static AUT startAUT(){
 		if (m_aut != null && m_aut.isConnected()) {
+			Utils.dbg_msg("startAUT: Skip restart as m_aut != null && m_aut.isConnected()");
 			return m_aut; // Don't restart automatically!!
 		}
 		starting_autagent = true;
@@ -438,12 +439,20 @@ public class AUT_run {
 	public static AUT restartApp(AUT aut){
 		Utils.dbg_msg(
 			"AUT_run.restartApp " + aut + " aut " + (aut != null ? aut.isConnected() : "null"));
-		if (aut != null) {
-			m_agent.stopAUT(aut.getIdentifier());
-			Utils.dbg_msg("AUT_run.stoppedAUT aut_id is null now? " + aut);
-			aut = null;
+		int j = 0;
+		while (j< 4 && aut != null) {
+			j ++;
+			try {
+				m_agent.stopAUT(aut.getIdentifier());
+				aut = null;
+				Utils.dbg_msg("AUT_run.stoppedAUT aut_id is null now? " + (aut == null) + " after try nr: " + j);
+			} catch (CommunicationException e) {
+				Utils.dbg_msg("stopAUT Exception " + e.getMessage());
+				Utils.sleep1second();
+			}
 		}
-		Utils.sleep1second();
+		m_aut = null; // or we will skip starting the AUT
+		aut = null;
 		AUT my_aut =  startAUT();
 		Utils.dbg_msg(
 			"AUT_run.restartApp successfull aut " + (aut != null ? aut.isConnected() : "null"));

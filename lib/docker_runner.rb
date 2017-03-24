@@ -80,12 +80,14 @@ class DockerRunner
       next if @noop
       if @test_name.eql?('build_docker')
         res = system(a_cmd, MAY_FAIL) if /build/i.match(a_cmd)
+        # Next line should avoid error: unable to find user elexis: no matching entries in passwd file
+        sleep(5) # Sleep some time to give the jenkins_slave time to create the elexis user
       else
         res = -27
         status = Timeout::timeout(30*60) { # 30 minutes timeout
           res = system(a_cmd, MAY_FAIL)
         }
-        puts "#{Time.now}: After timeout status #{status} res #{res}"
+        puts "#{Time.now}: After timeout status #{status} res #{res} for #{a_cmd}"
       end
     end
     rescue RuntimeError => e
