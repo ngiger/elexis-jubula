@@ -211,14 +211,8 @@ public class Common {
 	}
 
 	public void maximixeView(){
-		Utils.dbg_msg("maximize does not work in elexis");
-		/* Works only when running natively with keyboard set to de_CH, but not under xvfb
-		*/
-		 // bot.menu(IDEWorkbenchMessages.Workbench_window).menu("Maximize Active View or Editor").click();
-		// Workbench action (id: "maximize", commandId: "org.eclipse.ui.window.maximizePart"): Maximize/restore the active part.
-		m_aut.execute(AUT_run.app.clickInActiveWindow(2, InteractionMode.primary, new Integer(1), Unit.percent, new Integer(1), Unit.percent), null);
-		// m_aut.execute(AUT_run.app.externalKeyCombination(new Modifier[] {Modifier.control}, "m"), null); // this does not work!
-		// m_aut.execute(AUT_run.app.externalKeyCombination(new Modifier[] {Modifier.control}, "n"), null); // this open open view dialog
+		// Works only when running natively with keyboard set to de_CH, but not under xvfb
+		m_aut.execute(AUT_run.app.externalKeyCombination(new Modifier[] {Modifier.control}, "m"), null);
 	}
 
 	@SuppressWarnings("rawtypes")
