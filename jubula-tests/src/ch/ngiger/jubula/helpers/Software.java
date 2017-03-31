@@ -168,6 +168,7 @@ public class Software extends Common {
 		String install_title = "Install";
 		String installing_title = "Installing Software";
 		String updates_title = "Software Updates";
+		String trust_certificates =  "Selection Needed";
 		@SuppressWarnings("rawtypes")
 		ComponentIdentifier finish_button = OM.SW_Install_Finish_btn;
 		@SuppressWarnings("rawtypes")
@@ -198,20 +199,45 @@ public class Software extends Common {
 			Assert.fail("finishInstallSelectedSW: Unable to close" + install_title);
 		}
 
-		waitForWindow(installing_title, 15 * Constants.ONE_SECOND);
 		// Comment: We assume -Declipse.p2.unsignedPolicy=allow passed as vmarg to the application
 		// Else we would have to activate "SW_SecurityWarning_OK_btn"
-		if (!waitForWindowClose(installing_title, 180 * Constants.ONE_SECOND))
+		long startSeconds = System.currentTimeMillis()/1000;
+		while (((System.currentTimeMillis()/1000) -startSeconds)  < 200)
 		{
-			Assert.fail("finishInstallSelectedSW: Unable to open" + installing_title);
-		}
+			System.out.println("Check "+ trust_certificates);
+			Utils.sleep1second();
 
-		if (!waitForWindow(updates_title, 5 * Constants.ONE_SECOND)) {
-			Assert.fail("finishInstallSelectedSW: Unable to open" + updates_title);
-		}
+			if (waitForWindow(trust_certificates, Constants.ONE_SECOND))
+			{
+				AUT_run.takeScreenshotActiveWindow(m_aut, m_app, root + "sw-trust_certificates.png"); //$NON-NLS-1$;
+				pressSpace();
+				Utils.sleep1second();
+				AUT_run.takeScreenshotActiveWindow(m_aut, m_app, root + "sw-trust_certificates_eclipse.png"); //$NON-NLS-1$;
+				pressEnter();
+				AUT_run.takeScreenshotActiveWindow(m_aut, m_app, root + "sw-trust_certificates_accpted.png"); //$NON-NLS-1$;
+				Utils.sleep1second();
+				pressEnter();
+				if (waitForWindowClose(trust_certificates, Constants.ONE_SECOND))
+				{
+					break;
+				} else
+				{
+					Assert.fail("finishInstallSelectedSW: Unable to close " + trust_certificates);
+				}
+				if (waitForWindow(updates_title, Constants.ONE_SECOND)) {
+					break;
+				}
+			}
 
+			if (waitForWindow(updates_title, Constants.ONE_SECOND)) {
+				break;
+			}
+		}
+		if (!waitForWindow(updates_title, Constants.ONE_SECOND)) {
+			Assert.fail("finishInstallSelectedSW: Unable to close" + updates_title);
+		}
 		// Click on "No". If we clicked "now", we could not detect restart of application
-		clickComponent(OM.SW_Update_Dialog_no);
+    		clickComponent(OM.SW_Update_Dialog_no);
 		waitForWindowClose(updates_title, 15 * Constants.ONE_SECOND);
 		return true;
 	}
