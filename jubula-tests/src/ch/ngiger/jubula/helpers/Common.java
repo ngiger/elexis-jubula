@@ -19,6 +19,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.eclipse.jubula.client.AUT;
 import org.eclipse.jubula.client.Result;
@@ -42,10 +44,17 @@ import org.eclipse.jubula.toolkit.enums.ValueSets.BinaryChoice;
 import org.eclipse.jubula.toolkit.enums.ValueSets.InteractionMode;
 import org.eclipse.jubula.toolkit.enums.ValueSets.Modifier;
 import org.eclipse.jubula.toolkit.enums.ValueSets.Operator;
+import org.eclipse.jubula.toolkit.enums.ValueSets.SearchType;
 import org.eclipse.jubula.toolkit.enums.ValueSets.Unit;
 import org.eclipse.jubula.toolkit.swt.SwtComponents;
+import org.eclipse.jubula.toolkit.swt.components.Tree;
+import org.eclipse.jubula.toolkit.swt.components.TreeTable;
 import org.eclipse.jubula.tools.ComponentIdentifier;
 import org.junit.Assert;
+import org.junit.Test;
+
+import ch.ngiger.jubula.Messages;
+import ch.ngiger.jubula.elexiscore.OM;
 
 /**
  * @author Niklaus Giger niklaus.giger@member.fsf.org
@@ -53,6 +62,15 @@ import org.junit.Assert;
 public class Common {
 
 	static MenuBarComponent mbr = SwtComponents.createMenu();
+	private final static String window_other = "Fenster.*/Ansicht.*/Other.*";
+	@SuppressWarnings("unchecked")
+	private final static TextInputComponent selViewCti =
+		ConcreteComponents.createTextInputComponent(OM.ShowView_SelView_cti);
+	@SuppressWarnings("unchecked")
+	private final static TableComponent viewTree =
+		ConcreteComponents.createTableComponent(OM.ShowView_ViewTree_grc);//$NON-NLS-1$
+	@SuppressWarnings("unchecked")
+	private final static TreeTable tbl2 = SwtComponents.createTreeTable(OM.ShowView_ViewTree_grc);//$NON-NLS-1$
 
 	public AUT m_aut;
 	protected Application m_app;
@@ -314,13 +332,14 @@ public class Common {
 	 * @param cid
 	 * @param tabName
 	 */
-	public void selectTabByValue(@SuppressWarnings("rawtypes") ComponentIdentifier cid,
+	public boolean selectTabByValue(@SuppressWarnings("rawtypes") ComponentIdentifier cid,
 		String tabName){
 		waitForComponent(cid);
 		@SuppressWarnings("unchecked")
 		TabComponent tab = SwtComponents.createCTabFolder(cid);
 		try {
 			m_aut.execute(tab.selectTabByValue(tabName, Operator.matches), null);
+			return true;
 		} catch (ActionException | CheckFailedException | ComponentNotFoundException e) {
 			String msg =
 				String.format("selectTabByValue %s failed. Error %s", tabName, e.getMessage());
@@ -328,6 +347,7 @@ public class Common {
 			e.printStackTrace(Utils.getWriter());
 			AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "selectTabByValue_failed.png");
 		}
+		return false;
 	}
 
 	public boolean selectTopLeftCell(@SuppressWarnings("rawtypes") ComponentIdentifier cid){
@@ -495,5 +515,145 @@ public class Common {
 		}
 
 	}
+    /**
+     * Select a given tab, by passing the tabName as a match, e.g. Bl.cke will match Blöcke
+     * @param cid
+     * @param tabName
+     */
+    public boolean enabledTabByValue(@SuppressWarnings("rawtypes") ComponentIdentifier cid,
+            String tabName){
+            waitForComponent(cid);
+            @SuppressWarnings("unchecked")
+            TabComponent tab = SwtComponents.createCTabFolder(cid);
+            try {
+                    Result<Object> res = m_aut.execute(tab.checkEnablementOfTabByValue(tabName, Operator.matches, true), null);
+                    Utils.dbg_msg(String.format("enabledTabByValue %s returns true %s", tabName, res));
+                    return true;
+            } catch (ActionException | CheckFailedException | ComponentNotFoundException e) {
+                    Utils.dbg_msg(String.format("enabledTabByValue %s returns false. Error %s", tabName, e.getMessage()));
+            }
+            return false;
+        }
 
+	void openViewByName(String name){
+		openMenu(window_other);
+		if (!waitForWindow("Show View", 5 * Constants.ONE_SECOND)) {
+			Assert.fail("openViewByName: Unable to open Show View " + name);
+		}
+
+		selViewCti.replaceText(name);
+		tbl2.waitForComponent(Constants.ONE_SECOND, 10);
+		AUT_run.m_aut.execute(viewTree.click(new Integer(1), InteractionMode.primary), null);
+		AUT_run.m_aut.execute(tbl2.selectNodeByTextpath(SearchType.absolute, new Integer(0), name,
+			Operator.matches, 1, InteractionMode.primary, BinaryChoice.no), null);
+
+		clickComponent(OM.ShowView_OkButton_grc);
+		Utils.sleep1second();
+		waitForElexisMainWindow(Constants.ONE_SECOND);
+	}
+
+
+	public boolean openViewByIndex(String index){
+		openMenu(window_other);
+		if (!waitForWindow("Show View", 5 * Constants.ONE_SECOND)) {
+			Assert.fail("openViewByIndex: Unable to open Show View for " + index);
+		}
+
+		selViewCti.replaceText(index);
+		tbl2.waitForComponent(Constants.ONE_SECOND, 10);
+		AUT_run.m_aut.execute(viewTree.click(new Integer(1), InteractionMode.primary), null);
+		AUT_run.m_aut.execute(tbl2.selectNodeByIndexpath(SearchType.absolute,
+			new Integer(0), index, new Integer(1), InteractionMode.primary,
+			ValueSets.BinaryChoice.no), null);
+
+		clickComponent(OM.ShowView_OkButton_grc);
+		Utils.sleep1second();
+		waitForElexisMainWindow(Constants.ONE_SECOND);
+		maximixeView();
+		return true;
+	}
+
+	public List<String> getAllViewIndices() {
+		Utils.dbg_msg("getAllViewIndices");
+		String new_pos = "first_time"; //$NON-NLS-1$ //$NON-NLS-2$
+		List<String> indices = new ArrayList<>();
+		openMenu(Messages.getString("VisitAllViews.7")); //$NON-NLS-1$
+		waitForWindow( Messages.getString("VisitAllViews.4"));
+
+		int major = 0, minor = 0;
+		@SuppressWarnings("unchecked")
+		ComponentIdentifier<Tree> tree = OM.ShowView_ViewTree_grc; //$NON-NLS-1$
+		Assert.assertNotNull("ShowView_ViewTree_grc may not be null", tree);
+		TreeComponent treeComp = ConcreteComponents.createTreeComponent(tree);
+		while (true) {
+			major++;
+			minor = 1;
+			while (true) {
+				new_pos = Integer.toString(major) + "/" + Integer.toString(minor); //$NON-NLS-1$
+				try {
+					AUT_run.m_aut.execute(treeComp.checkExistenceOfNodeByIndexpath(SearchType.absolute, new Integer(0), new_pos, true), null);
+					AUT_run.m_aut.execute(treeComp.selectNodeByIndexpath(SearchType.absolute,
+						new Integer(0), new_pos, new Integer(1), InteractionMode.primary,
+						ValueSets.BinaryChoice.no), null);
+					// This does not work as it throws ActionException Operation not supported by the selected toolkit.
+					// Utils.dbg_msg("value is " + Common.getTextFromCompent(OM.ShowView_ViewTree_grc));
+					indices.add(new_pos);
+					if (minor % 5 == 1) { // Take a screenshot every 5 item, then we should be able to pinpoint problems
+						AUT_run.takeScreenshotActiveWindow(AUT_run.m_aut, AUT_run.app,
+						"Views/View_" + major + "/" + minor + "_overview.png"); //$NON-NLS-1$ //$NON-NLS-2$
+					}
+					minor++;
+				} catch (CheckFailedException e) {
+					if (minor == 1 ) {
+						pressEscape(); // close window
+						return indices;
+					}
+					AUT_run.takeScreenshotActiveWindow(AUT_run.m_aut, AUT_run.app,
+						"Views/View_" + major + "/" + minor + "_last.png"); //$NON-NLS-1$ //$NON-NLS-2$
+					minor = -1;
+					break;
+				}
+			}
+		}
+	}
+	public void visitOneview(String index) {
+		openViewByIndex(index);
+	}
+
+	/**
+	 * Open the view Abrechnung/Leistungen and select the desired tabName in CTabFolder at the bottom
+	 *
+	 * @param tabName
+	 */
+	public void selectFavoritenTab(String tabName)
+	{
+		// Check whether the view is already open
+		if (!isEnabled(OM.CTabFolder_1_tpn)) {
+			openViewByName("Abrechnung/Leistungen");
+		}
+		boolean okay = selectTabByValue(OM.CTabFolder_1_tpn, tabName);
+		Utils.dbg_msg("selectTabByValue: OM.CTabFolder_1_tpn " + tabName + " is "  + okay);
+		if (okay) {
+			return;
+		}
+		boolean enabled = enabledTabByValue(OM.Favoriten_tbi, tabName);
+		Utils.dbg_msg("enabledTabByValue: OM.Favoriten_tbi is " + enabled);
+		if (enabled) {
+			contextMenuByText(OM.Favoriten_tbi, tabName, false);
+			return;
+		} else {
+			// Select by tool item
+			contextMenuByText(OM.Favoriten_tbi, tabName, false);
+			boolean okay2 = selectTabByValue(OM.CTabFolder_1_tpn, tabName);
+			Utils.dbg_msg("selectTabByValue: OM.CTabFolder_1_tpn " + tabName + " is "  + okay2);
+			return;
+		}
+	}
+
+	/** test visiting all views */
+	@Test
+	public void visit_all_views() throws Exception{
+		List<String> indices = getAllViewIndices();
+		indices.forEach((index) -> visitOneview(index));
+	}
 }

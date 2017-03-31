@@ -42,7 +42,7 @@ public class SuiteVisitAllPerspectives {
 		} catch (Exception e) {
 			System.exit(3);
 		}
-		m_aut = AUT_run.startAUT();
+		m_aut = AUT_run.startAUT(!AUT_run.FORCE_START);
 		Software software = new Software(AUT_run.m_aut, AUT_run.app);
 		software.showAbout("first", false);
 		if (!software.baseChIsInstalled()) {

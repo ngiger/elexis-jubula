@@ -34,7 +34,6 @@ import ch.ngiger.jubula.helpers.Patients;
 import ch.ngiger.jubula.helpers.Perspectives;
 import ch.ngiger.jubula.helpers.Software;
 import ch.ngiger.jubula.helpers.Utils;
-import ch.ngiger.jubula.helpers.Views;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class Smoketest {
@@ -67,7 +66,7 @@ public class Smoketest {
 	};
 
 	private static Common c = null;
-	private static Views views = null;
+	private static Common views = null;
 	private static Eigenleistung eigenleistung = null;
 	private static Artikelstamm artikelstamm = null;
 	private static Perspectives perspectives = null;
@@ -82,12 +81,11 @@ public class Smoketest {
 	public static void setup() throws Exception{
 		AUT_run.setUp();
 		Utils.dbg_msg("AUT_run: setup done"); //$NON-NLS-1$
-		m_aut = AUT_run.startAUT();
+		m_aut = AUT_run.startAUT(!AUT_run.FORCE_START);
 		m_app = AUT_run.app;
 
 		c = new Common(AUT_run.m_aut, AUT_run.app);
 		perspectives = new Perspectives(AUT_run.m_aut, AUT_run.app);
-		views = new Views(AUT_run.m_aut, AUT_run.app);
 		software = new Software(AUT_run.m_aut, AUT_run.app);
 		eigenleistung = new Eigenleistung(AUT_run.m_aut, AUT_run.app);
 		pat = new Patients(AUT_run.m_aut, AUT_run.app);
@@ -154,7 +152,6 @@ public class Smoketest {
 	 * @throws Exception
 	 */
 	public void _install_sw() throws Exception{
-		software.showAbout("first", false);
 		if (install_sw && !software.baseChIsInstalled()) {
 			software.installAllSW();
 		}
@@ -169,6 +166,11 @@ public class Smoketest {
 		Utils.dbg_msg("smoketest install_sw is " + install_sw
 			+ " with_artikelstamm " + with_artikelstamm + " Medelexis " + AUT_run.isMedelexis);
 		// showVars();
+		pat.selectFavoritenTab("Artikelstamm");
+		pat.selectFavoritenTab("Eigenartikel"); // Force migration in 3.2
+		pat.selectFavoritenTab("Eigenleistung");
+		pat.selectFavoritenTab("Tarmed");
+		pat.selectFavoritenTab("Block");
 		Utils.dbg_msg("Smoketest with_artikelstamm " + with_artikelstamm + " v4 "
 			+ software.isArtikelstamm_v4());
 		if (with_artikelstamm ) {

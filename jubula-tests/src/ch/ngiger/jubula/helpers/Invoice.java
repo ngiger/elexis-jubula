@@ -24,11 +24,9 @@ import ch.ngiger.jubula.elexiscore.OM;
 /** @author BREDEX GmbH */
 public class Invoice extends Common {
 
-	private Views views = null;
 
 	public Invoice(AUT aut, Application app){
 		super(aut, app);
-		views = new Views(aut, app);
 		Utils.dbg_msg("Eigenleistung init " + m_aut + " app " + m_app);
 	}
 
@@ -39,7 +37,7 @@ public class Invoice extends Common {
 	 */
 
 	public void showInvoices(String snapshot){
-		views.openViewByName("Abrechnung/Rechnungsübersicht.*");
+		openViewByName("Abrechnung/Rechnungsübersicht.*");
 		maximixeView();
 		if (snapshot != null) {
 			AUT_run.takeScreenshotActiveWindow(m_aut, m_app, snapshot);
@@ -47,7 +45,7 @@ public class Invoice extends Common {
 	}
 
 	public String getInvoicesAsString(String snapshot){
-		views.openViewByName("Abrechnung/Rechnungsübersicht.*");
+		openViewByName("Abrechnung/Rechnungsübersicht.*");
     AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "invoice_overview_a.png");
     Utils.sleep1second();
     clickInMiddleOfComponent(OM.Bills_Overview_tbl);

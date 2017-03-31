@@ -43,6 +43,7 @@ public class Eigenleistung extends Common {
 		int time_needed){
 		String window_title = "Eigenleistung";
 		perspectives.openLeistungenPerspective();
+		selectFavoritenTab(window_title);
 		waitForComponent(OM.CTabFolder_1_tpn);
 		boolean tab_enabled = isEnabled(OM.CTabFolder_1_tpn);
 		if (!tab_enabled) {
@@ -85,8 +86,8 @@ public class Eigenleistung extends Common {
 	}
 
 	public void selectEigenleistung(String abbrev, String description){
+		selectFavoritenTab("Eigenleistung");
 		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "eigenleistung/select_" + abbrev + ".png"); //$NON-NLS-1$
-		selectTabByValue(OM.CTabFolder_1_tpn, "Eigenleistung");
 		@SuppressWarnings("rawtypes")
 		ComponentIdentifier cid = null;
 		if (componentIsEnabled(OM.Eigenleistung_3_1_Code_txf)) { // Elexis 3.1 and previous

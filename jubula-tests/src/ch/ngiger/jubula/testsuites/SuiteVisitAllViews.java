@@ -17,13 +17,11 @@ import ch.ngiger.jubula.helpers.AUT_run;
 import ch.ngiger.jubula.helpers.AutTestWatcher;
 import ch.ngiger.jubula.helpers.Perspectives;
 import ch.ngiger.jubula.helpers.Utils;
-import ch.ngiger.jubula.helpers.Views;
 
 @RunWith(Parameterized.class)
 public class SuiteVisitAllViews {
 	private String index;
 	private static AUT m_aut = null;
-	private static Views v = null;
 	private static Perspectives p = null;
 	private static int cur_view_id = 0;
 	private static int nr_views = 0;
@@ -47,12 +45,11 @@ public class SuiteVisitAllViews {
 		} catch (Exception e) {
 			System.exit(3);
 		}
-		m_aut = AUT_run.startAUT();
+		m_aut = AUT_run.startAUT(!AUT_run.FORCE_START);
 		p = new Perspectives(m_aut, AUT_run.app);
 		p.initialSetup(); // Sonst haben wir Probleme mit den Leistungen!
-		v = new Views(m_aut, AUT_run.app);
-		v.maximixeView();
-		java.util.List<String> indices = v.getAllViewIndices();
+		p.maximixeView();
+		java.util.List<String> indices = p.getAllViewIndices();
 		Utils.dbg_msg("SuiteVisitAllViews names are " + indices); //$NON-NLS-1$
 		Collection<Object[]> data = new ArrayList<>();
 		indices.forEach((name) -> data.add(new Object[] {
@@ -69,7 +66,7 @@ public class SuiteVisitAllViews {
 		if (cur_view_id % restart_after == 0) {
 			AUT_run.restartApp(m_aut);
 		}
-		if (!v.openViewByIndex(this.index)) {
+		if (!p.openViewByIndex(this.index)) {
 			AUT_run.takeScreenshotActiveWindow(AUT_run.m_aut, AUT_run.app,
 				"Views/View_" + this.index + "_failed.png"); //$NON-NLS-1$ //$NON-NLS-2$
 			Assert.fail("Unable to open View " + this.index);

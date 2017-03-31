@@ -50,7 +50,7 @@ public class SuiteVisitAllPreferencePages {
 			System.exit(3);
 		}
 
-		m_aut = AUT_run.startAUT();
+		m_aut = AUT_run.startAUT(!AUT_run.FORCE_START);
 		p = new Perspectives(m_aut, AUT_run.app);
 		p.initialSetup(); // Sonst haben wir Probleme mit den Leistungen!
 		prefs = new PreferencePages(m_aut, AUT_run.app);

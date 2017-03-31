@@ -19,7 +19,7 @@ public class Screenshot {
 	@Test()
 	public void screenshot_active_window() throws Exception{
 		AUT_run.setUp();
-		AUT m_aut = AUT_run.startAUT();
+		AUT m_aut = AUT_run.startAUT(!AUT_run.FORCE_START);
 		Utils.dbg_msg("screenshot_active_window");
 		AUT_run.takeScreenshotActiveWindow(m_aut, AUT_run.app, "first_screenshot.png");
 		Utils.maximizeElexisWindow();

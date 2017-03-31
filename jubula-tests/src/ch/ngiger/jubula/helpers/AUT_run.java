@@ -36,6 +36,7 @@ public class AUT_run {
 	public static AUT m_aut;
 	public static String SAVE_RESULTS_DIR = null;
 	public static Application app = null;
+	public static final boolean  FORCE_START = true;
 
 	/** the logger */
 	// private static Logger log = LoggerFactory.getLogger(AUT_run.class);
@@ -207,8 +208,8 @@ public class AUT_run {
 		Utils.dbg_msg("Calling activate done");
 	}
 
-	public static AUT startAUT(){
-		if (m_aut != null && m_aut.isConnected()) {
+	public static AUT startAUT(boolean force_restart){
+		if (!force_restart && m_aut != null && m_aut.isConnected()) {
 			Utils.dbg_msg("startAUT: Skip restart as m_aut != null && m_aut.isConnected()");
 			return m_aut; // Don't restart automatically!!
 		}
@@ -453,9 +454,10 @@ public class AUT_run {
 		}
 		m_aut = null; // or we will skip starting the AUT
 		aut = null;
-		AUT my_aut =  startAUT();
+		AUT my_aut =  startAUT(FORCE_START);
 		Utils.dbg_msg(
 			"AUT_run.restartApp successfull aut " + (aut != null ? aut.isConnected() : "null"));
+		takeScreenshot(my_aut, app, "after_restart_app.png");
 		return my_aut;
 	}
 

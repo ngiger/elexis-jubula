@@ -34,14 +34,12 @@ import ch.ngiger.jubula.elexiscore.OM;
  */
 public class Patients extends Common {
 
-	private Views views = null;
 	private Perspectives perspectives = null;
 
 	public Patients(AUT aut, Application app){
 		super(aut, app);
 		Utils.dbg_msg("Patients init " + m_aut + " app " + m_app);
 		perspectives = new Perspectives(aut, app);
-		views = new Views(aut, app);
 	}
 
 	private String family_name;
@@ -159,7 +157,7 @@ public class Patients extends Common {
 		perspectives.openPatientenPerspective();
 		//testLoadFromStream();
 		family_name = familyName;
-		views.openViewByName("Daten/Patienten");
+		openViewByName("Daten/Patienten");
 
 		// Click in View Patient.Namen auswählen
 		//		TextInputComponent txt = SwtComponents.createTextInputComponent(OM.Patienten_SelectName_grc);
@@ -337,7 +335,7 @@ public class Patients extends Common {
 	 * We assume an open consultation
 	 */
 	public void eigenleistungVerrechnen(Eigenleistung eigenleistung, String abbrev, String name){
-		Utils.dbg_msg("eigenleistungVerrechnen: " + name); //$NON-NLS-1$
+		Utils.dbg_msg("eigenleistungVerrechnen1: " + name + " enabled " + componentIsEnabled(OM.Kons_Verrechnung_grc)); //$NON-NLS-1$
 		if (!componentIsEnabled(OM.Kons_Verrechnung_grc))  {
 			AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "cons/eigenleistung/start.png"); //$NON-NLS-1$
 			perspectives.openPatientenPerspective();
@@ -348,6 +346,7 @@ public class Patients extends Common {
 		}
 
 		// Clicking on Kons_Verrechnung_grc opens the perspective full
+		Utils.dbg_msg("eigenleistungVerrechnen2: " + name + " enabled " + componentIsEnabled(OM.Kons_Verrechnung_grc)); //$NON-NLS-1$
 		clickComponent(OM.Kons_Verrechnung_grc);
 		Utils.sleep1second();
 		eigenleistung.selectEigenleistung(abbrev, name);
@@ -387,6 +386,7 @@ public class Patients extends Common {
 			return;
 		}
 		Utils.dbg_msg("artikelstammItemVerrechnen: " + item); //$NON-NLS-1$
+		selectFavoritenTab("Artikelstamm");
 		if (!componentIsEnabled(OM.Kons_Verrechnung_grc))  {
 			perspectives.openPatientenPerspective();
 			perspectives.resetPerspective();
