@@ -134,6 +134,7 @@ whoami
   end
 
   def run_test_exec
+    Dir.chdir(RootDir)
     File.join(RootDir, RESULT_DIR)
     @test_params[:environment].each do |v,k| ENV[v]=k end if @test_params[:environment]
     puts "Will run #{@mvn_cmd}"
@@ -243,6 +244,8 @@ whoami
     @jubula_test_data_dir  = File.join(WorkDir, 'database/data')
     install_rcp_support_for_jubula(WorkDir)
     patch_ini_file_for_jubula_rc(WorkDir)
+  ensure
+    Dir.chdir(saved)
   end
 end
 

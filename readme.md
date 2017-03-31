@@ -20,6 +20,8 @@ Have a look at the "Jubula-Matrix":https://srv.elexis.info/jenkins/job/Elexis-3.
 
 The tests there are running all inside a docker container `ngiger/jubula_runner`, which has all the needed programs. Tests may use the MySql and PostgreSQL database, where the user `elexis` (with password elexisTest) got granted unlimited rights to the database
 
+Be aware of the problems outlines in "Java inside docker: What you must know to not FAIL":https://developers.redhat.com/blog/2017/03/14/java-inside-docker/
+
 There are some rake task (shown via `rake -T` or more verbose `rake -D`) to facilitate some stuff, which would have take much longer via Java.
 
 

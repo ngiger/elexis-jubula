@@ -168,6 +168,7 @@ def patch_ini_file_for_jubula_rc(inst_dir)
       next unless /^osgi.bundles=/.match(line)
       line.sub!(/osgi.bundles=/, 'osgi.bundles=reference\:file\:../dropins/plugins/' + File.basename(jubula_jar) + '@3\:start,')
       File.open(ini_name, 'w') { |file| file.write config_ini.join(''); file.puts "# patched by #{__FILE__} at #{Time.now}" }
+      puts "Patched #{ini_name} to start #{File.basename(jubula_jar)} at level 3"
       return true
     end
     fail "Could not find line osgi.bundle in #{File.expand_path(ini_name)}"

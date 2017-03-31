@@ -103,7 +103,7 @@ class DockerRunner
         end
       else
         res = -27
-        status = Timeout::timeout(30*60) { # 30 minutes timeout
+        status = Timeout::timeout(179*60) { # 179 minutes timeout
           res = system(a_cmd, MAY_FAIL)
         }
         puts "#{Time.now}: After timeout status #{status} res #{res} for #{a_cmd}"

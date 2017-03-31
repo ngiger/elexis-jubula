@@ -8,4 +8,4 @@ ls -l /etc/sudoers.d/elexis /home/elexis
 sudo -u elexis mkdir -p elexis /home/elexis/work /home/elexis/results
 echo "I am" `whoami`: `id`
 echo "Done with $0"
-sleep 3300
+sleep 10800 # three hours

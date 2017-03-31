@@ -39,13 +39,15 @@
       <plugin>
         <!-- we want to ensure that the bin directory created by the Eclipse
           gets cleaned, too. Without it Maven would put two versions of each class
-          file into the jars -->
+          file into the jars
+          But we do not want to clean the top bin directory used by ruby
+        -->
         <artifactId>maven-clean-plugin </artifactId>
           <version>2.6.1</version>
         <configuration>
           <filesets>
             <fileset>
-              <directory>bin</directory>
+              <directory>jubula-tests/bin</directory>
             </fileset>
           </filesets>
         </configuration>
