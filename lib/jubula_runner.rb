@@ -120,12 +120,6 @@ whoami
         @exitValue = File.exist?(result) && inhalt.first.to_i
       end
       puts "@exitValue #{@exitValue} res is #{@opts[:entrypoint]} is #{res} aus result #{result} mit Inhalt\n#{inhalt}"
-      if res && /smoketest|medelexis/i.match(@test_params[:test_to_run])
-        puts "smoketest: Copy newly installed plugins for further tests back"
-        FileUtils.cp_r(Dir.glob(File.join(@docker.container_home, 'work/*')), WorkDir, verbose: true, :noop => opts[:noop])
-      else
-        puts "Skip copying plugins as testsuite #{@test_params[:test_to_run]} != smoketest"
-      end
     ensure
       # stop container if we were unable to copy the result and/or log files
       @docker.stop_docker
