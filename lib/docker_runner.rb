@@ -120,8 +120,12 @@ class DockerRunner
     return unless opts[:need_to_stop_docker]
     cmd =  @start_with + "logs --no-color --timestamps > #{opts[:result_dir]}/containers.log"
     puts "Saving container logs using #{cmd}"
-    system(cmd, MAY_FAIL.merge({ :noop => @noop}))
-    @stop_commands.each do |a_cmd| system(a_cmd, MAY_FAIL.merge({ :noop => @noop})) end
+    begin
+        system(cmd, MAY_FAIL.merge({ :noop => @noop}))
+        @stop_commands.each do |a_cmd| system(a_cmd, MAY_FAIL.merge({ :noop => @noop})) end
+    rescue => err
+        puts "Error in stop_docker #{err}"  # ignore the errors in stop docker
+    end
     opts[:need_to_stop_docker] = false
   end
 
