@@ -340,6 +340,14 @@ public class AUT_run {
 		setup_done = true;
 	}
 
+	static int nr_shots = 0;
+	public static void gen_xwd_screenshot() {
+		nr_shots += 1;
+		Utils.dbg_msg("Calling import " + nr_shots);
+		String fullname =
+				new File(config.get(Constants.RESULT_DIR) + "/" +  "/error_shot_"+ nr_shots+ ".xwd").getAbsolutePath();
+		Utils.run_system_cmd("/usr/bin/xwd -root -out " + fullname, "import");
+	}
 	public static void takeScreenshotActiveWindow(AUT aut, Application app, String imageName){
 		if (!aut.isConnected()) {
 			Utils.dbg_msg("Request takeScreenshot failed (not connected) for " + imageName);
@@ -354,6 +362,8 @@ public class AUT_run {
 				null);
 		} catch (ActionException e) {
 			Utils.dbg_msg("Action Exception " + fullname + " reason: " + e.getMessage());
+			// TODO: Use import to try to get more info
+			gen_xwd_screenshot();
 		}
 	}
 
