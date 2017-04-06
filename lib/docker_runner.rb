@@ -258,12 +258,15 @@ echo 'Not waiting for databases'
 export status=$?
 date
 # find $PWD -name surefire-reports | xargs ls -lrt # needed sometimes for debugging
+/app/periodic_screenshots.sh #{opts[:result_dir]}&
+echo "Started periodic_screenshots.sh"
 ps -ef
 echo $status | tee #{opts[:result_dir]}/result_of_test_run
 echo Resultat von #{cmd_name} um `date` war $status | tee --append #{opts[:result_dir]}/result_of_test_run
 cat #{opts[:result_dir]}/result_of_test_run
 ls -l #{opts[:result_dir]}/result_of_test_run
 sync # ensure that everything is written to the disk
+ps -ef
 sleep 1
 echo killing children process
 sleep 0.1
