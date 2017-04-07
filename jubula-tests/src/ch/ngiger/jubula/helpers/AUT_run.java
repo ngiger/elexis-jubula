@@ -125,6 +125,7 @@ public class AUT_run {
 		    	// at this point we cannot take any screenshot, as the
 		    	// communication with the Jubula Agent is already stopped
 				Utils.dbg_msg("ShutdownElexis began");
+				gen_xwd_screenshot("shutdown"); // therefore we take a screenshot via the X11 xwd utility
 				try {
 					tearDown();
 				} catch (Exception e) {
@@ -346,12 +347,12 @@ public class AUT_run {
 	/**
 	 * Creates a screenshot using the X11 utility xwd
 	 */
-	public static void gen_xwd_screenshot() {
+	public static void gen_xwd_screenshot(String name_prefix) {
 		nr_shots += 1;
 		Utils.dbg_msg("Calling import " + nr_shots);
 		String fullname =
-				new File(config.get(Constants.RESULT_DIR) + "/" +  "/error_shot_"+ nr_shots+ ".xwd").getAbsolutePath();
-		Utils.run_system_cmd("/usr/bin/xwd -root -out " + fullname, "import");
+				new File(config.get(Constants.RESULT_DIR) + "/" +  "/" + name_prefix +"_"+ nr_shots+ ".xwd").getAbsolutePath();
+		Utils.run_system_cmd("/usr/bin/xwd -root -silent -out " + fullname, "import");
 	}
 	public static boolean takeScreenshotActiveWindow(AUT aut, Application app, String imageName){
 		if (!aut.isConnected()) {
@@ -369,7 +370,7 @@ public class AUT_run {
 		} catch (ActionException e) {
 			Utils.dbg_msg("Action Exception " + fullname + " reason: " + e.getMessage());
 			// TODO: Use import to try to get more info
-			gen_xwd_screenshot();
+			gen_xwd_screenshot("screenshot_failed");
 		}
 		return false;
 	}
