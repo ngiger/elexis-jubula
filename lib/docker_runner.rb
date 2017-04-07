@@ -270,7 +270,8 @@ ps -ef
 sleep 1
 echo killing children process
 sleep 0.1
-pkill --signal 9 -P $$
+# Try hard to kill all elexis process
+pkill --uid elexis
 echo about to exit with status $status for $VARIANT
 sleep 0.1
 exit $status
