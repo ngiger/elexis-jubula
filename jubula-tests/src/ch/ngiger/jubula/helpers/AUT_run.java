@@ -49,7 +49,6 @@ public class AUT_run {
 		Paths.get(System.getProperty("user.home") + "/elexis/logs/elexis-3.log");
 	public static boolean isMedelexis = false;
 	private static String agent_port = "6333"; // Default
-	private static final String console_port = "8752";
 	private static boolean stopping_autagent = false;
 	private static boolean starting_autagent = false;
 	private static Path exe_file;
@@ -107,7 +106,10 @@ public class AUT_run {
 		// -Dch.elexis.username=007 -Dch.elexis.password=topsecret
 		Utils.dbg_msg(config.get(Constants.AUT_VM_ARGS));
 		// TODO: For elexis in docker must pass -vm /usr/bin/java
-		config.put(Constants.AUT_ARGS, "-clean -console " + console_port + " -nl " + config.get(Constants.AUT_LOCALE)
+		String console_port = System.getenv("CONSOLE_PORT");
+		if (console_port == null ) { console_port = ""; } else { console_port = " -console  " + console_port + " ";}
+
+		config.put(Constants.AUT_ARGS, "-clean " + console_port + " -nl " + config.get(Constants.AUT_LOCALE)
 			+ config.get(Constants.AUT_ARGS) + " -consoleLog -debug dropins/.options ");
 		config.put(Constants.AUT_VM_ARGS, " -Declipse.p2.unsignedPolicy=allow" + " -Dautagent_port="
 				+ config.get(Constants.AGENT_PORT) + " -Dautagent_host="
@@ -341,6 +343,9 @@ public class AUT_run {
 	}
 
 	static int nr_shots = 0;
+	/**
+	 * Creates a screenshot using the X11 utility xwd
+	 */
 	public static void gen_xwd_screenshot() {
 		nr_shots += 1;
 		Utils.dbg_msg("Calling import " + nr_shots);
