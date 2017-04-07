@@ -62,6 +62,8 @@ services:
     # create_elexis_user.sh silently exits the docker after an hour
     entrypoint: /app/create_elexis_user.sh
     volumes:
+      # use the same time zone as the host (e.g. files, dates in logs (except docker logs which uses UTC)) 
+      - /etc/localtime:/etc/localtime
       - ${PWD}/results:/home/elexis/results
       - ${PWD}/container_home_m2:/home/elexis/.m2
       - ${PWD}/container_home:/home/elexis
