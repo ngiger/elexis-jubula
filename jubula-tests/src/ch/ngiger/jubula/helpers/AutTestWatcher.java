@@ -7,8 +7,11 @@ import org.junit.runner.Description;
 @SuppressWarnings("restriction")
 public class AutTestWatcher extends TestWatcher {
 
+	public static int nr_failures = 0;
+
 	@Override
 	protected void failed(Throwable e, Description description){
+		nr_failures += 1;
 		String msg = description + " failed\n";
 		Utils.dbg_msg("JUnitTest: " + msg);
 		e.printStackTrace(Utils.getWriter());

@@ -77,5 +77,6 @@ public class SuiteVisitAllPerspectives {
 	@AfterClass
 	public static void teardown() throws Exception{
 		Utils.dbg_msg("SuiteVisitAllPerspectives.teardown"); //$NON-NLS-1$
+		// Don't call stopAut, as this class is also used by the Medelexis Testusuite 
 	}
 }

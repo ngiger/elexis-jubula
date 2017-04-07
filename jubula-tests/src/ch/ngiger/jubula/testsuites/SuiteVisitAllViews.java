@@ -8,7 +8,6 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestWatcher;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
@@ -29,7 +28,7 @@ public class SuiteVisitAllViews {
 	   // With the Medelexis I had problems after 26 windows
 
 	@Rule
-    public TestWatcher watchman = new AutTestWatcher();
+    public AutTestWatcher watchman = new AutTestWatcher();
 
 	public SuiteVisitAllViews(String index){
 		super();
@@ -46,6 +45,9 @@ public class SuiteVisitAllViews {
 			System.exit(3);
 		}
 		m_aut = AUT_run.startAUT(!AUT_run.FORCE_START);
+		// Software software = null;
+		// software = new Software(m_aut, AUT_run.app);
+		// software.installAllSW(); // Don't installAllSw here, as it would lead to shutdown of the whole unit test
 		p = new Perspectives(m_aut, AUT_run.app);
 		p.initialSetup(); // Sonst haben wir Probleme mit den Leistungen!
 		p.maximixeView();
@@ -62,6 +64,9 @@ public class SuiteVisitAllViews {
 	@Test
 	public void test_single_View(){
 		cur_view_id ++;
+		if (AutTestWatcher.nr_failures > 5) {
+			Assert.fail("Failing as too many failures occured already" + this.index);
+		}
 		Utils.dbg_msg("SuiteVisitAllViews.test_single_View: " + this.index  + " (" + cur_view_id + " of " + nr_views + ")");
 		if (cur_view_id % restart_after == 0) {
 			Assert.assertTrue(AUT_run.restartApp(m_aut) != null);
@@ -79,6 +84,6 @@ public class SuiteVisitAllViews {
 	@AfterClass
 	public static void teardown() throws Exception{
 		Utils.dbg_msg("SuiteVisitAllViews.teardown"); //$NON-NLS-1$
-		// AUT_run.tearDown();
+		// Don't call stopAut, as this class is also used by the Medelexis Testusuite
 	}
 }

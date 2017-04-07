@@ -8,6 +8,7 @@ import org.eclipse.jubula.client.exceptions.ActionException;
 import org.eclipse.jubula.client.exceptions.ComponentNotFoundException;
 import org.eclipse.jubula.toolkit.swt.components.Button;
 import org.eclipse.jubula.tools.ComponentIdentifier;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -67,6 +68,9 @@ public class SuiteVisitAllPreferencePages {
 	@Test
 	public void test_single_PreferencePage(){
 		cur_PreferencePage_id++;
+		if (AutTestWatcher.nr_failures > 5) {
+			Assert.fail("Failing as too many failures occured already" + this.index);
+		}
 		Utils.dbg_msg("SuiteVisitAllPreferencePages.test_single_PreferencePage: " + this.index
 			+ " (" + cur_PreferencePage_id + " of " + nr_PreferencePages + ")");
 		@SuppressWarnings({
@@ -123,5 +127,11 @@ public class SuiteVisitAllPreferencePages {
 		if (!name2.contains("Secure Storage") ) { // ignore this non Elexis problem
 			Assert.fail(error_mgs);
 		}
+	}
+
+	@AfterClass
+	public static void teardown() throws Exception{
+		Utils.dbg_msg("SuiteVisitAllPreferencePages.teardown"); //$NON-NLS-1$
+		// Don't call stopAut, as this class is also used by the Medelexis Testusuite
 	}
 }
