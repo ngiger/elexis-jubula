@@ -418,10 +418,14 @@ public class Common {
 	}
 
 	public boolean waitForComponent(@SuppressWarnings("rawtypes") ComponentIdentifier cid){
+		return waitForComponent(cid,Constants.ONE_SECOND);
+	}
+
+	public boolean waitForComponent(@SuppressWarnings("rawtypes") ComponentIdentifier cid, int max_wait_ms){
 		try {
 			@SuppressWarnings("unchecked")
 			GraphicsComponent comp = AbstractComponents.createGraphicsComponent(cid);
-			m_aut.execute(comp.waitForComponent(Constants.ONE_SECOND, 0), null);
+			m_aut.execute(comp.waitForComponent(max_wait_ms, 0), null);
 			return true;
 		} catch (ActionException | CheckFailedException | ComponentNotFoundException e) {
 			String msg = String.format("waitForComponent failed. Error %s", e.getMessage());

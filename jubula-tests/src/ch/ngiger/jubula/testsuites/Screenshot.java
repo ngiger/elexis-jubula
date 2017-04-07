@@ -21,9 +21,10 @@ public class Screenshot {
 		AUT_run.setUp();
 		AUT m_aut = AUT_run.startAUT(!AUT_run.FORCE_START);
 		Utils.dbg_msg("screenshot_active_window");
-		AUT_run.takeScreenshotActiveWindow(m_aut, AUT_run.app, "first_screenshot.png");
+		Assert.assertTrue(AUT_run.takeScreenshotActiveWindow(m_aut, AUT_run.app, "first_screenshot.png"));
 		Utils.maximizeElexisWindow();
-		Assert.assertTrue(true);
+		Assert.assertTrue(AUT_run.restartApp(m_aut) != null);
 		Utils.dbg_msg("screenshot_active_window done");
+		Assert.assertTrue(AUT_run.takeScreenshotActiveWindow(m_aut, AUT_run.app, "after_restart_screenshot.png"));
 	}
 }

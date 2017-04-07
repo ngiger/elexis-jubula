@@ -180,16 +180,14 @@ public class Software extends Common {
 		Utils.sleep1second();
 		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, root + "sw_inst-before-next.png"); //$NON-NLS-1$;
 		clickComponent(OM.SW_Install_Next_btn);
-		Utils.sleepMs(5 * 1000); // It may take some time to compile all the details
-		String sw_details = getTextFromCompent(OM.Install_SW_Details);
-		writeStringToResultsFile(sw_details, "sw_inst-details.log"); //$NON-NLS-1$;
-		Utils.sleep1second();
-		AUT_run.takeScreenshotActiveWindow(m_aut, m_app, root + "sw-has-updates-or-not.png"); //$NON-NLS-1$;
-		if (componentIsEnabled(finish_button)) {
-			Utils.dbg_msg("SW_Install_Finish_btn is enabled"); //$NON-NLS-1$;
+		if (waitForComponent(finish_button, 5 * 1000)) {
+			String sw_details = getTextFromCompent(OM.Install_SW_Details);
+			writeStringToResultsFile(sw_details, "sw_inst-details.log"); //$NON-NLS-1$;
+			AUT_run.takeScreenshotActiveWindow(m_aut, m_app, root + "sw-has-updates.png"); //$NON-NLS-1$;$$
 			clickComponent(finish_button);
 		} else {
-			Utils.dbg_msg("SW_Install_Finish_btn is NOT enabled. Already updated?");
+			Utils.dbg_msg("SW_Install_Finish_btn is NOT enabled. Already updated");
+			AUT_run.takeScreenshotActiveWindow(m_aut, m_app, root + "sw-no-updates.png"); //$NON-NLS-1$;$$
 			clickComponent(cancel_button);//$NON-NLS-1$
 			waitForWindowClose("Install", 5 * Constants.ONE_SECOND);
 			return false;
@@ -233,11 +231,8 @@ public class Software extends Common {
 				break;
 			}
 		}
-		if (!waitForWindow(updates_title, Constants.ONE_SECOND)) {
-			Assert.fail("finishInstallSelectedSW: Unable to close" + updates_title);
-		}
+		clickComponent(OM.SW_Update_Dialog_no);
 		// Click on "No". If we clicked "now", we could not detect restart of application
-    		clickComponent(OM.SW_Update_Dialog_no);
 		waitForWindowClose(updates_title, 15 * Constants.ONE_SECOND);
 		return true;
 	}
@@ -257,7 +252,7 @@ public class Software extends Common {
 		}
 		Utils.dbg_msg("installFeature medelexis succeeded after" + seconds + " res: " +
 				waitForElexisMainWindow());
-		AUT_run.restartApp(AUT_run.m_aut);
+		Assert.assertTrue(AUT_run.restartApp(AUT_run.m_aut) != null);
 		return true;
 	}
 	public void installFeature(String feature_name){
@@ -324,12 +319,12 @@ public class Software extends Common {
 				Utils.dbg_msg("AUT_EXE is medelexis waiting");
 			}
 			Utils.sleep1second();
-			AUT_run.restartApp(m_aut);
+			Assert.assertTrue(AUT_run.restartApp(m_aut) != null);
 		} else {
 			if (installAllFeatures()) {
 				// needs restart
 				Utils.dbg_msg("installAllAndShowSW calling restart");
-				AUT_run.restartApp(m_aut);
+				Assert.assertTrue(AUT_run.restartApp(m_aut) != null);
 				Utils.dbg_msg("installAllAndShowSW restarted");
 				AUT_run.takeScreenshotActiveWindow(AUT_run.m_aut, AUT_run.app, "after_restart.png");
 				Utils.dbg_msg("installAllAndShowSW restarted");

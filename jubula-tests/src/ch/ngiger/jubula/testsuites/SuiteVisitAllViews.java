@@ -64,7 +64,7 @@ public class SuiteVisitAllViews {
 		cur_view_id ++;
 		Utils.dbg_msg("SuiteVisitAllViews.test_single_View: " + this.index  + " (" + cur_view_id + " of " + nr_views + ")");
 		if (cur_view_id % restart_after == 0) {
-			AUT_run.restartApp(m_aut);
+			Assert.assertTrue(AUT_run.restartApp(m_aut) != null);
 		}
 		if (!p.openViewByIndex(this.index)) {
 			AUT_run.takeScreenshotActiveWindow(AUT_run.m_aut, AUT_run.app,

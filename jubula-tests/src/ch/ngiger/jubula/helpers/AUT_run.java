@@ -348,10 +348,10 @@ public class AUT_run {
 				new File(config.get(Constants.RESULT_DIR) + "/" +  "/error_shot_"+ nr_shots+ ".xwd").getAbsolutePath();
 		Utils.run_system_cmd("/usr/bin/xwd -root -out " + fullname, "import");
 	}
-	public static void takeScreenshotActiveWindow(AUT aut, Application app, String imageName){
+	public static boolean takeScreenshotActiveWindow(AUT aut, Application app, String imageName){
 		if (!aut.isConnected()) {
 			Utils.dbg_msg("Request takeScreenshot failed (not connected) for " + imageName);
-			return;
+			return false;
 		}
 		String fullname =
 			new File(config.get(Constants.RESULT_DIR) + "/" + imageName).getAbsolutePath();
@@ -360,17 +360,19 @@ public class AUT_run {
 			aut.execute(
 				app.takeScreenshotOfActiveWindow(fullname, 0, "rename", 100, true, 0, 0, 0, 0),
 				null);
+			return true;
 		} catch (ActionException e) {
 			Utils.dbg_msg("Action Exception " + fullname + " reason: " + e.getMessage());
 			// TODO: Use import to try to get more info
 			gen_xwd_screenshot();
 		}
+		return false;
 	}
 
-	public static void takeScreenshot(AUT aut, Application app, String imageName){
+	public static boolean takeScreenshot(AUT aut, Application app, String imageName){
 		if (aut == null || !aut.isConnected()) {
 			Utils.dbg_msg("Request takeScreenshot failed (not connected) for " + imageName);
-			return;
+			return false;
 		}
 		String fullname =
 			new File(config.get(Constants.RESULT_DIR) + "/" + imageName).getAbsolutePath();
@@ -386,11 +388,13 @@ public class AUT_run {
 					LinkOption.NOFOLLOW_LINKS);
 				Utils.dbg_msg("Created " + fullname + " exists " + foundFile);
 				Assert.assertTrue(foundFile);
+				return true;
 			}
 		} catch (ActionException e) {
 			Utils.dbg_msg("Action Exception " + fullname + " reason: " + e.getMessage());
 			// Assert.fail("Unable to create screenshot " + imageName);
 		}
+		return false;
 	}
 
 	public static void stopAut(AUT aut){

@@ -79,7 +79,7 @@ public class SuiteVisitAllPreferencePages {
 				base_png_name + "_failed.png"); //$NON-NLS-1$ //$NON-NLS-2$
 			Utils.dbg_msg("SuiteVisitAllPreferencePages.test_single_PreferencePage: " + this.index +
 					"restarting app");
-			AUT_run.restartApp(m_aut);
+			Assert.assertTrue(AUT_run.restartApp(m_aut) != null);
 			Utils.dbg_msg("SuiteVisitAllPreferencePages.test_single_PreferencePage: " + this.index +
 					" after restarting app. Will fail");
 			Assert.fail("Unable to open PreferencePage " + this.index);
