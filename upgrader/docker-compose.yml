@@ -67,7 +67,7 @@ services:
     # We want silently kill the docker after an hour
     entrypoint: /app/create_elexis_user.sh
     volumes:
-      - ${PWD}/upgrader/create_elexis_user.sh:/app/create_elexis_user.sh
+      - ${PWD}/wheezy/assets/create_elexis_user.sh:/app/create_elexis_user.sh
       - ${PWD}/wheezy/assets/daemonize:/app/daemonize
       - /opt/db_dumps:/opt/db_dumps
       - /opt/downloads:/opt/downloads
