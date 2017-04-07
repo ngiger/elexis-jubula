@@ -28,6 +28,7 @@ import java.nio.file.attribute.PosixFilePermissions;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Set;
+import java.util.TimeZone;
 
 import org.junit.Assert;
 import org.junit.Rule;
@@ -91,6 +92,8 @@ public class Utils {
 		// log.info(msg);
 		if (Utils.writer == null) {
 			String log_name = null;
+			TimeZone tz = TimeZone.getDefault();
+
 			String log_timestamp = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss")
 				.format(Calendar.getInstance().getTime());
 			log_name = SAVE_RESULTS_DIR + "/AUT_run_" + log_timestamp + ".log";
@@ -101,6 +104,14 @@ public class Utils {
 				Utils.writer = new PrintWriter(System.out);
 			}
 			System.out.println("log_name writer is: " + log_name);
+			Utils.writer.println("init default " + tz.getDisplayName() + " value: " +new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss")
+				.format(Calendar.getInstance().getTime()));
+			TimeZone.setDefault(TimeZone.getTimeZone("Europe/London"));
+			Utils.writer.println("init europe/London " + tz.getDisplayName() + " value: " +new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss")
+				.format(Calendar.getInstance().getTime()));
+			TimeZone.setDefault(TimeZone.getTimeZone("Europe/Zurich"));
+			Utils.writer.println("init europe/Zurich " + tz.getDisplayName() + " value: " +new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss")
+				.format(Calendar.getInstance().getTime()));
 		}
 		System.out.println(timeStamp + ": dbg_msg " + msg);
 		Utils.writer.println(timeStamp + ": " + msg);
