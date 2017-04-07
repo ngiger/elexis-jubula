@@ -44,9 +44,12 @@ public class SuiteVisitAllPerspectives {
 		}
 		m_aut = AUT_run.startAUT(!AUT_run.FORCE_START);
 		Software software = new Software(AUT_run.m_aut, AUT_run.app);
-		software.showAbout("first", false);
+		software.showAbout("perspectives_first", false);
 		if (!software.baseChIsInstalled()) {
+			Utils.dbg_msg("baseChIsInstalled is to be installed"); //$NON-NLS-1$
 			software.installAllSW();
+		} else {
+			Utils.dbg_msg("baseChIsInstalled is already installed"); //$NON-NLS-1$
 		}
 		p = new Perspectives(m_aut, AUT_run.app);
 		p.initialSetup(); // Sonst haben wir Probleme mit den Leistungen!
@@ -77,6 +80,6 @@ public class SuiteVisitAllPerspectives {
 	@AfterClass
 	public static void teardown() throws Exception{
 		Utils.dbg_msg("SuiteVisitAllPerspectives.teardown"); //$NON-NLS-1$
-		// Don't call stopAut, as this class is also used by the Medelexis Testusuite 
+		// Don't call stopAut, as this class is also used by the Medelexis Testusuite
 	}
 }

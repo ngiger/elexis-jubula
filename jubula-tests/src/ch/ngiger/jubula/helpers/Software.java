@@ -13,6 +13,7 @@ package ch.ngiger.jubula.helpers;
 import java.util.LinkedHashMap;
 
 import org.eclipse.jubula.client.AUT;
+import org.eclipse.jubula.client.exceptions.CommunicationException;
 import org.eclipse.jubula.toolkit.concrete.components.Application;
 import org.eclipse.jubula.toolkit.concrete.components.ComboComponent;
 import org.eclipse.jubula.toolkit.enums.ValueSets.BinaryChoice;
@@ -184,7 +185,9 @@ public class Software extends Common {
 			String sw_details = getTextFromCompent(OM.Install_SW_Details);
 			writeStringToResultsFile(sw_details, "sw_inst-details.log"); //$NON-NLS-1$;
 			AUT_run.takeScreenshotActiveWindow(m_aut, m_app, root + "sw-has-updates.png"); //$NON-NLS-1$;$$
+			Utils.sleep1second(); // really needed or sometimes the installation will fail!!
 			clickComponent(finish_button);
+			Utils.dbg_msg("SW_Install_Finish_btn was enabled");
 		} else {
 			Utils.dbg_msg("SW_Install_Finish_btn is NOT enabled. Already updated");
 			AUT_run.takeScreenshotActiveWindow(m_aut, m_app, root + "sw-no-updates.png"); //$NON-NLS-1$;$$
@@ -234,6 +237,7 @@ public class Software extends Common {
 		clickComponent(OM.SW_Update_Dialog_no);
 		// Click on "No". If we clicked "now", we could not detect restart of application
 		waitForWindowClose(updates_title, 15 * Constants.ONE_SECOND);
+		Utils.sleep1second();
 		return true;
 	}
 
@@ -323,9 +327,16 @@ public class Software extends Common {
 		} else {
 			if (installAllFeatures()) {
 				// needs restart
+				String quit = "Datei.*/Beenden*";
 				Utils.dbg_msg("installAllAndShowSW calling restart");
-				Assert.assertTrue(AUT_run.restartApp(m_aut) != null);
-				Utils.dbg_msg("installAllAndShowSW restarted");
+				try {
+					m_aut.execute(mbr.selectMenuEntryByTextpath(quit, Operator.matches), null);
+				} catch (CommunicationException e) {
+					Utils.dbg_msg("CommunicationException. Expected after " + quit);
+					m_aut = AUT_run.startAUT(false);
+				}
+				Assert.assertTrue(m_aut != null);
+				Assert.assertTrue(m_aut.isConnected());
 				AUT_run.takeScreenshotActiveWindow(AUT_run.m_aut, AUT_run.app, "after_restart.png");
 				Utils.dbg_msg("installAllAndShowSW restarted");
 				Perspectives perspectives = new Perspectives(AUT_run.m_aut, AUT_run.app);
