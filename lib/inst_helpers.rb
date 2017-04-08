@@ -31,7 +31,12 @@ module InstHelpers
     FileUtils.makedirs(File.dirname(cache), :verbose => true, :noop => opts[:noop])
     Dir.chdir(File.dirname(cache)) unless opts[:noop]
       Dir.chdir(File.dirname(cache)) unless opts[:noop]
-      cmd = "wget --user #{ENV['medelexis_user']} --password #{ENV['medelexis_password']} -c -N --no-host-directories --cut-dirs=1 -m -r -np -k #{url}"
+      unless ENV['medelexis_password'] && ENV['medelexis_user']
+        puts "!!!!! medelexis_password and medelexis_user must be defined in the user environment of #{ENV['USER']} !!!!"
+        puts "!!!!! Fatal error !!!!"
+        exit 2
+      end
+      cmd = "wget --user #{ENV['medelexis_user']} --password #{ENV['medelexis_password']} --no-check-certificate -c -N --no-host-directories --cut-dirs=1 -m -r -np -k #{url}"
       unless res = system(cmd)
         puts "Unable to download #{url}"
         return false
