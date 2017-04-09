@@ -72,8 +72,11 @@ class UpgradeRunner
 # here we decided to use the apt-package for trollop sequel mysql2 and pg instead of calling
 # bundle install --path=vendor/indocker --without debugger
 # bundle exec /home/elexis/
-bin/tst_upgrade.rb --clean --upgrade --run-in-docker #{opts[:definition] ? ('--definition='+opts[:definition]) : ''}
-)
+bin/tst_upgrade.rb --clean --upgrade )
+            [ :definition, :variant, :dummy].each do |param|
+              next unless opts[param]
+              cmd += " --#{param}=#{opts[param]}"
+            end
             cmd_name = "/home/elexis/upgrade_#{opts[:variant]}.sh"
             res = @docker.run_cmd_in_docker(cmd_name, cmd)
             @docker.stop_docker
@@ -114,8 +117,9 @@ bin/tst_upgrade.rb --clean --upgrade --run-in-docker #{opts[:definition] ? ('--d
         end if false
         puts "Found '#{status_line.chomp}' in #{file}. That is good. Details are in #{file.sub('errors', 'done')}"
       end
-      if results.size != 2
-        puts "upgrade_runner fails: Need 2 install_sw_medelexis.done in #{opts[:result_dir]}. Found only #{results.size}"
+      needed_done = 3
+      if results.size != needed_done
+        puts "upgrade_runner fails: Need #{needed_done} install_sw_medelexis.done in #{opts[:result_dir]}. Found #{results.size}"
         okay = false
       end
     end
