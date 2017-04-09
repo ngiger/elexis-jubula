@@ -43,8 +43,7 @@ module InstHelpers
     else
       cmd = "curl"
     end
-    cmd += " --silent --user #{access['medelexis_user']}:#{access['medelexis_password']} -O -L #{url}"
-    puts "#{Dir.pwd}: curl cmd for download is #{cmd}"
+    cmd += " --insecure --silent --user #{access['medelexis_user']}:#{access['medelexis_password']} -O -L #{url}"
     unless res = system(cmd)
       puts "Unable to download #{url}"
     end
