@@ -140,11 +140,11 @@ module DbHelpers
     puts "Loading #{opts[:db_type]} database #{opts[:db_name]} from #{opts[:db_dump]} (#{size_in_mb(opts[:db_dump])}). This could take a long time"
     # Delete from the database dump the create database and use command
     start_time = Time.now
+    cat = /sql$/.match(opts[:db_dump]) ? 'cat' : 'zcat' # check whether we have a compressed sql dump
     case opts[:db_type]
     when /mysql/
-      cmd = "cat #{opts[:db_dump]} | egrep -v  '^CREATE DATABASE|^USE '| #{opts[:db_root_cmd]} #{opts[:db_name]}"
+      cmd = "#{cat} #{opts[:db_dump]} | egrep -v  '^CREATE DATABASE|^USE '| #{opts[:db_root_cmd]} #{opts[:db_name]}"
     when /postgresql/
-      cat = /sql$/.match(opts[:db_dump]) ? 'cat' : 'zcat' # check whether we have a compressed sql dump
       cmd = "#{cat} #{opts[:db_dump]} |#{opts[:db_root_cmd]} --dbname  #{opts[:db_name]}"
       cmd = "#{cat} #{opts[:db_dump]} |psql #{opts[:db_name]} " if run_in_docker?
     else
@@ -284,9 +284,9 @@ select 'Only tables using more > 1 MB were displayed' as '';
     file.close
     case opts[:db_type]
     when /mysql/
-      cmd = "cat  #{file.path} | mysql --user #{opts[:db_user]} --password=#{opts[:db_password]} #{opts[:db_name]} | tee #{outfile}"
+      cmd = "cat  #{file.path} | mysql --host #{opts[:db_host]} --password=#{opts[:db_password]} #{opts[:db_name]} | tee #{outfile}"
     else
-      cmd = "cat  #{file.path} | psql  --user #{opts[:db_user]} --dbname #{opts[:db_name]} | tee #{outfile}"
+      cmd = "cat  #{file.path} | psql  --host #{opts[:db_host]} --user #{opts[:db_user]} --dbname #{opts[:db_name]} | tee #{outfile}"
     end
     res = system(cmd)
     puts "Created info about database size in #{outfile}. res #{res}"

@@ -25,25 +25,36 @@ module InstHelpers
     msg += " stored db info in " + opts[:db_info_root] if opts[:db_info_root]
     puts msg
   end
-  def download(url, cache)
+  def self.download(url, cache, noop = false)
     res = false
     saved = Dir.pwd
-    FileUtils.makedirs(File.dirname(cache), :verbose => true, :noop => opts[:noop])
-    Dir.chdir(File.dirname(cache)) unless opts[:noop]
-      Dir.chdir(File.dirname(cache)) unless opts[:noop]
-      unless ENV['medelexis_password'] && ENV['medelexis_user']
-        puts "!!!!! medelexis_password and medelexis_user must be defined in the user environment of #{ENV['USER']} !!!!"
-        puts "!!!!! Fatal error !!!!"
-        exit 2
-      end
-      cmd = "wget --user #{ENV['medelexis_user']} --password #{ENV['medelexis_password']} --no-check-certificate -c -N --no-host-directories --cut-dirs=1 -m -r -np -k #{url}"
-      unless res = system(cmd)
-        puts "Unable to download #{url}"
-        return false
-      end
-    ensure
-      Dir.chdir(saved)
-      return res
+    FileUtils.makedirs(cache, :verbose => true, :noop => noop)
+    Dir.chdir(cache) unless noop
+    medelexis_yml = '/etc/medelexis.yml'
+    unless File.exist?(medelexis_yml) && (access = YAML.load_file(medelexis_yml)) &&  access['medelexis_password'] && access['medelexis_user']
+      puts "!!!!! medelexis_password and medelexis_user must be defined in the YAML file #{medelexis_yml} !!!!"
+      puts "!!!!! Fatal error !!!!"
+      exit 2
+    end
+    puts 'https://download.medelexis.ch/medelexis.3.application/snapshot/products/ch.medelexis.application.product.Medelexis-linux.gtk.x86_64.zip'
+    cmd = "wget --quiet --user #{access['medelexis_user']} --password #{access['medelexis_password']} --no-check-certificate -N --no-directories --cut-dirs=1 -m -r -np --convert-links #{url}"
+    if File.exist?(File.basename(url))
+      cmd = "curl --time-cond #{File.basename(url)}"
+    else
+      cmd = "curl"
+    end
+    cmd += " --silent --user #{access['medelexis_user']}:#{access['medelexis_password']} -O -L #{url}"
+    puts "#{Dir.pwd}: curl cmd for download is #{cmd}"
+    unless res = system(cmd)
+      puts "Unable to download #{url}"
+    end
+    system("pwd && ls -lrta")
+  rescue => err
+    puts "err #{err} #{err.backtrace.join("\n")}"
+    res = false
+  ensure
+    Dir.chdir(saved)
+    return res
   end
 
   def install_variant(url, cache,  dest)
@@ -72,11 +83,11 @@ module InstHelpers
     # /home/srv/web/download.medelexis.ch/medelexis.3.application/snapshot/products/ch.medelexis.application.product.Medelexis-linux.gtk.x86_64.zip
     # download("#{root}/#{jobname}/#{artifact}", cache)
     root      = 'https://download.medelexis.ch/medelexis.3.application'
-    download("#{root}/#{variant}/products/ch.medelexis.application.product.Medelexis-linux.gtk.x86_64.zip", cache)
+    InstHelpers.download("#{root}/#{variant}/products/ch.medelexis.application.product.Medelexis-linux.gtk.x86_64.zip", cache, opts[:noop])
     FileUtils.makedirs(dest, :verbose => true, :noop => opts[:noop])
     Dir.chdir(dest) unless opts[:noop]
     puts File.expand_path(saved)
-    candidates = Dir.glob("#{saved}/*elexis*.zip")+Dir.glob("#{cache}/products/*.zip")
+    candidates = Dir.glob("#{saved}/*elexis*.zip")+Dir.glob("#{cache}/*.zip")
     unless candidates.size > 0
       fail "Must find at least one zip file to unpack in #{saved} or #{cache}"
     end
@@ -149,12 +160,13 @@ module InstHelpers
 
   def upgrade
     variant = opts[:variant]
-
+    ENV['SWT_GTK3'] = '0'
     cache = File.join(UpgradeOptions::CACHE_BASE, opts[:medelexis] ? 'medelexis' : 'elexis', variant)
     url = "https://download.medelexis.ch/medelexis.3//#{variant}"
     dest = File.join(Dir.pwd, variant)
     result_dir1 = "#{opts[:result_dir]}/runFromScratch"
     result_dir2 = "#{opts[:result_dir]}/#{opts[:db_name]}"
+    result_dir3 = "#{opts[:result_dir]}/#{opts[:db_name]}_restart"
 
     if File.exist?(File.join(dest, 'plugins'))
       puts "Skip extract_medelexis_exe as #{cache}/plugins exists"
@@ -180,6 +192,8 @@ module InstHelpers
     puts "upgrade: start second start_and_install_sw"
     res = start_and_install_sw(dest, variant, result_dir2, false)
     puts "upgrade: start second start_and_install_sw returned #{res}"
+    res = start_and_install_sw(dest, variant, result_dir3, false)
+    puts "upgrade: start third start_and_install_sw returned #{res}"
     return res
   end
 

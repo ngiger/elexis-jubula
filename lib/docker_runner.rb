@@ -247,8 +247,8 @@ sleep 1
     cmd += %(
 /app/daemonize /usr/bin/xclock -digital -twentyfour
 echo 'Not waiting for databases'
-# /app/wait-for-it.sh --timeout=30 postgres:5432 -- echo "postgres database server is up"
-# /app/wait-for-it.sh --timeout=90 mysql:3306 -- echo "mysql database server is up"
+/app/wait-for-it.sh --timeout=30 postgres:5432 -- echo "postgres database server is up"
+/app/wait-for-it.sh --timeout=90 mysql:3306 -- echo "mysql database server is up"
 ) unless opts[:use_x11]
     cmd
   end

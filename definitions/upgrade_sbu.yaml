@@ -1,0 +1,10 @@
+---
+# Here we define the parameter which are the same when using
+# the database from Peter Schönbucher for the different variants/varsions and licenses
+# I changed manually the mandant psy -> test with password test
+  :db_dump: /opt/db_dumps/sbu_mit_test.sql.gz
+  :db_label: sbu
+  :elexis_user: test
+  :elexis_password: test
+  :db_name: tst_upgrade
+  :jdbc: postgresql://elexis:elexisTest@localhost/tst_upgrade

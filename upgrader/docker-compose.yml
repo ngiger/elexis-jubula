@@ -67,8 +67,10 @@ services:
     # We want silently kill the docker after an hour
     entrypoint: /app/create_elexis_user.sh
     volumes:
+      - /etc/medelexis.yml:/etc/medelexis.yml
       - ${PWD}/wheezy/assets/create_elexis_user.sh:/app/create_elexis_user.sh
       - ${PWD}/wheezy/assets/daemonize:/app/daemonize
+      - ${PWD}/wheezy/assets/periodic_screenshots.sh:/app/periodic_screenshots.sh
       - /opt/db_dumps:/opt/db_dumps
       - /opt/downloads:/opt/downloads
       - ${PWD}:/home/elexis
