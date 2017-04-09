@@ -36,7 +36,6 @@ module InstHelpers
       puts "!!!!! Fatal error !!!!"
       exit 2
     end
-    puts 'https://download.medelexis.ch/medelexis.3.application/snapshot/products/ch.medelexis.application.product.Medelexis-linux.gtk.x86_64.zip'
     cmd = "wget --quiet --user #{access['medelexis_user']} --password #{access['medelexis_password']} --no-check-certificate -N --no-directories --cut-dirs=1 -m -r -np --convert-links #{url}"
     if File.exist?(File.basename(url))
       cmd = "curl --time-cond #{File.basename(url)}"
@@ -102,18 +101,20 @@ module InstHelpers
   end
 
   def prepare_license(container_home = false)
-    dest = File.expand_path(File.join("~/elexis/license.xml"))
+    dest = File.expand_path(File.join(Dir.home, 'elexis', 'license.xml'))
+    license = opts[:license_file]
+    puts "prepare_license run_in_docker? #{run_in_docker?} license #{license} dest #{dest}"
     if run_in_docker?
       puts "I am running inside the docker. The license file must already be present under #{dest} #{File.exist?(dest)}"
+      raise "No license #{dest} found" unless File.exist?(dest)
       return File.exist?(dest)
     end
-    license = opts[:license_file]
     if license
       unless File.exist?(license)
-        puts "No file #{license} found"
-        return false
+        puts "No license #{license} found"
+        raise "No license #{license} found"
       end
-      dest = File.expand_path(File.join(container_home, "/elexis/license.xml")) if opts[:run_in_docker]
+      dest = File.expand_path(File.join(container_home, 'elexis', 'license.xml'))
       FileUtils.makedirs(File.dirname(dest), :verbose => true, :noop => opts[:noop]) unless File.exist?(File.dirname(dest))
       FileUtils.cp(license, dest, :verbose => true, :noop => opts[:noop])
       return system("ls -la #{dest}")
@@ -136,11 +137,11 @@ module InstHelpers
     elexis_log = File.expand_path("~/elexis/logs/elexis-3.log")
     FileUtils.rm_f(elexis_log, :verbose => true, :noop => opts[:noop]) if File.exist?(elexis_log)
 
-    cmd = "wheezy/assets/install_sw_medelexis.rb #{exefile} #{variant} #{result_dir}"
+    cmd = run_in_docker? ? '/app/install_sw_medelexis.rb' : 'wheezy/assets/install_sw_medelexis.rb'
+    cmd += " #{exefile} #{variant} #{result_dir}"
     unless first_run
       cmd += " '#{opts[:db_elexis_params] }' "
     end
-    puts cmd
     res = true
     begin
       res = system(cmd)
