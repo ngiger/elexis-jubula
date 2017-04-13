@@ -28,7 +28,7 @@ class UpgradeRunner
     @opts[:result_dir] = "results_#{@opts[:variant]}"
     @db  = Sequel.connect(@opts[:sequel_connect])
     if @opts[:medelexis]
-      raise "Remove #{WorkDir} with installed Elexis-Opensourc" if Dir.glob(File.join(WorkDir, 'Elexis3*')).size > 0
+      raise "Remove #{WorkDir} with installed Elexis-Opensource" if Dir.glob(File.join(WorkDir, 'Elexis3*')).size > 0
     else
       raise "We don't have adapted this script for the Elexis OpenSource. Patches welcome"
     end

@@ -84,7 +84,7 @@ module DbHelpers
   # org.osgi.framework.BundleException
   # sequel mysql2://localhost/hgz
   def get_db_elexis_version
-    @db  = Sequel.connect(opts[:sequel_connect]) unless @db
+    @db  = Sequel.connect(opts[:sequel_connect])
     return ['0.0', 'x.y'] if opts[:noop]
     db_version = @db[:config].filter[:param => 'dbversion'][:wert]
     elexis_version = @db[:config].filter[:param => 'ElexisVersion'][:wert]
@@ -170,7 +170,7 @@ module DbHelpers
   end
 
   def load_elexis_db_if_not_exist
-    @db  = Sequel.connect(opts[:sequel_connect]) unless @db
+    @db  = Sequel.connect(opts[:sequel_connect])
     puts "Connecting to #{opts[:sequel_connect]}"
     has_tables = false
     begin
@@ -294,7 +294,7 @@ select 'Only tables using more > 1 MB were displayed' as '';
       cmd = "cat  #{file.path} | psql  --host #{opts[:db_host]} --user #{opts[:db_user]} --dbname #{opts[:db_name]} | tee #{outfile}"
     end
     res = system(cmd)
-    raise "Running #{cmd} failed" unless File.exist?(outfile) && File.size(outfile) > 10
+    raise "Running #{cmd} failed" unless File.exist?(outfile) # && File.size(outfile) > 10
     puts "Created info about database size in #{outfile}. res #{res}. #{outfile} is #{File.size(outfile)} bytes"
     file.unlink if res
   end
