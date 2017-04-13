@@ -18,6 +18,7 @@ import org.eclipse.jubula.client.exceptions.ActionException;
 import org.eclipse.jubula.client.exceptions.CommunicationException;
 import org.eclipse.jubula.client.launch.AUTConfiguration;
 import org.eclipse.jubula.toolkit.concrete.components.Application;
+import org.eclipse.jubula.toolkit.concrete.components.MenuBarComponent;
 import org.eclipse.jubula.toolkit.enums.ValueSets.AUTActivationMethod;
 import org.eclipse.jubula.toolkit.enums.ValueSets.Modifier;
 import org.eclipse.jubula.toolkit.enums.ValueSets.Operator;
@@ -457,6 +458,20 @@ public class AUT_run {
 	public static boolean AUT_runs_on_localhost() {
 		 return config.get(Constants.AGENT_HOST).equals("localhost");
 	}
+	public static AUT restartAppViaQuit(AUT aut){
+		String quit = "Datei.*/Beenden*";
+		Utils.dbg_msg("installAllAndShowSW calling restart");
+		try {
+			MenuBarComponent mbr = SwtComponents.createMenu();
+			m_aut.execute(mbr.selectMenuEntryByTextpath(quit, Operator.matches), null);
+		} catch (CommunicationException e) {
+			Utils.dbg_msg("CommunicationException. Expected after " + quit);
+			m_aut = AUT_run.startAUT(false);
+		}
+		Assert.assertTrue(m_aut != null);
+		return m_aut;
+	}
+
 	public static AUT restartApp(AUT aut){
 		Utils.dbg_msg(
 			"AUT_run.restartApp " + aut + " aut " + (aut != null ? aut.isConnected() : "null"));

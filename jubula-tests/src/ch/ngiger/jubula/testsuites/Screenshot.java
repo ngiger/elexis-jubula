@@ -23,7 +23,7 @@ public class Screenshot {
 		Utils.dbg_msg("screenshot_active_window");
 		Assert.assertTrue(AUT_run.takeScreenshotActiveWindow(m_aut, AUT_run.app, "first_screenshot.png"));
 		Utils.maximizeElexisWindow();
-		Assert.assertTrue(AUT_run.restartApp(m_aut) != null);
+		Assert.assertTrue(AUT_run.restartAppViaQuit(m_aut) != null);
 		Utils.dbg_msg("screenshot_active_window done");
 		Assert.assertTrue(AUT_run.takeScreenshotActiveWindow(m_aut, AUT_run.app, "after_restart_screenshot.png"));
 	}

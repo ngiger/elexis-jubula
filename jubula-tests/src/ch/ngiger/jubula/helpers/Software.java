@@ -314,16 +314,7 @@ public class Software extends Common {
 	public void installAllSW(){
 		if (AUT_run.isMedelexis) {
 			Utils.dbg_msg("AUT_EXE is medelexis: " + AUT_run.config.get(Constants.AUT_EXE));
-			openMenu("Datei/Beenden");
-			while (m_aut.isConnected()) {
-				if (waitForWindow("Install Error")) {
-					pressEscape();
-				}
-				Utils.sleep1second();
-				Utils.dbg_msg("AUT_EXE is medelexis waiting");
-			}
-			Utils.sleep1second();
-			Assert.assertTrue(AUT_run.restartApp(m_aut) != null);
+			Assert.assertTrue(AUT_run.restartAppViaQuit(m_aut) != null);
 		} else {
 			if (installAllFeatures()) {
 				// needs restart

@@ -270,8 +270,7 @@ public class Common {
 			j++;
 		}
 	}
-
-	public boolean openMenu(String menu){
+	public boolean openMenu(String menu, int timeout_in_millisecond){
 		Utils.dbg_msg(String.format("openMenu: %s %s", menu, mbr.toString())); //$NON-NLS-1$ //$NON-NLS-2$
 		if (!AUT_run.m_agent.isConnected())
 		{
@@ -280,14 +279,14 @@ public class Common {
 		}
 		try {
 			m_aut.execute(
-				mbr.waitForComponent(Constants.ONE_SECOND * 120, Constants.NR_MS_WAIT_AFTER_ACTION),
+				mbr.waitForComponent(timeout_in_millisecond, Constants.NR_MS_WAIT_AFTER_ACTION),
 				null);
 			m_aut.execute(mbr.selectMenuEntryByTextpath(menu, Operator.matches), null);
 			Utils.dbg_msg(String.format("openMenu %s done", menu)); //$NON-NLS-1$
 			return true;
 		} catch (ExecutionException | CommunicationException e) {
-			String msg = String.format("openMenu %s after 120 second failed", menu + //$NON-NLS-1$
-				" " + e.getMessage()); //$NON-NLS-1$
+			String msg = String.format("openMenu %s after %d second failed %s", menu, timeout_in_millisecond,
+				e.getMessage()); //$NON-NLS-1$
 			Utils.dbg_msg(msg);
 			e.printStackTrace(Utils.getWriter());
 			AUT_run.takeScreenshotActiveWindow(m_aut, m_app, "open_menu_failed.png"); //$NON-NLS-1$
@@ -295,6 +294,10 @@ public class Common {
 		}
 		pressEscape();
 		return false;
+	}
+
+	public boolean openMenu(String menu){
+		return openMenu(menu, Constants.ONE_SECOND);
 	}
 
 	public void pressEscape(){
