@@ -98,7 +98,7 @@ bin/tst_upgrade.rb --clean --upgrade )
       puts "#{Time.now.strftime('%Y.%m.%d %H:%M:%S')}: took #{diff_seconds} seconds to run. returning #{result_okay.inspect}"
       return result_okay
     else
-      puts "#{Time.now.strftime('%Y.%m.%d %H:%M:%S')}: took #{diff_seconds} seconds to run. Exit status 0 if #{result_okay.inspect}"
+      puts "#{Time.now.strftime('%Y.%m.%d %H:%M:%S')}: Total time #{diff_seconds}:#{sprintf('%02d',diff_seconds)}. Result #{result_okay ? 'SUCCESS' : opts[:noop] ? 'opts[:noop]' : 'FAILURE'}"
       exit(result_okay ? 0 : 1) unless defined?(RSpec)
     end
   end
