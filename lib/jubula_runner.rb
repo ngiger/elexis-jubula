@@ -128,6 +128,7 @@ whoami
   end
 
   def run_test_exec
+    ENV['SWT_GTK3'] = '0'
     Dir.chdir(RootDir)
     File.join(RootDir, RESULT_DIR)
     @test_params[:environment].each do |v,k| ENV[v]=k end if @test_params[:environment]

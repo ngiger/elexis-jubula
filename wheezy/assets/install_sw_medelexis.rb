@@ -7,6 +7,7 @@
 #   Close all your Internet Explorer windows  nircmd.exe win close class "IEFrame"
 #   Answer 'Yes' to a standard Windows message-box.   nircmd.exe dlg "" "" click yes
 require 'fileutils'
+begin require 'pry'; rescue LoadError; end
 ELEXIS_DB_DEFAULTS = '-Dch.elexis.username=007 -Dch.elexis.password=topsecret -Delexis-run-mode=RunFromScratch '
 
 if ARGV.size < 3
@@ -33,6 +34,7 @@ NEEDED_APPS = [ 'xdotool', 'scrot', 'wmctrl']
 PROBLEMATIC_WINDOW_TITLES = [
   'InfoBox not proper private key', # eg. priaid
   'Install',
+  'Install Error',
   'Update', # Update Error prerelease -> altes release updaten
   ERROR_WINDOW,
   'Multiple problems have occurred', # eg. Several Installing
@@ -172,9 +174,9 @@ end
 
 def send_escape(window_name)
   cmd = "xdotool search --name '#{window_name}' windowactivate && xdotool key Escape"
+  puts cmd
   res = system(cmd)
 end
-
 def close_non_error_popups
   @@index  ||= 0
  ['Wichtige Reminder'].each do |popup_name|
@@ -193,15 +195,16 @@ def install_sw
   sleep 5
   create_snapshot('install_sw_pressed_quit')
   progress "Waiting for Elexis to quit"
-  while name = get_window_name
-    sleep 3
+  while (name = get_window_name)
+    sleep 2
     progress "Elexis #{name} still alive after #{(Time.now - StartTime).to_i} seconds"
-    PROBLEMATIC_WINDOW_TITLES.each{ |name| close_error_window_if_present(name) }
+    PROBLEMATIC_WINDOW_TITLES.each{ |title| close_error_window_if_present(title) }
     send_quit # why
     close_non_error_popups # sometime we have them
     if (Time.now - StartTime).to_i > 600 # wait maximal 10 minutes
       increment_sw_error_and_snapshot('Elexis', "Timout expired (600 seconds) #{$sw_errors}", 'timeout_installation')
     end
+    sleep 1  # needed or get_window_name fails sometime
   end
 end
 

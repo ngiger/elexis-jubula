@@ -26,7 +26,7 @@ class UpgradeOptions < Hash
       opt :db_dump,       'The full path for the sql_dump to load', :type => String, :default => DEFAULT_DB_DUMP
       opt :variant,       "Possible values are snapshot, beta, prerelease, release", :type => String, :default => 'prerelease'
       opt :info,          "Open (load if not yet exist) database and save DB-Info (inkl. elexis/db-version, nr_rows, max/min lastupdate)"
-      opt :run_in_docker, "Run (only --clean --upgrade supported) inside docker, not on the command line", :default => true
+      opt :run_in_docker, "Run (only --clean --upgrade supported) inside docker, not on the command line", :default => false
       opt :upgrade,       "Download (cached in #{CACHE_BASE}) (Med-)Elexis,
       start it twice and
       visit all views to catch possible errors, NPE, etc"

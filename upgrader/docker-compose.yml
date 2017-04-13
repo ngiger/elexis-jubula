@@ -71,11 +71,11 @@ services:
       - ${PWD}/wheezy/assets/create_elexis_user.sh:/app/create_elexis_user.sh
       - ${PWD}/wheezy/assets/daemonize:/app/daemonize
       - ${PWD}/wheezy/assets/periodic_screenshots.sh:/app/periodic_screenshots.sh
+      - ${PWD}/wheezy/mysql:/etc/mysql/conf.d
+      - ${PWD}:/home/elexis
       - /opt/db_dumps:/opt/db_dumps
       - /opt/downloads:/opt/downloads
-      - ${PWD}:/home/elexis
       # File in this directory must not be world readable or the mysqld will simply ignore it!
-      - ${PWD}/wheezy/mysql:/etc/mysql/conf.d
       # - /tmp/.X11-unix:/tmp/.X11-unix # für USE_X11
     # devices: # für USE_X11
       # - /dev/snd # für USE_X11

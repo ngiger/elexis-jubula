@@ -55,14 +55,6 @@ module InstHelpers
     return res
   end
 
-  def install_variant(url, cache,  dest)
-    puts "install_variant #{url} #{cache} #{dest}"
-    ['plugins', 'features'].each do |to_install|
-      FileUtils.makedirs(dest, :verbose => true, :noop => opts[:noop]) unless File.exist?(dest)
-      FileUtils.cp_r(File.join(cache, to_install), dest, :preserve => true, :verbose => true, :noop => opts[:noop])
-    end
-  end
-
   def extract_medelexis_exe(variant, cache, dest)
     saved = Dir.pwd
     root      = 'https://sbe.medelexis.ch/jenkins/view/3.0/job'
@@ -114,7 +106,11 @@ module InstHelpers
         puts "No license #{license} found"
         raise "No license #{license} found"
       end
-      dest = File.expand_path(File.join(container_home, 'elexis', 'license.xml'))
+      if container_home
+        dest = File.expand_path(File.join(container_home, 'elexis', 'license.xml'))
+      else
+        dest = File.join(Dir.home, 'elexis', 'license.xml')
+      end
       FileUtils.makedirs(File.dirname(dest), :verbose => true, :noop => opts[:noop]) unless File.exist?(File.dirname(dest))
       FileUtils.cp(license, dest, :verbose => true, :noop => opts[:noop])
       return system("ls -la #{dest}")
@@ -122,6 +118,7 @@ module InstHelpers
   end
   def start_and_install_sw(dest, variant, result_dir, first_run)
     exefile = nil
+    return unless opts[:medelexis]
     candidates = [ File.join(dest, 'Elexis3'),
       File.join(dest, 'Medelexis')]
     candidates.each do |exe| exefile = exe if File.executable?(exe) end
@@ -162,38 +159,40 @@ module InstHelpers
     variant = opts[:variant]
     ENV['SWT_GTK3'] = '0'
     cache = File.join(UpgradeOptions::CACHE_BASE, opts[:medelexis] ? 'medelexis' : 'elexis', variant)
-    url = "https://download.medelexis.ch/medelexis.3//#{variant}"
-    dest = File.join(Dir.pwd, variant)
+    if opts[:medelexis]
+      url = "https://download.medelexis.ch/medelexis.3/#{variant}"
+      if File.exist?(File.join(WorkDir, 'plugins'))
+        puts "Skip extract_medelexis_exe as #{cache}/plugins exists"
+      else
+        extract_medelexis_exe(variant, cache, WorkDir)
+      end
+    else
+      puts "Installing Elexis opensource WorkDir is #{WorkDir} WorkDir #{WorkDir}"
+      elexis_zip = Config[:elexis_fsf][variant][:full_zip_url]
+      download_and_unzip(elexis_zip.gsub('snapshot', variant), File.join(WorkDir, '**/plugins'))
+      install_rcp_support_for_jubula(WorkDir)
+      patch_ini_file_for_jubula_rc(WorkDir)
+    end
     result_dir1 = "#{opts[:result_dir]}/runFromScratch"
     result_dir2 = "#{opts[:result_dir]}/#{opts[:db_name]}"
     result_dir3 = "#{opts[:result_dir]}/#{opts[:db_name]}_restart"
 
-    if File.exist?(File.join(dest, 'plugins'))
-      puts "Skip extract_medelexis_exe as #{cache}/plugins exists"
-    else
-      extract_medelexis_exe(variant, cache, dest)
-    end
-    if false
-      install_variant(url, cache, dest) unless Dir.glob("#{dest}/plugins/org.iatrix*.jar").size > 0
-    else
-      puts "upgrade: Skip install_variant. We think it is better to install"
-    end
     res = true
     if File.exist?(result_dir1) && !opts[:clean]
       puts "upgrade: Skipping first install as we found #{result_dir1} and not clean demanded"
     else
-      res = start_and_install_sw(dest, variant, result_dir1, true)
+      res = start_and_install_sw(WorkDir, variant, result_dir1, true)
       puts "upgrade: first start_and_install_sw returned #{res}"
       unless res
-          puts "upgrade: first start_and_install_sw failed"
+          puts "#{Time.now}: upgrade: first start_and_install_sw failed"
         return false
       end
     end
-    puts "upgrade: start second start_and_install_sw"
-    res = start_and_install_sw(dest, variant, result_dir2, false)
-    puts "upgrade: start second start_and_install_sw returned #{res}"
-    res = start_and_install_sw(dest, variant, result_dir3, false)
-    puts "upgrade: start third start_and_install_sw returned #{res}"
+    puts "#{Time.now}: upgrade: start second start_and_install_sw"
+    res = start_and_install_sw(WorkDir, variant, result_dir2, false)
+    puts "#{Time.now}: upgrade: start second start_and_install_sw returned #{res}"
+    res = start_and_install_sw(WorkDir, variant, result_dir3, false)
+    puts "#{Time.now}: upgrade: start third start_and_install_sw returned #{res}"
     return res
   end
 

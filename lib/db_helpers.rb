@@ -284,12 +284,18 @@ select 'Only tables using more > 1 MB were displayed' as '';
     file.close
     case opts[:db_type]
     when /mysql/
-      cmd = "cat  #{file.path} | mysql --host #{opts[:db_host]} --password=#{opts[:db_password]} #{opts[:db_name]} | tee #{outfile}"
+      if run_in_docker?
+        credentials ="--host #{opts[:db_host]} --password=#{opts[:db_password]} "
+      else
+        credentials ="--host #{opts[:db_host]} --user #{opts[:db_user]} --password=#{opts[:db_password]} "
+      end
+      cmd = "cat  #{file.path} | mysql #{credentials} #{opts[:db_name]} | tee #{outfile}"
     else
       cmd = "cat  #{file.path} | psql  --host #{opts[:db_host]} --user #{opts[:db_user]} --dbname #{opts[:db_name]} | tee #{outfile}"
     end
     res = system(cmd)
-    puts "Created info about database size in #{outfile}. res #{res}"
+    raise "Running #{cmd} failed" unless File.exist?(outfile) && File.size(outfile) > 10
+    puts "Created info about database size in #{outfile}. res #{res}. #{outfile} is #{File.size(outfile)} bytes"
     file.unlink if res
   end
 
