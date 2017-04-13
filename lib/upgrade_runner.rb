@@ -13,10 +13,14 @@ class UpgradeRunner
   include DbHelpers
   include InstHelpers
   def cleanup(result_dir)
-    dirs = [@opts[:variant], 'vendor/indocker'] +  Dir.glob(result_dir)
+    dirs = [ WorkDir, @opts[:variant],'vendor/indocker'] +  Dir.glob(result_dir)
     dirs.each do |dir|
       puts "Removing directory and its content: #{dir}"
       FileUtils.rm_rf(dir, :verbose => true, :noop => @opts[:noop] )
+    end
+    unless File.exist?(WorkDir)
+      FileUtils.makedirs(WorkDir)
+      File.open("#{WorkDir}/creation.#{Time.now.strftime('%H.%M.%S')}", 'w+') { |f| f.puts "Created by #{__FILE__}: opts #{@opts}" }
     end
   end
   def run(options)
@@ -25,7 +29,7 @@ class UpgradeRunner
     start_time = Time.now
     @info_root = File.expand_path(File.join(__FILE__, '..', '..', 'db_info'))
     @info_today = File.join(@info_root, @opts[:db_name], start_time.strftime('%Y%m%d.%H%M%S'))
-    @opts[:result_dir] = "results_#{@opts[:variant]}"
+    @opts[:result_dir] = "results_#{@opts[:variant]}_#{@opts[:definition]}"
     @db  = Sequel.connect(@opts[:sequel_connect])
     if @opts[:medelexis]
       raise "Remove #{WorkDir} with installed Elexis-Opensource" if Dir.glob(File.join(WorkDir, 'Elexis3*')).size > 0
