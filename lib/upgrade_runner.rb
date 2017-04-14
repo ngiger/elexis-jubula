@@ -106,6 +106,8 @@ bin/tst_upgrade.rb --clean --upgrade )
 
   def show_results
     okay = true
+    elexis_log = (opts[:run_in_docker] ? "#{@docker.container_home}/elexis" : Dir.home) + "/logs/elexis-3.log"
+    FileUtils.cp(elexis_log, @opts[:result_dir], :verbose => true) unless run_in_docker?
     results = Dir.glob(@opts[:result_dir] + '/**/install_sw_medelexis.errors')
     if @opts[:upgrade] && !@opts[:noop] && !run_in_docker?
       puts "Checking #{results}"
