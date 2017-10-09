@@ -221,7 +221,6 @@ class DockerRunner
 export LANGUAGE=de_CH
 export DISPLAY=#{@display}
 export VARIANT=#{opts[:variant]}
-export SWT_GTK3=0
 if ! test -f /app/daemonize ; then echo daemonize not installed; exit 2; fi
 /app/daemonize /usr/bin/Xvfb :1 -screen 5 1600x1280x24 -nolisten tcp
 ps -ef | grep -i xvfb

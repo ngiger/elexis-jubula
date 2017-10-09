@@ -61,9 +61,9 @@ class JubulaRunner
     case opts[:variant]
     when /beta/
       port += 300
-    when /prerelease/
+    when /^3.1-prerelease/
       port += 200
-    when /^release/
+    when /^3.1/
       port += 100
     else
       # use default
@@ -94,7 +94,6 @@ mkdir -p /home/elexis/elexis/GlobalInbox
 env | sort
 export AGENT_PORT=#{@opts[:agent_port]}
 export agent_port=#{@opts[:agent_port]}
-export SWT_GTK3=0
 grep elexis /etc/passwd
 echo elexis should have UID #{ENV['HOST_UID']}
 whoami
@@ -128,7 +127,6 @@ whoami
   end
 
   def run_test_exec
-    ENV['SWT_GTK3'] = '0'
     Dir.chdir(RootDir)
     File.join(RootDir, RESULT_DIR)
     @test_params[:environment].each do |v,k| ENV[v]=k end if @test_params[:environment]

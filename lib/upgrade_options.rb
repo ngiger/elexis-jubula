@@ -24,7 +24,7 @@ class UpgradeOptions < Hash
       opt :elexis_password, 'Username for Elexis', :type => String, :default => 'elexisTest'
       opt :root_pw,       'Password for mysql/postgres root user', :type => String, :default => 'elexisTest'
       opt :db_dump,       'The full path for the sql_dump to load', :type => String, :default => DEFAULT_DB_DUMP
-      opt :variant,       "Possible values are snapshot, beta, prerelease, release", :type => String, :default => 'prerelease'
+      opt :variant,       "Possible values are master, 3.1-prerelease, 3.1, new feature branches", :type => String, :default => 'master'
       opt :info,          "Open (load if not yet exist) database and save DB-Info (inkl. elexis/db-version, nr_rows, max/min lastupdate)"
       opt :run_in_docker, "Run (only --clean --upgrade supported) inside docker, not on the command line", :default => false
       opt :upgrade,       "Download (cached in #{CACHE_BASE}) (Med-)Elexis,

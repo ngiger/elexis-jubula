@@ -7,12 +7,9 @@
 :agent_port: 6200
 :director_latest: http://mirror.switch.ch/eclipse/tools/buckminster/products/director_latest.zip
 :elexis_fsf:
-   # :full_zip_url: http://download.elexis.info/elexis.3.core/3.0.0/ch.elexis.core.application.ElexisApp-linux.gtk.x86_64.zip
-  snapshot:
-    :full_zip_url: http://download.elexis.info/elexis.3.core/snapshot/products/ch.elexis.core.application.ElexisApp-linux.gtk.x86_64.zip
-  beta:
-    :full_zip_url: http://download.elexis.info/elexis.3.core/beta/products/ch.elexis.core.application.ElexisApp-linux.gtk.x86_64.zip
-  prerelease:
+  master:
+    :full_zip_url: http://download.elexis.info/elexis/master/products/ch.elexis.core.application.ElexisApp-linux.gtk.x86_64.zip
+  3.1-prerelease:
     :full_zip_url: http://download.elexis.info/elexis.3.core/prerelease/products/ch.elexis.core.application.ElexisApp-linux.gtk.x86_64.zip
-  release:
+  3.1:
     :full_zip_url: http://download.elexis.info/elexis.3.core/release/products/ch.elexis.core.application.ElexisApp-linux.gtk.x86_64.zip

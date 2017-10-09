@@ -20,7 +20,7 @@ class JubulaOptions < Hash
       opt :aut_agent,     "Start autagent for Jubula inside the docker"
       opt :run_in_docker, "Run maven inside docker, not on the command line", :default => false
       opt :medelexis,     "Test Medelexis (not Elexis3) app", :default => false
-      opt :variant,       "Possible values are snapshot, beta, prerelease, release", :type => String, :default => 'snapshot'
+      opt :variant,       "Possible values are master, 3.x, fxxxx, pre-release, release", :type => String, :default => 'master'
     end
     result = Trollop::with_standard_exception_handling p do
       p.parse options

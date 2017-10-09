@@ -36,10 +36,10 @@ if  ENV['VARIANT']
   VARIANT ||= ENV['VARIANT']
   desc "Install latest #{VARIANT} (as specified by env variable VARIANT) of OpenSource Elexis"
 else
-  VARIANT ||= 'snapshot'
-  desc 'Install latest snapshot of OpenSource Elexis'
+  VARIANT ||= 'master'
+  desc 'Install latest master of OpenSource Elexis'
 end
-desc "Install Elexis Opensource. Branch default to snapshot, unless overriden via environment variable VARIANT #{ENV['VARIANT']}"
+desc "Install Elexis Opensource. Branch default to master, unless overriden via environment variable VARIANT #{ENV['VARIANT']}"
 task :elexis_install_os do
   fail 'elexis_install_os failed!' unless system('scripts/install_open_source_elexis.rb')
 end

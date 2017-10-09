@@ -205,7 +205,7 @@ public class Software extends Common {
 		long startSeconds = System.currentTimeMillis()/1000;
 		while (((System.currentTimeMillis()/1000) -startSeconds)  < 200)
 		{
-			System.out.println("Check "+ trust_certificates);
+			System.out.println("Check "+ trust_certificates + " waited " + ((System.currentTimeMillis()/1000) -startSeconds) + " seconds");
 			Utils.sleep1second();
 
 			if (waitForWindow(trust_certificates, Constants.ONE_SECOND))

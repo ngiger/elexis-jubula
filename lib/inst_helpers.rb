@@ -60,18 +60,14 @@ module InstHelpers
     root      = 'https://sbe.medelexis.ch/jenkins/view/3.0/job'
     artifact  = 'lastSuccessfulBuild/artifact/ch.medelexis.application.p2site/target/products/ch.medelexis.application.product.Medelexis-linux.gtk.x86_64.zip'
     case variant
-    when /snapshot/
+    when /master/
       jobname = 'Medelexis-3-Application'
-    when /beta/
-      jobname = 'Medelexis-3-Application-Beta'
     when /prerelase/
       jobname = 'Medelexis-3-Application-Releases'
     else # only support 3.0.25
       jobname = 'Medelexis-3-Application-Releases'
       artifact = '131/artifact/ch.medelexis.application.product/target/products/ch.medelexis.application.product.Medelexis-linux.gtk.x86_64.zip'
     end
-    # /home/srv/web/download.medelexis.ch/medelexis.3.application/snapshot/products/ch.medelexis.application.product.Medelexis-linux.gtk.x86_64.zip
-    # download("#{root}/#{jobname}/#{artifact}", cache)
     root      = 'https://download.medelexis.ch/medelexis.3.application'
     InstHelpers.download("#{root}/#{variant}/products/ch.medelexis.application.product.Medelexis-linux.gtk.x86_64.zip", cache, opts[:noop])
     FileUtils.makedirs(dest, :verbose => true, :noop => opts[:noop])
@@ -157,7 +153,6 @@ module InstHelpers
 
   def upgrade
     variant = opts[:variant]
-    ENV['SWT_GTK3'] = '0'
     cache = File.join(UpgradeOptions::CACHE_BASE, opts[:medelexis] ? 'medelexis' : 'elexis', variant)
     if opts[:medelexis]
       url = "https://download.medelexis.ch/medelexis.3/#{variant}"
@@ -169,7 +164,7 @@ module InstHelpers
     else
       puts "Installing Elexis opensource WorkDir is #{WorkDir} WorkDir #{WorkDir}"
       elexis_zip = Config[:elexis_fsf][variant][:full_zip_url]
-      download_and_unzip(elexis_zip.gsub('snapshot', variant), File.join(WorkDir, '**/plugins'))
+      download_and_unzip(elexis_zip.gsub('master', variant), File.join(WorkDir, '**/plugins'))
       install_rcp_support_for_jubula(WorkDir)
       patch_ini_file_for_jubula_rc(WorkDir)
     end

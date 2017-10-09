@@ -12,7 +12,7 @@ begin
 rescue LoadError
 end
 
-VARIANT = ENV['VARIANT'] ? ENV['VARIANT'] : 'snapshot' unless defined?(VARIANT)
+VARIANT = ENV['VARIANT'] ? ENV['VARIANT'] : 'master' unless defined?(VARIANT)
 MAY_FAIL = true
 def noop
   ENV['DRY_RUN']

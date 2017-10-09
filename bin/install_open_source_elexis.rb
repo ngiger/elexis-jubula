@@ -12,7 +12,7 @@ def install_opensource_elexis(noop = ENV['DRY_RUN'], variant = VARIANT)
   end
 
   if true # install from jenkins
-    download_and_unzip(elexis_zip.gsub('snapshot', variant), File.join(WorkDir, '**/plugins'))
+    download_and_unzip(elexis_zip.gsub('master', variant), File.join(WorkDir, '**/plugins'))
   else # install via director
     download_and_unzip(director_zip, File.join(WorkDir, 'director'))
     to_install = Config[:elexis_fsf][:features_2_install]
